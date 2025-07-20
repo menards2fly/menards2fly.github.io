@@ -1,0 +1,12 @@
+{
+  "printWidth": 80,              // max line length before wrapping
+  "tabWidth": 2,                 // 2 spaces per indent
+  "useTabs": false,              // use spaces, not tabs
+  "semi": true,                  // always end statements with semicolons
+  "singleQuote": true,           // use single quotes instead of double quotes
+  "trailingComma": "es5",        // add trailing commas where valid in ES5 (objects, arrays, etc)
+  "bracketSpacing": true,        // spaces between brackets in object literals { like this }
+  "arrowParens": "always",       // always include parens around arrow function params
+  "htmlWhitespaceSensitivity": "css", // respect CSS display property for whitespace in HTML
+  "endOfLine": "lf"              // use LF line endings (good for Unix systems)
+}
