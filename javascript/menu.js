@@ -355,15 +355,17 @@ async function loadMutualFriends() {
       isOnline = minutesAgo >= 0 && minutesAgo < 5;
     }
 
-    // Fetch game if any
+    // Fetch game if any, including URL now
     let nowPlaying = null;
+    let gameUrl = null;
     if (canView && friend.current_game_id) {
       const { data: gameData } = await supabase
         .from('games_menu')
-        .select('name')
+        .select('name, url')
         .eq('id', friend.current_game_id)
         .maybeSingle();
       if (gameData?.name) nowPlaying = gameData.name;
+      if (gameData?.url) gameUrl = gameData.url;
     }
 
     // Decide status text
@@ -376,17 +378,58 @@ async function loadMutualFriends() {
       statusText = `${nowPlaying}`;
     }
 
-    // Render friend card
+    // Create avatar wrapper, clickable if gameUrl exists
+    const avatarWrapper = document.createElement('div');
+    avatarWrapper.className = 'friend-avatar-wrapper';
+
+    if (gameUrl) {
+      avatarWrapper.style.cursor = 'pointer';
+      avatarWrapper.addEventListener('click', () => {
+        // Save game info for play page
+        localStorage.setItem('gameLink', gameUrl);
+        localStorage.setItem('gameName', nowPlaying);
+        // You can add more info here if needed, e.g.
+        // localStorage.setItem('gameImage', someImageUrl);
+        // localStorage.setItem('gameDesc', someDescription);
+
+        // Redirect to /play
+        window.location.href = '/play';
+      });
+    }
+
+    const avatarImg = document.createElement('img');
+    avatarImg.className = 'friend-avatar';
+    avatarImg.src = friend.avatar_url || '/uploads/branding/default-avatar.png';
+    avatarImg.alt = friend.username;
+
+    avatarWrapper.appendChild(avatarImg);
+
+    if (isOnline) {
+      const onlineDot = document.createElement('span');
+      onlineDot.className = 'online-dot';
+      onlineDot.title = 'Online';
+      avatarWrapper.appendChild(onlineDot);
+    }
+
+    // Render friend item container
     const card = document.createElement('div');
     card.className = 'friend-item';
-    card.innerHTML = `
-      <div class="friend-avatar-wrapper">
-        <img class="friend-avatar" src="${friend.avatar_url || '/uploads/branding/default-avatar.png'}" alt="${friend.username}">
-        ${isOnline ? `<span class="online-dot" title="Online"></span>` : ''}
-      </div>
-      <div class="friend-username">${friend.username}</div>
-      <div class="friend-nowplaying">${statusText}</div>
-    `;
+
+    // Username div
+    const usernameDiv = document.createElement('div');
+    usernameDiv.className = 'friend-username';
+    usernameDiv.textContent = friend.username;
+
+    // Now playing / status div
+    const nowPlayingDiv = document.createElement('div');
+    nowPlayingDiv.className = 'friend-nowplaying';
+    nowPlayingDiv.textContent = statusText;
+
+    // Append all
+    card.appendChild(avatarWrapper);
+    card.appendChild(usernameDiv);
+    card.appendChild(nowPlayingDiv);
+
     list.appendChild(card);
   }
   console.log('🎉 Finished loading mutual friends.');
