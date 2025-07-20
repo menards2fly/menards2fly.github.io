@@ -367,7 +367,16 @@ const updateLastSeen = async () => {
   else console.log('📡 Last seen updated.');
 };
 
+// Run once on page load (e.g., navbar load)
 updateLastSeen();
+
+// Then set up a ping every 60 seconds
+const lastSeenInterval = setInterval(updateLastSeen, 60 * 1000);
+
+// Optional: clear interval when user leaves page to avoid unnecessary pings
+window.addEventListener('beforeunload', () => {
+  clearInterval(lastSeenInterval);
+});
 
 if (user) {
   const { data: profile, error } = await supabase

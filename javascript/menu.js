@@ -280,13 +280,11 @@ async function loadMutualFriends() {
     .from('follows')
     .select('following_id')
     .eq('follower_id', user.id);
-  console.log('📥 Following rows fetched:', followingRows);
 
   const { data: followerRows, error: followerError } = await supabase
     .from('follows')
     .select('follower_id')
     .eq('following_id', user.id);
-  console.log('📤 Follower rows fetched:', followerRows);
 
   if (followingError || followerError) {
     console.error('❌ Error loading follows:', followingError || followerError);
@@ -298,10 +296,7 @@ async function loadMutualFriends() {
   const followerIds = (followerRows || []).map(row => row.follower_id);
   const mutualIds = followingIds.filter(id => followerIds.includes(id));
 
-  console.log('🤝 Mutual friend IDs:', mutualIds);
-
   if (mutualIds.length === 0) {
-    console.log('😶 No mutual friends found.');
     document.getElementById('friends-list').innerHTML = "<p>No mutual friends yet. When you follow someone who follows you back, they'll show up here!</p>";
     return;
   }
@@ -312,29 +307,23 @@ async function loadMutualFriends() {
     .select('id, username, avatar_url, last_active, current_game_id, online_status_visibility')
     .in('id', mutualIds);
 
-  console.log('👥 Profiles fetched:', profiles);
-
   if (profilesError) {
     console.error('❌ Error loading profiles:', profilesError);
     document.getElementById('friends-list').innerHTML = "<p>Error loading profiles.</p>";
     return;
   }
 
-  // Step 3: Sort profiles — active players first
+  // Step 3: Sort — active players first
   profiles.sort((a, b) => {
     const aPlaying = !!a.current_game_id;
     const bPlaying = !!b.current_game_id;
     return bPlaying - aPlaying;
   });
-  console.log('📊 Profiles sorted with active players first.');
 
   const list = document.getElementById('friends-list');
   list.innerHTML = "";
 
   for (const friend of profiles) {
-    console.log(`💡 Processing friend: ${friend.username} (${friend.id})`);
-
-    // Check privacy setting
     let canView = false;
     const visibility = friend.online_status_visibility || 'everyone';
 
@@ -358,53 +347,50 @@ async function loadMutualFriends() {
     else if (visibility === 'mutual_follow' && isMutual) canView = true;
     else if (visibility === 'no_one') canView = false;
 
-    console.log(`🔒 Privacy check for ${friend.username}: canView = ${canView}`);
-
-    // Online status
+    // Online check
     let isOnline = false;
     if (canView && friend.last_active) {
       const lastActive = new Date(friend.last_active.replace(' ', 'T') + 'Z');
       const minutesAgo = (Date.now() - lastActive.getTime()) / 60000;
       isOnline = minutesAgo >= 0 && minutesAgo < 5;
-      console.log(`🟢 Online check for ${friend.username}: ${isOnline ? 'Online' : 'Offline'}`);
     }
 
-    // Now playing
+    // Fetch game if any
     let nowPlaying = null;
     if (canView && friend.current_game_id) {
-      const { data: gameData, error: gameError } = await supabase
+      const { data: gameData } = await supabase
         .from('games_menu')
         .select('name')
         .eq('id', friend.current_game_id)
         .maybeSingle();
-
-      if (gameError) {
-        console.warn(`⚠️ Error fetching game for ${friend.username}:`, gameError);
-      }
-
-      if (gameData?.name) {
-        nowPlaying = gameData.name;
-      }
-      console.log(`🎮 Now playing for ${friend.username}: ${nowPlaying || 'Nothing'}`);
+      if (gameData?.name) nowPlaying = gameData.name;
     }
 
-    // Render card
+    // Decide status text
+    let statusText = "";
+    if (!isOnline) {
+      statusText = "Offline";
+    } else if (!nowPlaying) {
+      statusText = "Inactive";
+    } else {
+      statusText = `${nowPlaying}`;
+    }
+
+    // Render friend card
     const card = document.createElement('div');
-    card.className = 'friend-card';
+    card.className = 'friend-item';
     card.innerHTML = `
-      <img class="friend-avatar" src="${friend.avatar_url || '/uploads/branding/default-avatar.png'}" alt="${friend.username}">
-      <div class="friend-info">
-        <span class="friend-username">
-          ${friend.username}
-          ${isOnline ? `<span class="online-dot" style="background-color: purple;" title="Online"></span>` : ''}
-        </span>
-        ${nowPlaying ? `<span class="friend-nowplaying">Playing: ${nowPlaying}</span>` : ''}
+      <div class="friend-avatar-wrapper">
+        <img class="friend-avatar" src="${friend.avatar_url || '/uploads/branding/default-avatar.png'}" alt="${friend.username}">
+        ${isOnline ? `<span class="online-dot" title="Online"></span>` : ''}
       </div>
+      <div class="friend-username">${friend.username}</div>
+      <div class="friend-nowplaying">${statusText}</div>
     `;
     list.appendChild(card);
-    console.log(`✅ Rendered friend card for ${friend.username}`);
   }
   console.log('🎉 Finished loading mutual friends.');
 }
 
 window.addEventListener("DOMContentLoaded", loadMutualFriends);
+

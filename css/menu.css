@@ -400,59 +400,112 @@ padding: 20px 40px 20px 80px; /* Add left padding to push cards away from navbar
     right: 8px;
   }
 }
-/* Add to menu.css or in a <style> tag */
-.friends-section {
-  margin: 32px auto;
-  max-width: 900px;
-  background: rgba(34,34,34,0.2);
-  border-radius: 20px;
-  padding: 24px;
-  color: #fff;
-  box-shadow: 0 0 20px rgba(138,43,226,0.1);
-}
+/* Container: center the list horizontally */
 #friends-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  justify-content: flex-start;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 16px !important;
+  overflow-x: auto !important;
+  padding: 8px 0 !important;
+  scrollbar-width: none !important;
+  
+  /* Center horizontally */
+  justify-content: center !important;  /* <-- this centers the row */
+  margin: 0 auto !important;            /* <-- also helps center the container */
+  width: 100% !important;
 }
-.friend-card {
-  background: rgba(0,0,0,0.4);
-  border-radius: 16px;
-  padding: 16px 24px;
-  display: flex;
-  align-items: center;
-  min-width: 220px;
-  gap: 16px;
-  box-shadow: 0 0 10px #222;
+
+/* Hide scrollbar for WebKit */
+#friends-list::-webkit-scrollbar {
+  display: none !important;
 }
+
+/* Each friend item forced vertical stack but horizontally lined up */
+.friend-item {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  min-width: 100px !important;       /* bumped min width for more space */
+  max-width: 140px !important;       /* bumped max width for longer game names */
+  height: 140px !important;           /* a bit taller to fit text */
+  cursor: pointer !important;
+  transition: transform 0.2s ease !important;
+  flex-shrink: 0 !important;
+  text-align: center !important;
+}
+
+/* Hover effect */
+.friend-item:hover {
+  transform: scale(1.05) !important;
+}
+
+/* Avatar wrapper with gradient ring */
+.friend-avatar-wrapper {
+  position: relative !important;
+  width: 72px !important;
+  height: 72px !important;
+  border-radius: 50% !important;
+  padding: 1px !important;
+  background: linear-gradient(135deg, #ae54ff, #ff66cc) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 0 14px rgba(174, 84, 255, 0.4) !important;
+}
+
+/* Avatar image */
 .friend-avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #ae54ff;
+  width: 64px !important;
+  height: 64px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  background: #111 !important;
 }
-.friend-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+
+/* Username text */
 .friend-username {
-  font-weight: bold;
-  font-size: 1.1em;
+  margin-top: 6px !important;
+  font-size: 0.9em !important;
+  color: #fff !important;
+  max-width: 140px !important;       /* wider max width */
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
 }
+
+/* Status text */
 .friend-nowplaying {
-  font-size: 0.95em;
-  color: #ae54ff;
+  margin-top: 2px !important;
+  font-size: 0.8em !important;
+  max-width: 140px !important;       /* wider max width */
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+  color: #ae54ff !important;
+  opacity: 0.9 !important;
+}
+
+/* Status variants */
+.friend-nowplaying.offline {
+  color: #aaa !important;
+}
+.friend-nowplaying.inactive {
+  color: #c48fff !important;
+}
+
+/* Adjust friends-section margin if needed */
+.friends-section {
+  margin-left: 84px !important;
 }
 .online-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background-color: #b84eff;
-  border-radius: 50%;
-  margin-left: 6px;
-  vertical-align: middle;
-  box-shadow: 0 0 6px #b84eff;
+  position: absolute !important;
+  bottom: 4px !important;
+  right: 4px !important;
+  width: 14px !important;
+  height: 14px !important;
+  border-radius: 50% !important;
+  background: #ae54ff !important; /* purple vibe */
+  box-shadow: 0 0 8px 2px rgba(174, 84, 255, 0.7) !important;
+  z-index: 10 !important;
 }
