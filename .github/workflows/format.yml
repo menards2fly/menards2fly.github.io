@@ -1,4 +1,4 @@
-name: Auto Format and Commit
+name: Format Code & Push Changes
 
 on:
   push:

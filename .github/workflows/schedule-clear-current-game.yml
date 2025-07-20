@@ -1,4 +1,4 @@
-name: Schedule Clear Current Game
+name: Active Data Cleanup
 
 on:
   workflow_dispatch:   # Manual run button
