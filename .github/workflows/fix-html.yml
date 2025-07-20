@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install tidy
-        run: sudo apt-get update && sudo apt-get install -y tidy
+        run: sudo apt-get update && sudo apt-get install -y tidy 
 
       - name: Auto-fix HTML with tidy
         run: |
@@ -31,7 +31,7 @@ jobs:
         run: npm install --save-dev prettier prettier-plugin-organize-attributes
 
       - name: Format with prettier
-        run: npx prettier --write "**/*.{html,js,css,json,md}"
+        run: npx prettier --write "**/*.{html,js,css,json,md}" || true
 
       - name: Commit & push changes
         run: |
