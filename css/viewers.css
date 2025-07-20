@@ -11,179 +11,180 @@
 }
 
 /* New UI */
-        body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background-color: black;
-            z-index:0;
-            height: 100vh;
-            overflow:hidden;
-        }
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: black;
+  z-index: 0;
+  height: 100vh;
+  overflow: hidden;
+}
 
 /* Unified container for iframe and controls */
 .game-container {
-    width: 1000px; /* Set a larger fixed width */
-    background-color: rgba(20, 20, 20, 0.95); /* Unified background for iframe and controls */
-    border: 4px solid #AE54FF; /* Purple border around the entire container */
-    border-radius: 12px; /* Rounded corners for the entire container */
-    box-shadow: 0 0 30px rgba(174, 84, 255, 0.8); /* Enhanced glow for the container */
-    overflow: hidden; /* Ensure content stays within the rounded corners */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 20px auto; /* Center the container on the page */
-    padding: 0; /* Remove any internal padding */
-      background-color: rgba(34, 34, 34, 0.2); 
-  backdrop-filter: blur(6px); 
+  width: 1000px; /* Set a larger fixed width */
+  background-color: rgba(
+    20,
+    20,
+    20,
+    0.95
+  ); /* Unified background for iframe and controls */
+  border: 4px solid #ae54ff; /* Purple border around the entire container */
+  border-radius: 12px; /* Rounded corners for the entire container */
+  box-shadow: 0 0 30px rgba(174, 84, 255, 0.8); /* Enhanced glow for the container */
+  overflow: hidden; /* Ensure content stays within the rounded corners */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px auto; /* Center the container on the page */
+  padding: 0; /* Remove any internal padding */
+  background-color: rgba(34, 34, 34, 0.2);
+  backdrop-filter: blur(6px);
   margin-bottom: 300px; /* Add space at the bottom */
 }
 
 /* Adjust iframe to fit within the unified container */
 iframe {
-    width: 100%; /* Take the full width of the container */
-    height: 800px; /* Increase height for better proportions */
-    border: none; /* Remove individual iframe border */
-    box-shadow: none; /* Remove individual iframe shadow */
-    margin: 0; /* Remove any margin */
-    padding: 0; /* Remove any padding */
-    z-index: 1; /* Ensure it stays above the controls */
+  width: 100%; /* Take the full width of the container */
+  height: 800px; /* Increase height for better proportions */
+  border: none; /* Remove individual iframe border */
+  box-shadow: none; /* Remove individual iframe shadow */
+  margin: 0; /* Remove any margin */
+  padding: 0; /* Remove any padding */
+  z-index: 1; /* Ensure it stays above the controls */
 }
 
 /* Style the controls container */
 .controls {
-    width: 100%; /* Match the width of the container */
+  width: 100%; /* Match the width of the container */
 
-    display: flex;
-    height:50px;
-    /* flex-direction: column; */
-    align-items: center;
-    margin: 0; /* Remove any margin */
-    z-index: 0; /* Ensure it sits below the iframe */
-  
+  display: flex;
+  height: 50px;
+  /* flex-direction: column; */
+  align-items: center;
+  margin: 0; /* Remove any margin */
+  z-index: 0; /* Ensure it sits below the iframe */
 }
 
 /* Style the buttons */
 .buttons {
-    display: flex;
-    gap: 12px; /* Add spacing between buttons */
-    float: right; /* Keep the float */
-    margin-right: 15px; /* Add spacing to the right */
+  display: flex;
+  gap: 12px; /* Add spacing between buttons */
+  float: right; /* Keep the float */
+  margin-right: 15px; /* Add spacing to the right */
 }
 
 .buttons button {
-
-    font-size: 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    background-color: black;
-    color: white;
-    border: 2px solid #AE54FF; /* Purple border */
-    transition: box-shadow 0.3s, transform 0.2s;
-
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: black;
+  color: white;
+  border: 2px solid #ae54ff; /* Purple border */
+  transition:
+    box-shadow 0.3s,
+    transform 0.2s;
 }
 
 .buttons button:hover {
-    box-shadow: 0 0 15px rgba(174, 84, 255, 0.8); /* Subtle glow on hover */
-    transform: scale(1.05); /* Slightly enlarge the button on hover */
+  box-shadow: 0 0 15px rgba(174, 84, 255, 0.8); /* Subtle glow on hover */
+  transform: scale(1.05); /* Slightly enlarge the button on hover */
 }
 
 /* Style the game-info section */
 .game-info {
-    display: flex;
-    justify-content: space-between; /* Space between the image/name and buttons */
-    align-items: center;
-    width: 100%; /* Full width of the container */
-    padding: 16px;
-    border-radius: 8px; /* Rounded corners */
-    margin: 0; /* Remove any margin */
-
+  display: flex;
+  justify-content: space-between; /* Space between the image/name and buttons */
+  align-items: center;
+  width: 100%; /* Full width of the container */
+  padding: 16px;
+  border-radius: 8px; /* Rounded corners */
+  margin: 0; /* Remove any margin */
 }
 
 .game-img {
-    max-height: 50px;
-    max-width: 50px;
+  max-height: 50px;
+  max-width: 50px;
 }
 
 /* Style the game image */
 .game-info img {
-    width: 60px; /* Set a good size for the image */
-    height: 60px; /* Set a good size for the image */
-    border-radius: 8px; /* Rounded corners for the image */
-    margin-right: 16px; /* Add spacing between the image and the text */
-    box-shadow: 0 0 10px rgba(174, 84, 255, 0.8); /* Purple glow for the image */
-    margin-left:15px;
+  width: 60px; /* Set a good size for the image */
+  height: 60px; /* Set a good size for the image */
+  border-radius: 8px; /* Rounded corners for the image */
+  margin-right: 16px; /* Add spacing between the image and the text */
+  box-shadow: 0 0 10px rgba(174, 84, 255, 0.8); /* Purple glow for the image */
+  margin-left: 15px;
 }
 
 /* Style the game name */
 .game-info h2 {
-    margin: 0;
-    
-    font-size: 30px; /* Adjust font size for better readability */
-    font-family: 'Bebas Neue', sans-serif;
-    background: linear-gradient(to right, #ffffff, #ae54ff); /* Gradient text */
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    text-shadow: 0 0 10px rgba(174, 84, 255, 0.8); /* Subtle glow for the text */
-    user-select: none;
+  margin: 0;
+
+  font-size: 30px; /* Adjust font size for better readability */
+  font-family: 'Bebas Neue', sans-serif;
+  background: linear-gradient(to right, #ffffff, #ae54ff); /* Gradient text */
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 10px rgba(174, 84, 255, 0.8); /* Subtle glow for the text */
+  user-select: none;
 }
 
 /* Align the game details (image and name) */
 .game-info .game-details {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 /* Align the buttons */
 .game-info .buttons {
-    display: flex;
-    gap: 0px; /* Add spacing between buttons */
-    
+  display: flex;
+  gap: 0px; /* Add spacing between buttons */
 }
 
 /* Style the buttons new */
 .game-info .buttons button {
-      background: rgba(34, 34, 34, 0.2); 
+  background: rgba(34, 34, 34, 0.2);
   backdrop-filter: blur(10px);
-    padding: 7px 10px;
-    font-size: 14px;
-    border-radius: 12px;
-    cursor: pointer;
-    background-color: black;
-    color: white;
-    border: 2px solid #AE54FF; /* Purple border */
-    transition: box-shadow 0.3s, transform 0.2s;
+  padding: 7px 10px;
+  font-size: 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  background-color: black;
+  color: white;
+  border: 2px solid #ae54ff; /* Purple border */
+  transition:
+    box-shadow 0.3s,
+    transform 0.2s;
 }
 
 .game-info .buttons button:hover {
-    box-shadow: 0 0 15px rgba(174, 84, 255, 0.8); /* Subtle glow on hover */
-    transform: scale(1.05); /* Slightly enlarge the button on hover */
+  box-shadow: 0 0 15px rgba(174, 84, 255, 0.8); /* Subtle glow on hover */
+  transform: scale(1.05); /* Slightly enlarge the button on hover */
 }
-
-
 
 /* Style for the toggle button */
 .toggle-button {
-    margin: 10px auto;
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    background-color: #8A2BE2;
-    color: white;
-    border: none;
-    transition: background-color 0.3s ease;
+  margin: 10px auto;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: #8a2be2;
+  color: white;
+  border: none;
+  transition: background-color 0.3s ease;
 }
 
 .toggle-button:hover {
-    background-color: #8e3bcc;
+  background-color: #8e3bcc;
 }
-
 
 #likeRatioBarContainer {
   position: absolute;
@@ -192,7 +193,6 @@ iframe {
   transform: translateX(-50%);
 
   width: 1000px;
-
 
   box-shadow: 0 2px 12px #000a;
 
@@ -213,13 +213,13 @@ iframe {
 #likeRatioLike {
   height: 100%;
   background: #4caf50;
-  transition: width 0.3s cubic-bezier(.4,2,.6,1);
+  transition: width 0.3s cubic-bezier(0.4, 2, 0.6, 1);
 }
 
 #likeRatioDislike {
   height: 100%;
   background: #f44336;
-  transition: width 0.3s cubic-bezier(.4,2,.6,1);
+  transition: width 0.3s cubic-bezier(0.4, 2, 0.6, 1);
 }
 @media (max-width: 700px) {
   body {

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -9,19 +9,18 @@
       type="module"
       src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"
     ></script>
-
     <!-- Stylesheets -->
     <link rel="stylesheet" href="/css/navbar.css" />
     <link rel="stylesheet" href="/css/main.css" />
-
     <!-- Google AdSense and Google Analytics -->
+
     <script
       async
       src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4851718454212779"
       crossorigin="anonymous"
     ></script>
-
     <!-- Google tag (gtag.js) -->
+
     <script
       async
       src="https://www.googletagmanager.com/gtag/js?id=G-ZZH4JE7RJF"
@@ -31,9 +30,9 @@
       function gtag() {
         dataLayer.push(arguments);
       }
-      gtag("js", new Date());
+      gtag('js', new Date());
 
-      gtag("config", "G-ZZH4JE7RJF");
+      gtag('config', 'G-ZZH4JE7RJF');
     </script>
     <style>
       body {
@@ -57,8 +56,12 @@
         height: 400px;
         overflow-y: auto;
         padding: 12px;
-        background: linear-gradient(135deg, rgba(11,11,20,0.3) 0%, rgba(26,24,48,0.3) 100%);
-        backdrop-filter:blur(20px);
+        background: linear-gradient(
+          135deg,
+          rgba(11, 11, 20, 0.3) 0%,
+          rgba(26, 24, 48, 0.3) 100%
+        );
+        backdrop-filter: blur(20px);
         border-radius: 16px;
         box-shadow: 0 0 12px #5f5cff88;
         display: flex;
@@ -80,21 +83,21 @@
         gap: 8px;
       }
 
-.message.own {
-  background: rgba(95, 92, 255, 0.3); /* #5f5cff */
-  color: white;
-  align-self: flex-end;
-  border-bottom-right-radius: 4px;
-  backdrop-filter:blur(12px);
-}
+      .message.own {
+        background: rgba(95, 92, 255, 0.3); /* #5f5cff */
+        color: white;
+        align-self: flex-end;
+        border-bottom-right-radius: 4px;
+        backdrop-filter: blur(12px);
+      }
 
-.message.other {
-  background: rgba(26, 26, 29, 0.3); /* #1a1a1d */
-  color: #b0b0d6;
-  align-self: flex-start;
-  border-bottom-left-radius: 4px;
-    backdrop-filter:blur(12px);
-}
+      .message.other {
+        background: rgba(26, 26, 29, 0.3); /* #1a1a1d */
+        color: #b0b0d6;
+        align-self: flex-start;
+        border-bottom-left-radius: 4px;
+        backdrop-filter: blur(12px);
+      }
 
       .message-header {
         display: flex;
@@ -133,13 +136,13 @@
         margin-top: auto;
       }
 
-      input[type="text"] {
+      input[type='text'] {
         flex: 1;
         padding: 14px 18px;
         border-radius: 24px;
         border: none;
         background: rgba(44, 44, 47, 0.3);
-        backdrop-filter:blur(12px);
+        backdrop-filter: blur(12px);
         color: white;
         font-size: 16px;
       }
@@ -168,45 +171,44 @@
   </head>
   <body>
     <script>
-      window.addEventListener("load", () => {
-        showNotification("Welcome to starchat!", {
+      window.addEventListener('load', () => {
+        showNotification('Welcome to starchat!', {
           body: `For the safety of our users, all messages are filtered for inappropriate content. Please be respectful and avoid using banned words. All profile pictures are blurred for privacy.`,
           duration: 20000, // Auto-dismiss after 10 seconds
           sound: true, // Play sound
         });
       });
     </script>
-
     <!-- Navigation Bar -->
     <div id="navbar"></div>
     <script type="module" src="/javascript/navbar.js"></script>
-
-    <br /><br /><br /><br />
+    <br />
+    <br />
+    <br />
+    <br />
     <div id="typing-indicator" aria-live="polite"></div>
     <div id="messages" aria-live="polite" aria-relevant="additions"></div>
-
-    <form id="message-form" autocomplete="off">
+    <form id="message-form" autocomplete="off" name="message-form">
       <input
         type="text"
         id="message-input"
         placeholder="Type a message..."
-        required
+        required=""
       />
       <button type="submit">Send</button>
     </form>
-
     <script type="module">
-      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-      import { bannedWords } from "/javascript/filter.js";
+      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+      import { bannedWords } from '/javascript/filter.js';
       const supabase = createClient(
-        "https://jbekjmsruiadbhaydlbt.supabase.co",
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY"
+        'https://jbekjmsruiadbhaydlbt.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY'
       );
 
-      const messagesDiv = document.getElementById("messages");
-      const form = document.getElementById("message-form");
-      const input = document.getElementById("message-input");
-      const typingIndicator = document.getElementById("typing-indicator");
+      const messagesDiv = document.getElementById('messages');
+      const form = document.getElementById('message-form');
+      const input = document.getElementById('message-input');
+      const typingIndicator = document.getElementById('typing-indicator');
 
       let currentUser = null;
 
@@ -216,10 +218,10 @@
         } = await supabase.auth.getUser();
         if (!user) {
           currentUser = {
-            id: localStorage.getItem("anonId") || crypto.randomUUID(),
-            username: "Guest",
+            id: localStorage.getItem('anonId') || crypto.randomUUID(),
+            username: 'Guest',
           };
-          localStorage.setItem("anonId", currentUser.id);
+          localStorage.setItem('anonId', currentUser.id);
         } else {
           currentUser = user;
         }
@@ -227,9 +229,9 @@
 
       async function fetchCurrentUserProfile() {
         const { data } = await supabase
-          .from("profiles")
-          .select("username, avatar_url")
-          .eq("id", currentUser.id)
+          .from('profiles')
+          .select('username, avatar_url')
+          .eq('id', currentUser.id)
           .single();
 
         if (data) {
@@ -244,36 +246,36 @@
 
       async function loadMessages() {
         const { data } = await supabase
-          .from("messages")
-          .select("*, profiles(username, avatar_url)")
-          .order("inserted_at", { ascending: true });
+          .from('messages')
+          .select('*, profiles(username, avatar_url)')
+          .order('inserted_at', { ascending: true });
 
-        messagesDiv.innerHTML = "";
+        messagesDiv.innerHTML = '';
         data.forEach(addMessageToDOM);
         scrollToBottom();
       }
 
       function addMessageToDOM(message) {
-        const div = document.createElement("div");
-        div.className = "message";
-        div.classList.add(message.user_id === currentUser.id ? "own" : "other");
+        const div = document.createElement('div');
+        div.className = 'message';
+        div.classList.add(message.user_id === currentUser.id ? 'own' : 'other');
 
-        const header = document.createElement("div");
-        header.className = "message-header";
+        const header = document.createElement('div');
+        header.className = 'message-header';
 
-        const avatar = document.createElement("img");
-        avatar.className = "avatar";
-        avatar.src = message.profiles?.avatar_url || "";
-        avatar.alt = "avatar";
+        const avatar = document.createElement('img');
+        avatar.className = 'avatar';
+        avatar.src = message.profiles?.avatar_url || '';
+        avatar.alt = 'avatar';
         header.appendChild(avatar);
 
-        const username = document.createElement("div");
-        username.className = "username";
-        username.textContent = message.profiles?.username || "Unknown";
+        const username = document.createElement('div');
+        username.className = 'username';
+        username.textContent = message.profiles?.username || 'Unknown';
         header.appendChild(username);
 
-        const content = document.createElement("div");
-        content.className = "message-content";
+        const content = document.createElement('div');
+        content.className = 'message-content';
         content.textContent = message.content;
 
         div.appendChild(header);
@@ -284,15 +286,15 @@
 
       function subscribeToMessages() {
         supabase
-          .channel("messages-channel")
+          .channel('messages-channel')
           .on(
-            "postgres_changes",
-            { event: "INSERT", schema: "public", table: "messages" },
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'messages' },
             async (payload) => {
               const { data: profile } = await supabase
-                .from("profiles")
-                .select("username, avatar_url")
-                .eq("id", payload.new.user_id)
+                .from('profiles')
+                .select('username, avatar_url')
+                .eq('id', payload.new.user_id)
                 .single();
               payload.new.profiles = profile;
               addMessageToDOM(payload.new);
@@ -307,13 +309,13 @@
       // Track timestamps of sent messages for spam filter
       let messageTimestamps = [];
 
-      form.addEventListener("submit", async (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const content = input.value.trim();
         if (!content) return;
 
-        if (!currentUser || currentUser.username === "Guest") {
-          showNotification("Message Not Sent", {
+        if (!currentUser || currentUser.username === 'Guest') {
+          showNotification('Message Not Sent', {
             body: `You must be logged in to send messages. Please create an account or log in <a href="/auth">here.</a>`,
             duration: 5000,
             sound: true,
@@ -328,7 +330,7 @@
         );
 
         if (messageTimestamps.length >= MESSAGE_LIMIT) {
-          showNotification("Slow down!", {
+          showNotification('Slow down!', {
             body: `You can only send ${MESSAGE_LIMIT} messages every 20 seconds. Please wait a bit before sending more.`,
             duration: 5000,
             sound: true,
@@ -338,18 +340,18 @@
 
         const lowered = content.toLowerCase();
         const foundWord = bannedWords.find((word) => {
-          const pattern = new RegExp(`\\b${word}\\b`, "i"); // \b = word boundary, 'i' = case-insensitive
+          const pattern = new RegExp(`\\b${word}\\b`, 'i'); // \b = word boundary, 'i' = case-insensitive
           return pattern.test(lowered);
         });
 
         if (foundWord) {
-          console.log("Word blocked:", foundWord);
-          showNotification("Message Filtered", {
+          console.log('Word blocked:', foundWord);
+          showNotification('Message Filtered', {
             body: `That message contains inappropriate content and has been blocked.`,
             duration: 5000,
             sound: true,
           });
-          input.value = ""; // Clear input
+          input.value = ''; // Clear input
           return;
         }
 
@@ -357,9 +359,9 @@
         messageTimestamps.push(now);
 
         await supabase
-          .from("messages")
+          .from('messages')
           .insert([{ user_id: currentUser.id, content }]);
-        input.value = "";
+        input.value = '';
         scrollToBottom();
       });
 
@@ -382,8 +384,10 @@
     <script src="/javascript/particles-config.js"></script>
     <script src="/javascript/notifications.js"></script>
     <!-- Scrollbar Customization -->
+
     <script src="/javascript/scrollbar.js"></script>
     <!-- Scheduler -->
-  <script src="/javascript/schedule.js"></script>
+
+    <script src="/javascript/schedule.js"></script>
   </body>
 </html>

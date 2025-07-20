@@ -3,9 +3,9 @@
   height: 150px;
   width: 150px;
   border-radius: 20%;
-  box-shadow: 
-    0 0 15px rgba(255, 255, 255, 0.5),    /* White core glow */
-    0 0 25px rgba(174, 84, 255, 0.6);      /* Purple outer glow */
+  box-shadow:
+    0 0 15px rgba(255, 255, 255, 0.5),
+    /* White core glow */ 0 0 25px rgba(174, 84, 255, 0.6); /* Purple outer glow */
 }
 
 /* Page loader container (no background) */
@@ -27,16 +27,20 @@
 #loader {
   width: 100px; /* 2x size */
   height: 100px;
-  border: 10px solid rgba(174, 84, 255, 0.3);  /* Purple semi‑transparent */
-  border-top-color: #AE54FF;                   /* Solid purple for animation */
+  border: 10px solid rgba(174, 84, 255, 0.3); /* Purple semi‑transparent */
+  border-top-color: #ae54ff; /* Solid purple for animation */
   border-radius: 50%;
   animation: spinLoad 0.7s linear infinite;
   box-shadow: 0 0 25px rgba(174, 84, 255, 0.8); /* Enhanced purple glow */
 }
 
 @keyframes spinLoad {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Blue and green bars now match starship purple theme */
@@ -44,8 +48,10 @@
 #loadergreen {
   height: 100%;
   width: 0;
-  background-color: #AE54FF; /* Purple */
-  animation: loadingBarblue 0.7s forwards, fadeInOut 0.3s 0.7s infinite;
+  background-color: #ae54ff; /* Purple */
+  animation:
+    loadingBarblue 0.7s forwards,
+    fadeInOut 0.3s 0.7s infinite;
   border-radius: 15px;
   box-shadow: 0 0 15px rgba(174, 84, 255, 0.5);
 }
@@ -62,7 +68,7 @@
   font-size: 2em; /* Increased size to match the loader */
   font-weight: bold;
   color: white;
-  text-shadow: 
+  text-shadow:
     0 0 20px rgba(255, 255, 255, 1),
     0 0 40px rgba(174, 84, 255, 0.8),
     0 0 60px rgba(174, 84, 255, 0.6);
@@ -71,12 +77,12 @@
 
 @keyframes pulseGlowLoad {
   0% {
-    text-shadow: 
+    text-shadow:
       0 0 15px rgba(255, 255, 255, 0.8),
       0 0 30px rgba(174, 84, 255, 0.6);
   }
   100% {
-    text-shadow: 
+    text-shadow:
       0 0 25px rgba(255, 255, 255, 1),
       0 0 50px rgba(174, 84, 255, 0.9),
       0 0 70px rgba(174, 84, 255, 0.7);
@@ -84,20 +90,37 @@
 }
 
 @keyframes loadingBar {
-  0%   { width: 0;   background-color: #AE54FF; }
-  50%  { width: 50%;  background-color: white; }
-  100% { width: 100%; background-color: #AE54FF; }
+  0% {
+    width: 0;
+    background-color: #ae54ff;
+  }
+  50% {
+    width: 50%;
+    background-color: white;
+  }
+  100% {
+    width: 100%;
+    background-color: #ae54ff;
+  }
 }
 
 /* keep existing loadingBargreen & loadingBarblue animations as-is */
 
 @-webkit-keyframes spin {
-  0%   { -webkit-transform: rotate(0deg); }
-  100% { -webkit-transform: rotate(360deg); }
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
 }
 @keyframes spin {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Add animation to "page content" */
@@ -109,26 +132,26 @@
   animation-duration: 1s;
 }
 @-webkit-keyframes animatebottom {
-  from { 
-    bottom: -100px; 
-    opacity: 0; 
+  from {
+    bottom: -100px;
+    opacity: 0;
     transform: scale(0.8); /* Add scale effect */
   }
-  to { 
-    bottom: 0; 
-    opacity: 1; 
+  to {
+    bottom: 0;
+    opacity: 1;
     transform: scale(1); /* Return to original size */
   }
 }
 @keyframes animatebottom {
-  from { 
-    bottom: -100px; 
-    opacity: 0; 
+  from {
+    bottom: -100px;
+    opacity: 0;
     transform: scale(0.8); /* Add scale effect */
   }
-  to { 
-    bottom: 0; 
-    opacity: 1; 
+  to {
+    bottom: 0;
+    opacity: 1;
     transform: scale(1); /* Return to original size */
   }
 }
@@ -147,8 +170,8 @@ body {
 /* Input & Control Styling */
 #sortOptions,
 #toggleUsageData {
-      background-color: rgba(34, 34, 34, 0.2); 
-  backdrop-filter: blur(6px); 
+  background-color: rgba(34, 34, 34, 0.2);
+  backdrop-filter: blur(6px);
   padding: 10px;
   font-size: 20px;
   font-family: Inter, sans-serif;
@@ -169,7 +192,7 @@ body {
 }
 #sortOptions:hover,
 #toggleUsageData:hover {
-  background-color: #AE54FF; /* Change background color on hover */
+  background-color: #ae54ff; /* Change background color on hover */
   color: white; /* Ensure text remains visible */
   box-shadow: 0 0 20px rgba(174, 84, 255, 0.6); /* Glow effect on hover */
 }
@@ -177,7 +200,7 @@ body {
 #sortOptions:focus,
 #toggleUsageData:focus {
   outline: none; /* Remove default outline */
-  border-color: #AE54FF; /* Change border color on focus */
+  border-color: #ae54ff; /* Change border color on focus */
   box-shadow: 0 0 25px rgba(174, 84, 255, 0.8); /* Enhanced glow on focus */
   transform: scale(1.05); /* Slightly grow the dropdown or button */
 }
@@ -191,8 +214,8 @@ body {
   margin: 0;
   box-sizing: border-box;
   border-radius: 25px; /* Rounded corners */
-      background-color: rgba(34, 34, 34, 0.2); 
-  backdrop-filter: blur(6px); 
+  background-color: rgba(34, 34, 34, 0.2);
+  backdrop-filter: blur(6px);
   color: white;
   box-shadow: 0 0 15px rgba(174, 84, 255, 0.3);
   transition: all 0.3s ease; /* Smooth transition for hover and focus effects */
@@ -206,7 +229,7 @@ body {
 #search:focus,
 #searchBar:focus {
   outline: none; /* Remove default outline */
-  border-color: #AE54FF; /* Change border color on focus */
+  border-color: #ae54ff; /* Change border color on focus */
   box-shadow: 0 0 25px rgba(174, 84, 255, 0.8); /* Enhanced glow on focus */
   transform: scale(1.05); /* Slightly grow the input field */
 }
@@ -215,7 +238,7 @@ body {
 }
 
 #toggleUsageData:hover {
-  background-color: #AE54FF;
+  background-color: #ae54ff;
   box-shadow: 0 0 15px rgba(174, 84, 255, 0.6);
 }
 
@@ -307,7 +330,10 @@ body {
 
 .app-name {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.7);
   color: white;
   display: flex;
@@ -316,15 +342,17 @@ body {
   font-size: 14px;
   border-radius: inherit;
   opacity: 0;
-  transition: opacity 0.3s ease, color 1s;
+  transition:
+    opacity 0.3s ease,
+    color 1s;
   backdrop-filter: blur(6px);
   text-shadow: 0 0 10px rgba(174, 84, 255, 0.8);
 }
 
 .app:hover .app-name {
   opacity: 1;
-  color: #AE54FF;
-  text-shadow: 0 0 10px #AE54FF;
+  color: #ae54ff;
+  text-shadow: 0 0 10px #ae54ff;
 }
 
 .favorite-icon {
@@ -333,7 +361,7 @@ body {
   right: 12px;
   font-size: 30px;
   cursor: pointer;
-  color: #AE54FF;
+  color: #ae54ff;
   z-index: 10;
   text-shadow: 0 0 10px rgba(174, 84, 255, 0.8);
 }
@@ -348,11 +376,21 @@ body {
 
 /* Rotate color animation for dynamic effect */
 @keyframes colorRotate {
-  from   { color: #6666ff; }
-  10%    { color: #0099ff; }
-  50%    { color: #00ff00; }
-  75%    { color: #ff3399; }
-  100%   { color: #6666ff; }
+  from {
+    color: #6666ff;
+  }
+  10% {
+    color: #0099ff;
+  }
+  50% {
+    color: #00ff00;
+  }
+  75% {
+    color: #ff3399;
+  }
+  100% {
+    color: #6666ff;
+  }
 }
 
 /* Blur/load states */
@@ -379,23 +417,25 @@ a.disabled-link:hover {
   gap: 10px;
   opacity: 0;
   transform: scale(0.8);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .skeleton {
-    background: linear-gradient(45deg, #7A1FA2 25%, #9C27B0 50%, #7A1FA2 75%);
-    background-size: 200% 100%;
-    animation: skeleton-loading 1.5s infinite;
-    border-radius: 10px;
+  background: linear-gradient(45deg, #7a1fa2 25%, #9c27b0 50%, #7a1fa2 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 10px;
 }
 
 @keyframes skeleton-loading {
-    0% {
-        background-position: 200% 0;
-    }
-    100% {
-        background-position: -200% 0;
-    }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .skeleton-app {
@@ -408,7 +448,7 @@ a.disabled-link:hover {
 }
 
 .skeleton-text {
-    width: 100px;
-    height: 20px;
-    margin: 10px auto;
+  width: 100px;
+  height: 20px;
+  margin: 10px auto;
 }

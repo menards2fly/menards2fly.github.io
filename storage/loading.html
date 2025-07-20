@@ -1,12 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
+  <head>
     <title>Loading</title>
-    <style>
-    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css');
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
 
-    body, html {
+    <style>
+      @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css');
+      @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
+
+      body,
+      html {
         margin: 0;
         padding: 0;
         width: 100%;
@@ -18,9 +20,9 @@
         background: black;
         color: white;
         font-family: Space Grotesk;
-    }
+      }
 
-    #background-video {
+      #background-video {
         position: absolute;
         top: 0;
         left: 0;
@@ -28,15 +30,15 @@
         height: 100%;
         object-fit: cover;
         z-index: 1;
-    }
+      }
 
-    #loader-container {
+      #loader-container {
         text-align: center;
         z-index: 1000;
-    }
+      }
 
-    /* Bar Loader Styles */
-    .bar-loader-container {
+      /* Bar Loader Styles */
+      .bar-loader-container {
         position: relative;
         width: 300px;
         height: 30px;
@@ -44,49 +46,51 @@
         border-radius: 15px;
         overflow: hidden;
         margin: 0 auto;
-    }
+      }
 
-    .bar-loader {
+      .bar-loader {
         position: absolute;
         height: 100%;
         width: 0;
-        background-color: #8A2BE2;
-        animation: loadingBar 4s forwards, fadeInOut 2s 4s infinite; /* 3-second loading + 2s fade in/out after */
+        background-color: #8a2be2;
+        animation:
+          loadingBar 4s forwards,
+          fadeInOut 2s 4s infinite; /* 3-second loading + 2s fade in/out after */
         border-radius: 15px;
-    }
+      }
 
-    @keyframes loadingBar {
+      @keyframes loadingBar {
         0% {
-            width: 0;
-            background-color: #8A2BE2;
+          width: 0;
+          background-color: #8a2be2;
         }
         50% {
-            width: 50%;
-            background-color: white;
+          width: 50%;
+          background-color: white;
         }
         100% {
-            width: 100%;
-            background-color: #8A2BE2;
+          width: 100%;
+          background-color: #8a2be2;
         }
-    }
+      }
 
-    /* Fade in and out from white effect */
-    @keyframes fadeInOut {
+      /* Fade in and out from white effect */
+      @keyframes fadeInOut {
         0% {
-            background-color: #8A2BE2;
-            opacity: 1;
+          background-color: #8a2be2;
+          opacity: 1;
         }
         50% {
-            background-color: white;
-            opacity: 0.5;
+          background-color: white;
+          opacity: 0.5;
         }
         100% {
-            background-color: #8A2BE2;
-            opacity: 1;
+          background-color: #8a2be2;
+          opacity: 1;
         }
-    }
+      }
 
-    #popup {
+      #popup {
         position: absolute;
         bottom: -50px;
         left: 50%;
@@ -99,32 +103,36 @@
         font-weight: bold;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         animation: slideUp 1s forwards;
-    }
+      }
 
-    @keyframes slideUp {
-        0% { bottom: -50px; }
-        100% { bottom: 20px; }
-    }
-
-    /* Fading color animation for text */
-    .fadeColor {
-        animation: fadeRedWhite 3s infinite;
-    }
-
-    @keyframes fadeRedWhite {
+      @keyframes slideUp {
         0% {
-            color: #8A2BE2;
-        }
-        50% {
-            color: white;
+          bottom: -50px;
         }
         100% {
-            color: #8A2BE2;
+          bottom: 20px;
         }
-    }
+      }
 
-    /* Warning message styles */
-    #warning {
+      /* Fading color animation for text */
+      .fadeColor {
+        animation: fadeRedWhite 3s infinite;
+      }
+
+      @keyframes fadeRedWhite {
+        0% {
+          color: #8a2be2;
+        }
+        50% {
+          color: white;
+        }
+        100% {
+          color: #8a2be2;
+        }
+      }
+
+      /* Warning message styles */
+      #warning {
         display: none; /* Hidden by default */
         position: absolute;
         top: 50%;
@@ -138,97 +146,96 @@
         border-radius: 10px;
         text-align: center;
         z-index: 2000;
-        border: 2px solid #8A2BE2; /* Updated border color */
-    }
-    .loading-wave {
-  width: 300px;
-  height: 100px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-}
+        border: 2px solid #8a2be2; /* Updated border color */
+      }
+      .loading-wave {
+        width: 300px;
+        height: 100px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+      }
 
-.loading-bar {
-  width: 20px;
-  height: 20px;
-  margin: 0 5px;
-  background-color: #8a2be2;
-  border-radius: 5px;
-  animation: loading-wave-animation 1s ease-in-out infinite;
-}
+      .loading-bar {
+        width: 20px;
+        height: 20px;
+        margin: 0 5px;
+        background-color: #8a2be2;
+        border-radius: 5px;
+        animation: loading-wave-animation 1s ease-in-out infinite;
+      }
 
-.loading-bar:nth-child(2) {
-  animation-delay: 0.1s;
-}
+      .loading-bar:nth-child(2) {
+        animation-delay: 0.1s;
+      }
 
-.loading-bar:nth-child(3) {
-  animation-delay: 0.2s;
-}
+      .loading-bar:nth-child(3) {
+        animation-delay: 0.2s;
+      }
 
-.loading-bar:nth-child(4) {
-  animation-delay: 0.3s;
-}
+      .loading-bar:nth-child(4) {
+        animation-delay: 0.3s;
+      }
 
+      @keyframes loading-wave-animation {
+        0% {
+          height: 20px;
+        }
 
-@keyframes loading-wave-animation {
-  0% {
-    height: 20px;
-  }
+        50% {
+          height: 60px;
+        }
 
-  50% {
-    height: 60px;
-  }
-
-  100% {
-    height: 20px;
-  }
-}
-
+        100% {
+          height: 20px;
+        }
+      }
     </style>
-</head>
-<body>        <audio id="bg-music" src="/storage/loading.mp3" autoplay preload="auto"></audio>
-    <video id="background-video" autoplay>
-        <source src="/storage/loadvid.mp4" type="video/mp4">
-        Your browser does not support the video tag.
+  </head>
+  <body>
+    <audio
+      id="bg-music"
+      src="/storage/loading.mp3"
+      autoplay=""
+      preload="auto"
+    ></audio>
+    <video id="background-video" autoplay="">
+      <source src="/storage/loadvid.mp4" type="video/mp4" />
+      Your browser does not support the video tag.
     </video>
-
-
     <div id="loader-container">
-
-    <!-- Warning message -->
-    <div id="warning" style="color:red;border:2px solid white">
-        <img src=/uploads/branding/favicon.png height=100px width=100px>
+      <!-- Warning message -->
+      <div id="warning" style="color: red; border: 2px solid white">
+        <img src="/uploads/branding/favicon.png" height="100px" width="100px" />
         <h1>FATAL ERROR</h1>
-        <p>Game wasn't launched within 10 seconds, there may be something wrong with the launch script.</p>
-        <br>
-        If this continues to happen, please <a href=/contact> submit a bug report. </a>
-    </div>
-
-    <script>
+        <p>
+          Game wasn't launched within 10 seconds, there may be something wrong
+          with the launch script.
+        </p>
+        <br />
+        If this continues to happen, please
+        <a href="/contact">submit a bug report.</a>
+      </div>
+      <script>
         const audio = document.getElementById('bg-music');
-  audio.addEventListener('play', () => console.log('Audio is playing'));
-  audio.addEventListener('error', (e) => console.log('Audio error:', e));
+        audio.addEventListener('play', () => console.log('Audio is playing'));
+        audio.addEventListener('error', (e) => console.log('Audio error:', e));
         // Function to hide loader, popup, video and show warning after 10 seconds
         function showWarningAfterDelay() {
-            setTimeout(() => {
-                // Hide the loader, popup, and background video
-                document.getElementById('loader-container').style.display = 'none';
-                document.getElementById('background-video').style.display = 'none';
+          setTimeout(() => {
+            // Hide the loader, popup, and background video
+            document.getElementById('loader-container').style.display = 'none';
+            document.getElementById('background-video').style.display = 'none';
 
-                // Show the warning
-                document.getElementById('warning').style.display = 'block';
-            }, 10000); // 10 seconds delay
+            // Show the warning
+            document.getElementById('warning').style.display = 'block';
+          }, 10000); // 10 seconds delay
         }
 
         // Start the rolling text and show warning after 10 seconds
 
         showWarningAfterDelay();
-
-
-
-
-
-    </script>
-
-</body>
+      </script>
+    </div>
+  </body>
 </html>

@@ -31,7 +31,7 @@ body {
   width: 1000px;
   max-width: 98vw;
   background-color: rgba(34, 34, 34, 0.2);
-  border: 4px solid #AE54FF;
+  border: 4px solid #ae54ff;
   border-radius: 12px;
   box-shadow: 0 0 30px rgba(174, 84, 255, 0.8);
   overflow: hidden;
@@ -99,8 +99,10 @@ body {
   cursor: pointer;
   background-color: black;
   color: white;
-  border: 2px solid #AE54FF;
-  transition: box-shadow 0.3s, transform 0.2s;
+  border: 2px solid #ae54ff;
+  transition:
+    box-shadow 0.3s,
+    transform 0.2s;
 }
 
 .buttons button:hover {
@@ -124,4 +126,3 @@ body {
   border-radius: 0;
   background: #111;
 }
-

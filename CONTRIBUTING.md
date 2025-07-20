@@ -20,9 +20,9 @@
 
 1. Fork the repository.
 2. Clone your fork:  
-   git clone https://github.com/your-username/your-repo.git  
+   git clone https://github.com/your-username/your-repo.git
 3. Install dependencies (if applicable):  
-   npm install  
+   npm install
 4. Create a new branch for your changes:  
    git checkout -b your-feature-name
 
@@ -53,7 +53,7 @@ If a linter or formatter (like ESLint or Prettier) is used, run it before commit
 ## 📦 How to Submit a Pull Request
 
 1. Push your changes:  
-   git push origin your-feature-name  
+   git push origin your-feature-name
 2. Go to your fork on GitHub and open a Pull Request.
 3. Fill out the PR template (if available), including:
    - Summary of changes
@@ -69,6 +69,7 @@ If a linter or formatter (like ESLint or Prettier) is used, run it before commit
 ### Reporting Bugs
 
 Include:
+
 - Steps to reproduce
 - Expected vs actual behavior
 - Logs or screenshots (if available)
@@ -76,6 +77,7 @@ Include:
 ### Suggesting Features
 
 Describe:
+
 - What the feature is
 - Why it’s useful or needed
 - Any related alternatives you considered

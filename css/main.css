@@ -5,25 +5,23 @@
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css');
 
 /* Fix pushup footer issue */
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
   padding-bottom: 250px;
-  border:none !important;
-
+  border: none !important;
 }
 body::before {
-  content: "";
+  content: '';
   position: fixed;
   inset: 0;
   background: radial-gradient(circle at top left, #8a2be2, #120032, #0a001a);
   filter: blur(60px);
   opacity: 0.9;
   z-index: -1;
-  
 }
-
 
 /* Hide scrollbar completely but keep scroll functionality */
 
@@ -70,7 +68,7 @@ h4 {
 
 body {
   font-family: Inter, sans-serif;
-    background: radial-gradient(circle at top left, #8a2be2, #120032, #0a001a);
+  background: radial-gradient(circle at top left, #8a2be2, #120032, #0a001a);
 }
 
 /* Particles.JS */
@@ -81,20 +79,23 @@ body {
   width: 100%;
   height: 100%;
   z-index: -100;
-  display:none;
+  display: none;
 }
 
 /* Glow Animation for Text */
 @keyframes glow {
-  0%, 100% {
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
-                 0 0 20px rgba(174, 84, 255, 0.8),
-                 0 0 30px rgba(174, 84, 255, 0.8);
+  0%,
+  100% {
+    text-shadow:
+      0 0 10px rgba(255, 255, 255, 0.8),
+      0 0 20px rgba(174, 84, 255, 0.8),
+      0 0 30px rgba(174, 84, 255, 0.8);
   }
   50% {
-    text-shadow: 0 0 20px rgba(255, 255, 255, 1),
-                 0 0 30px rgba(174, 84, 255, 1),
-                 0 0 40px rgba(174, 84, 255, 1);
+    text-shadow:
+      0 0 20px rgba(255, 255, 255, 1),
+      0 0 30px rgba(174, 84, 255, 1),
+      0 0 40px rgba(174, 84, 255, 1);
   }
 }
 
@@ -109,16 +110,13 @@ body {
   user-select: none;
 }
 
-
-
-
-
 /* Links */
-a:link, a:visited, a:hover, a:active {
+a:link,
+a:visited,
+a:hover,
+a:active {
   color: white;
 }
-
-
 
 /* Button styling */
 button {
@@ -127,13 +125,15 @@ button {
   color: white;
   border: 1.5px solid white;
   border-radius: 5px;
- 
-  margin: 10px;
-  transition: background-color 0.2s, box-shadow 0.3s;
-  box-shadow: 0 0 10px rgba(174, 84, 255, 0.3);
-      background-color: rgba(34, 34, 34, 0.2); 
 
-  backdrop-filter: blur(6px); 
+  margin: 10px;
+  transition:
+    background-color 0.2s,
+    box-shadow 0.3s;
+  box-shadow: 0 0 10px rgba(174, 84, 255, 0.3);
+  background-color: rgba(34, 34, 34, 0.2);
+
+  backdrop-filter: blur(6px);
 }
 
 button:hover {
@@ -142,12 +142,11 @@ button:hover {
 }
 
 button:nth-child(2) {
-
-      background-color: rgba(34, 34, 34, 0.2); 
+  background-color: rgba(34, 34, 34, 0.2);
 }
 
 button:nth-child(2):hover {
-    background-color: rgba(174, 84, 255, 0.3);
+  background-color: rgba(174, 84, 255, 0.3);
   box-shadow: 0 0 20px rgba(174, 84, 255, 0.7);
 }
 
@@ -167,7 +166,11 @@ button:nth-child(2):hover {
 .notification {
   min-width: 260px;
   max-width: 340px;
-  background: linear-gradient(90deg, rgba(138,43,226,0.3) 60%, rgba(255,75,43,0.3) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(138, 43, 226, 0.3) 60%,
+    rgba(255, 75, 43, 0.3) 100%
+  );
   backdrop-filter: blur(12px);
   color: #fff;
   font-family: Inter, sans-serif;
@@ -178,13 +181,15 @@ button:nth-child(2):hover {
   margin-bottom: 4px;
   opacity: 0;
   transform: translateY(-20px) scale(0.98);
-  animation: notif-in 0.4s cubic-bezier(.4,2,.6,1) forwards;
+  animation: notif-in 0.4s cubic-bezier(0.4, 2, 0.6, 1) forwards;
   pointer-events: auto;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 4px;
-  transition: opacity 0.3s, transform 0.3s;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
 }
 
 @keyframes notif-in {
@@ -196,7 +201,7 @@ button:nth-child(2):hover {
 
 .notification.hide {
   pointer-events: none;
-  animation: notif-out 0.35s cubic-bezier(.4,2,.6,1) forwards;
+  animation: notif-out 0.35s cubic-bezier(0.4, 2, 0.6, 1) forwards;
 }
 
 @keyframes notif-out {
@@ -250,7 +255,7 @@ button:nth-child(2):hover {
   position: absolute;
   left: 0;
   bottom: 0;
-  background: rgba(255,255,255,0.5);
+  background: rgba(255, 255, 255, 0.5);
   height: 3px;
   border-radius: 2px;
   width: 100%;
@@ -279,5 +284,6 @@ button:nth-child(2):hover {
   }
 }
 body {
-   margin-left:70px; width:calc(100% - 70px);
+  margin-left: 70px;
+  width: calc(100% - 70px);
 }

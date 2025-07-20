@@ -1,5 +1,5 @@
 /* /javascript/screentimetracking.js */
-(function() {
+(function () {
   /***********************
    * UTILITY FUNCTIONS
    ***********************/
@@ -8,7 +8,9 @@
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    return [hrs, mins, secs].map(num => String(num).padStart(2, '0')).join(':');
+    return [hrs, mins, secs]
+      .map((num) => String(num).padStart(2, '0'))
+      .join(':');
   }
 
   // Return today's date as YYYY-MM-DD
@@ -22,13 +24,13 @@
   let trackingInterval = null;
   let midnightTimeout = null;
   const DEFAULT_SETTINGS = {
-    usageLimitSeconds: 3600,      // Default to 1 hour
+    usageLimitSeconds: 3600, // Default to 1 hour
     limitActive: false,
-    limitAction: 'reminder',      // Options: "reminder" or "lockout"
-    disabledUntil: null,          // e.g., "2025-02-11" when tracking is disabled
+    limitAction: 'reminder', // Options: "reminder" or "lockout"
+    disabledUntil: null, // e.g., "2025-02-11" when tracking is disabled
     reminderPage: '/reminder.html',
     lockoutPage: '/lockout.html',
-    lastReminderRedirect: 0       // Used to control the 5-minute reminder interval
+    lastReminderRedirect: 0, // Used to control the 5-minute reminder interval
   };
 
   /***********************
@@ -88,7 +90,11 @@
   function scheduleMidnightReset() {
     if (midnightTimeout) clearTimeout(midnightTimeout);
     const now = new Date();
-    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const nextMidnight = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1
+    );
     const msUntilMidnight = nextMidnight - now;
     midnightTimeout = setTimeout(() => {
       const newData = { date: getTodayString(), secondsSpent: 0 };
@@ -143,18 +149,19 @@
     const settings = loadSettings();
     if (settings.limitActive && timeRemainingElem) {
       const remaining = settings.usageLimitSeconds - data.secondsSpent;
-      timeRemainingElem.textContent = remaining > 0 ? formatTime(remaining) : "00:00:00";
+      timeRemainingElem.textContent =
+        remaining > 0 ? formatTime(remaining) : '00:00:00';
     } else if (timeRemainingElem) {
-      timeRemainingElem.textContent = "No Limit";
+      timeRemainingElem.textContent = 'No Limit';
     }
-    
+
     // Change text color to red if the limit has been reached
     if (data.secondsSpent >= settings.usageLimitSeconds) {
-      if (timeSpentElem) timeSpentElem.style.color = "red";
-      if (timeRemainingElem) timeRemainingElem.style.color = "red";
+      if (timeSpentElem) timeSpentElem.style.color = 'red';
+      if (timeRemainingElem) timeRemainingElem.style.color = 'red';
     } else {
-      if (timeSpentElem) timeSpentElem.style.color = "white";
-      if (timeRemainingElem) timeRemainingElem.style.color = "white";
+      if (timeSpentElem) timeSpentElem.style.color = 'white';
+      if (timeRemainingElem) timeRemainingElem.style.color = 'white';
     }
   }
 
@@ -178,7 +185,10 @@
         window.location.href = settings.lockoutPage;
       } else if (settings.limitAction === 'reminder') {
         const now = Date.now();
-        if (!settings.lastReminderRedirect || now - settings.lastReminderRedirect >= 5 * 60 * 1000) {
+        if (
+          !settings.lastReminderRedirect ||
+          now - settings.lastReminderRedirect >= 5 * 60 * 1000
+        ) {
           settings.lastReminderRedirect = now;
           saveSettings(settings);
           window.location.href = settings.reminderPage;
@@ -215,7 +225,9 @@
         let rem = settings.usageLimitSeconds % 3600;
         let mins = Math.floor(rem / 60);
         let secs = rem % 60;
-        customTimeInput.value = [hrs, mins, secs].map(n => String(n).padStart(2, '0')).join(':');
+        customTimeInput.value = [hrs, mins, secs]
+          .map((n) => String(n).padStart(2, '0'))
+          .join(':');
       }
     }
     if (limitActionDropdown) {
@@ -230,7 +242,9 @@
     const customTimeInput = document.getElementById('customTimeInput');
     const limitActionDropdown = document.getElementById('limitActionDropdown');
 
-    const limitActive = limitActiveCheckbox ? limitActiveCheckbox.checked : true;
+    const limitActive = limitActiveCheckbox
+      ? limitActiveCheckbox.checked
+      : true;
     let usageLimitSeconds;
 
     if (presetTimeDropdown.value === 'custom') {
@@ -242,31 +256,35 @@
         let seconds = parseInt(parts[2], 10);
         usageLimitSeconds = hours * 3600 + minutes * 60 + seconds;
         if (isNaN(usageLimitSeconds)) {
-          alert("Invalid custom time. Please enter time as HH:MM:SS.");
+          alert('Invalid custom time. Please enter time as HH:MM:SS.');
           return;
         }
       } else {
-        alert("Invalid custom time format. Please use HH:MM:SS.");
+        alert('Invalid custom time format. Please use HH:MM:SS.');
         return;
       }
     } else {
       usageLimitSeconds = parseInt(presetTimeDropdown.value, 10);
     }
-    const limitAction = limitActionDropdown ? limitActionDropdown.value : 'reminder';
+    const limitAction = limitActionDropdown
+      ? limitActionDropdown.value
+      : 'reminder';
 
     let settings = loadSettings();
     settings.limitActive = limitActive;
     settings.usageLimitSeconds = usageLimitSeconds;
     settings.limitAction = limitAction;
     saveSettings(settings);
-    alert("Settings saved!");
+    alert('Settings saved!');
     updateDisplay();
   }
 
   // Disable tracking for today or for multiple days
   function handleDisableTracking() {
     const disableDaysDropdown = document.getElementById('disableDaysDropdown');
-    const days = disableDaysDropdown ? parseInt(disableDaysDropdown.value, 10) : 0;
+    const days = disableDaysDropdown
+      ? parseInt(disableDaysDropdown.value, 10)
+      : 0;
     const today = new Date(getTodayString());
     today.setDate(today.getDate() + days);
     const disabledUntilStr = today.toISOString().split('T')[0];
@@ -274,13 +292,13 @@
     let settings = loadSettings();
     settings.disabledUntil = disabledUntilStr;
     saveSettings(settings);
-    alert("Tracking disabled until " + disabledUntilStr);
+    alert('Tracking disabled until ' + disabledUntilStr);
   }
 
   /***********************
    * INITIALIZATION
    ***********************/
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     // If the settings form exists on the page, initialize it and attach listeners.
     if (document.getElementById('settingsForm')) {
       initSettingsForm();

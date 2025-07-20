@@ -34,5 +34,3 @@ const footer = document.querySelector('.footer');
 hideButton.addEventListener('click', () => {
   footer.classList.add('hidden');  // Hide the footer
 });*/
-
-

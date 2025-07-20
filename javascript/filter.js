@@ -1,72 +1,8 @@
-  // This file contains a list of banned words for filtering purposes.
-  // It is used to check user input against a predefined list of offensive or inappropriate words.
-  // Viewing is not recommended as it contains sensitive content.
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
- export const bannedWords = `
+// This file contains a list of banned words for filtering purposes.
+// It is used to check user input against a predefined list of offensive or inappropriate words.
+// Viewing is not recommended as it contains sensitive content.
+
+export const bannedWords = `
  
  .com
  .org
@@ -1452,15 +1388,16 @@ yankee
 yellowman
 zigabo
 zipperhead
-  `.split(/\s+/).filter(Boolean);
+  `
+  .split(/\s+/)
+  .filter(Boolean);
 
-
-  // Escape special regex chars in banned words to be safe
+// Escape special regex chars in banned words to be safe
 function escapeRegex(word) {
   return word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 const bannedRegex = new RegExp(
-  bannedWords.map(w => escapeRegex(w)).join('|'), 
+  bannedWords.map((w) => escapeRegex(w)).join('|'),
   'i' // case-insensitive
 );

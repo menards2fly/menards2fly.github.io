@@ -1,12 +1,12 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabase = createClient(
-  "https://jbekjmsruiadbhaydlbt.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY"
+  'https://jbekjmsruiadbhaydlbt.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY'
 );
 
 // --- Navbar Insert ---
-const style = document.createElement("style");
+const style = document.createElement('style');
 style.innerHTML = `
     .extra-links {
       display: none;
@@ -15,8 +15,8 @@ style.innerHTML = `
   `;
 document.head.appendChild(style);
 
-let username = "Sign Up";
-let avatarUrl = "/uploads/branding/signup.png";
+let username = 'Sign Up';
+let avatarUrl = '/uploads/branding/signup.png';
 
 const {
   data: { user },
@@ -24,42 +24,44 @@ const {
 
 if (user) {
   const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("username, avatar_url")
-    .eq("id", user.id)
+    .from('profiles')
+    .select('username, avatar_url')
+    .eq('id', user.id)
     .maybeSingle();
 
   if (!error && profile) {
-    username = profile.username || "User";
+    username = profile.username || 'User';
     avatarUrl = profile.avatar_url;
-    localStorage.setItem("loggedInUser", JSON.stringify({username: profile.username, avatar: profile.avatar_url}));
+    localStorage.setItem(
+      'loggedInUser',
+      JSON.stringify({ username: profile.username, avatar: profile.avatar_url })
+    );
   }
 }
 
-
-
-let isAdmin = JSON.parse(localStorage.getItem("isAdmin"));
+let isAdmin = JSON.parse(localStorage.getItem('isAdmin'));
 
 if (!isAdmin) {
   isAdmin = { isAdmin: false, role: null }; // fallback if missing
-  console.warn("⚠️ No admin info found in localStorage, defaulting to non-admin.");
+  console.warn(
+    '⚠️ No admin info found in localStorage, defaulting to non-admin.'
+  );
 }
 
-console.log("🔐 Admin status:", isAdmin);
-console.log("👔 Admin:", isAdmin.isAdmin, "Role:", isAdmin.role);
-
+console.log('🔐 Admin status:', isAdmin);
+console.log('👔 Admin:', isAdmin.isAdmin, 'Role:', isAdmin.role);
 
 let a;
 
 if (isAdmin.isAdmin === true) {
-  console.log("✅ User is an admin. Showing admin panel button.");
+  console.log('✅ User is an admin. Showing admin panel button.');
   a = `
     <a href="/admin.html" class="admin-icon" title="Admin Panel">
       <i class="fa-solid fa-user-tie"></i>
     </a>
   `;
 } else {
-  console.log("🙅‍♂️ User is NOT an admin. Showing social button.");
+  console.log('🙅‍♂️ User is NOT an admin. Showing social button.');
   a = `
     <a onClick="showPopUp()" class="admin-icon" title="Show Socials">
       <i class="fa-solid fa-hashtag"></i>
@@ -67,7 +69,7 @@ if (isAdmin.isAdmin === true) {
   `;
 }
 
-const isPlayPage = window.location.pathname.includes("play");
+const isPlayPage = window.location.pathname.includes('play');
 
 const navbarHTML = isPlayPage
   ? `
@@ -178,12 +180,11 @@ const navbarHTML = isPlayPage
   <meta name="viewport" content="width=device-width, initial-scale=1">
   `;
 
-
-document.body.insertAdjacentHTML("afterbegin", navbarHTML);
+document.body.insertAdjacentHTML('afterbegin', navbarHTML);
 
 const sidebar = document.getElementById('starshipSidebar');
 if (sidebar) {
-  sidebar.classList.add('collapsed');  // start collapsed
+  sidebar.classList.add('collapsed'); // start collapsed
 
   const toggleBtn = document.querySelector('.sidebar-toggle');
   if (toggleBtn) {
@@ -355,7 +356,10 @@ if (hasSeenIntro) {
 }
 
 const updateLastSeen = async () => {
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
   if (authError || !user) return;
 
   const { error } = await supabase
@@ -380,42 +384,52 @@ window.addEventListener('beforeunload', () => {
 
 if (user) {
   const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("username, avatar_url")
-    .eq("id", user.id)
+    .from('profiles')
+    .select('username, avatar_url')
+    .eq('id', user.id)
     .maybeSingle();
 
   if (!error && profile) {
-    username = profile.username || "User";
+    username = profile.username || 'User';
     avatarUrl = profile.avatar_url;
-    localStorage.setItem("loggedInUser", JSON.stringify({username: profile.username, avatar: profile.avatar_url}));
+    localStorage.setItem(
+      'loggedInUser',
+      JSON.stringify({ username: profile.username, avatar: profile.avatar_url })
+    );
   } else {
-    console.error("⚠️ Signed in user does not have a profile in the database.");
-        showNotification("There's a glitch in the matrix.", {
-    body: "Your profile is missing! This breaks some features. Please log out and log back in to fix it.",
-    sound: true,          // Play sound
-  });
+    console.error('⚠️ Signed in user does not have a profile in the database.');
+    showNotification("There's a glitch in the matrix.", {
+      body: 'Your profile is missing! This breaks some features. Please log out and log back in to fix it.',
+      sound: true, // Play sound
+    });
   }
 }
 
 if (user) {
   const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("username, avatar_url")
-    .eq("id", user.id)
+    .from('profiles')
+    .select('username, avatar_url')
+    .eq('id', user.id)
     .maybeSingle();
 
   if (!error && profile) {
-    username = profile.username || "User";
+    username = profile.username || 'User';
     avatarUrl = profile.avatar_url;
-    localStorage.setItem("loggedInUser", JSON.stringify({username: profile.username, avatar: profile.avatar_url}));
+    localStorage.setItem(
+      'loggedInUser',
+      JSON.stringify({ username: profile.username, avatar: profile.avatar_url })
+    );
 
-    if (!profile.avatar_url || profile.avatar_url === "NULL" || profile.avatar_url === null) {
+    if (
+      !profile.avatar_url ||
+      profile.avatar_url === 'NULL' ||
+      profile.avatar_url === null
+    ) {
       console.warn("⚠️ User's profile avatar is not set (NULL).");
     }
   } else {
-    console.error("⚠️ Signed in user does not have a profile in the database.");
-    showNotification("Looking a little...default.", {
+    console.error('⚠️ Signed in user does not have a profile in the database.');
+    showNotification('Looking a little...default.', {
       body: "Finish setting up your profile to get the max out of Starship! <br><br> Click <a href='/auth' style='text-decoration:underline;'>here</a> to set it up.",
       sound: true,
       timer: 5000, // Auto-dismiss after 10 seconds
@@ -423,4 +437,3 @@ if (user) {
     });
   }
 }
-

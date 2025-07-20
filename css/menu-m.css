@@ -29,23 +29,29 @@
   width: 100px; /* 2x size */
   height: 100px;
   border: 10px solid rgba(174, 84, 255, 0.3);
-  border-top-color: #AE54FF;
+  border-top-color: #ae54ff;
   border-radius: 50%;
   animation: spinLoad 0.7s linear infinite;
   box-shadow: 0 0 25px rgba(174, 84, 255, 0.8);
 }
 
 @keyframes spinLoad {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 #loaderblue,
 #loadergreen {
   height: 100%;
   width: 0;
-  background-color: #AE54FF;
-  animation: loadingBarblue 0.7s forwards, fadeInOut 0.3s 0.7s infinite;
+  background-color: #ae54ff;
+  animation:
+    loadingBarblue 0.7s forwards,
+    fadeInOut 0.3s 0.7s infinite;
   border-radius: 15px;
   box-shadow: 0 0 15px rgba(174, 84, 255, 0.5);
 }
@@ -84,31 +90,66 @@
 }
 
 @keyframes loadingBar {
-  0%   { width: 0;   background-color: #AE54FF; }
-  50%  { width: 50%;  background-color: #fff; }
-  100% { width: 100%; background-color: #AE54FF; }
+  0% {
+    width: 0;
+    background-color: #ae54ff;
+  }
+  50% {
+    width: 50%;
+    background-color: #fff;
+  }
+  100% {
+    width: 100%;
+    background-color: #ae54ff;
+  }
 }
 
 @keyframes loadingBargreen {
-  0%   { width: 0;   background-color: #AE54FF; }
-  50%  { width: 50%;  background-color: #fff; }
-  100% { width: 100%; background-color: #AE54FF; }
+  0% {
+    width: 0;
+    background-color: #ae54ff;
+  }
+  50% {
+    width: 50%;
+    background-color: #fff;
+  }
+  100% {
+    width: 100%;
+    background-color: #ae54ff;
+  }
 }
 
 @keyframes loadingBarblue {
-  0%   { width: 0;   background-color: #AE54FF; }
-  50%  { width: 50%;  background-color: #fff; }
-  100% { width: 100%; background-color: #AE54FF; }
+  0% {
+    width: 0;
+    background-color: #ae54ff;
+  }
+  50% {
+    width: 50%;
+    background-color: #fff;
+  }
+  100% {
+    width: 100%;
+    background-color: #ae54ff;
+  }
 }
 
 @-webkit-keyframes spin {
-  0%   { -webkit-transform: rotate(0deg); }
-  100% { -webkit-transform: rotate(360deg); }
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
 }
 
 @keyframes spin {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Add animation to "page content" */
@@ -121,13 +162,25 @@
 }
 
 @-webkit-keyframes animatebottom {
-  from { bottom: -100px; opacity: 0; }
-  to   { bottom:    0px; opacity: 1; }
+  from {
+    bottom: -100px;
+    opacity: 0;
+  }
+  to {
+    bottom: 0px;
+    opacity: 1;
+  }
 }
 
 @keyframes animatebottom {
-  from { bottom: -100px; opacity: 0; }
-  to   { bottom:   0px; opacity: 1; }
+  from {
+    bottom: -100px;
+    opacity: 0;
+  }
+  to {
+    bottom: 0px;
+    opacity: 1;
+  }
 }
 
 #myDiv {
@@ -164,7 +217,7 @@ body {
 }
 
 #toggleUsageData:hover {
-  background-color: #AE54FF;
+  background-color: #ae54ff;
   box-shadow: 0 0 15px rgba(174, 84, 255, 0.6);
 }
 
@@ -270,8 +323,8 @@ body {
 
 .playlist:hover .playlist-name {
   opacity: 1;
-  color: #AE54FF;
-  text-shadow: 0 0 10px #AE54FF;
+  color: #ae54ff;
+  text-shadow: 0 0 10px #ae54ff;
 }
 
 .favorite-icon {
@@ -280,7 +333,7 @@ body {
   right: 12px;
   font-size: 30px;
   cursor: pointer;
-  color: #AE54FF;
+  color: #ae54ff;
   z-index: 10;
   text-shadow: 0 0 10px rgba(174, 84, 255, 0.8);
 }
@@ -295,11 +348,21 @@ body {
 
 /* Rotate color animation for dynamic effect */
 @keyframes colorRotate {
-  from   { color: #AE54FF; }
-  10%    { color: #C084FC; }
-  50%    { color: #FFFFFF; }
-  75%    { color: #C084FC; }
-  100%   { color: #AE54FF; }
+  from {
+    color: #ae54ff;
+  }
+  10% {
+    color: #c084fc;
+  }
+  50% {
+    color: #ffffff;
+  }
+  75% {
+    color: #c084fc;
+  }
+  100% {
+    color: #ae54ff;
+  }
 }
 
 /* Add CSS for loading animation */

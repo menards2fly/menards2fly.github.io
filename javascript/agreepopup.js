@@ -4,7 +4,7 @@ function hasAgreed() {
 }
 
 // Function to handle the "I Agree" button click
-document.getElementById('agreeButton').addEventListener('click', function() {
+document.getElementById('agreeButton').addEventListener('click', function () {
   // Store the agreement in localStorage to remember it
   localStorage.setItem('hasAgreed', 'true');
   // Hide the pop-up
@@ -12,13 +12,15 @@ document.getElementById('agreeButton').addEventListener('click', function() {
 });
 
 // Function to handle the "I Don't Agree" button click
-document.getElementById('disagreeButton').addEventListener('click', function() {
-  // Close the current tab
-  location.replace("/errors/notagreed");
-});
+document
+  .getElementById('disagreeButton')
+  .addEventListener('click', function () {
+    // Close the current tab
+    location.replace('/errors/notagreed');
+  });
 
 // Show the pop-up if the user hasn't agreed
-window.onload = function() {
+window.onload = function () {
   if (!hasAgreed()) {
     document.getElementById('popup').style.display = 'flex';
   }

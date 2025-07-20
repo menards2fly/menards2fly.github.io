@@ -1,153 +1,157 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
+  <head>
     <!-- Page Title and Favicon -->
     <title>starship - app menu</title>
-    <link rel="icon" type="image/x-icon" href="/uploads/branding/favicon.png">
-    <meta name="description" content="Play games, level up, and explore Starship - your new favorite gaming site.">
-<link rel="canonical" href="https://starship-app.com/apps" />
-
+    <link rel="icon" type="image/x-icon" href="/uploads/branding/favicon.png" />
+    <meta
+      name="description"
+      content="Play games, level up, and explore Starship - your new favorite gaming site."
+    />
+    <link rel="canonical" href="https://starship-app.com/apps" />
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="/css/navbar.css">
-    <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="/css/menu-apps.css">
-
+    <link rel="stylesheet" href="/css/navbar.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/menu-apps.css" />
     <!-- JavaScript for Page Load -->
+
     <script src="/javascript/pageload.js"></script>
-
     <!-- Google AdSense and Google Analytics -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4851718454212779"
-     crossorigin="anonymous"></script>
 
-     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZZH4JE7RJF"></script>
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4851718454212779"
+      crossorigin="anonymous"
+    ></script>
+    <!-- Google tag (gtag.js) -->
+
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-ZZH4JE7RJF"
+    ></script>
     <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
 
       gtag('config', 'G-ZZH4JE7RJF');
     </script>
-
     <!-- Inline Styles for Popup -->
+
     <style>
-        /* Popup styling */
-        .messagePopup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.2);
-            text-align: center;
-            max-width: 400px;
-            z-index: 1000;
-            display: none;
-        }
-        .messagePopup button {
-            background: red;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .messagePopup button:hover {
-            background: darkred;
-        }
+      /* Popup styling */
+      .messagePopup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.2);
+        text-align: center;
+        max-width: 400px;
+        z-index: 1000;
+        display: none;
+      }
+      .messagePopup button {
+        background: red;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+      .messagePopup button:hover {
+        background: darkred;
+      }
     </style>
-</head>
-<body style="margin:0;">
+  </head>
+  <body style="margin: 0">
     <!-- Navigation Bar -->
-    <div  id="navbar"></div>
+    <div id="navbar"></div>
     <script type="module" src="/javascript/navbar.js"></script>
-
     <!-- Footer -->
-    <script src="/javascript/footer.js"></script>
 
+    <script src="/javascript/footer.js"></script>
     <!-- NoScript Fallback -->
     <noscript>
-        <meta http-equiv="refresh" content="0; url=/errors/noscript" />
+      <meta http-equiv="refresh" content="0; url=/errors/noscript" />
     </noscript>
+    <center>
+      <div class="controls">
+        <input
+          type="text"
+          id="search"
+          placeholder="Search all apps"
+          oninput="filterApps()"
+        />
+        <button id="toggleUsageData" onclick="toggleClickCounts()">
+          Show Usage Data
+        </button>
+        <select id="sortOptions" onchange="sortApps()">
+          <option value="favorites">Sort by Favorites</option>
+          <option value="clickCount">Sort by Usage</option>
+          <option value="alphabetical">Sort Alphabetically</option>
+        </select>
+      </div>
+      <p id="appCount">Apps Loaded: 0</p>
+      <div id="appMenu" class="app-menu"></div>
+      <script src="/javascript/menu-apps.js"></script>
+      <!-- Easter Egg Script -->
 
-
-
-            
-            </center>
-
-        <center>
-
-
-<div class="controls">
-  <input type="text" id="search" placeholder="Search all apps" oninput="filterApps()" />
-  <button id="toggleUsageData" onclick="toggleClickCounts()">Show Usage Data</button>
-  <select id="sortOptions" onchange="sortApps()">
-    <option value="favorites">Sort by Favorites</option>
-    <option value="clickCount">Sort by Usage</option>
-    <option value="alphabetical">Sort Alphabetically</option>
-  </select>
-</div>
-<p id="appCount">Apps Loaded: 0</p>
-<div id="appMenu" class="app-menu">
-  </div>
-</div>
-<script src="/javascript/menu-apps.js"></script>
-
-        
-</div>        
-            </div>
-
-    <!-- Easter Egg Script -->
-    <script>
+      <script>
         let clicks = 0;
         let eastereggfoundyet = false;
-        const appTitle = document.querySelector("#appTitle");
-        appTitle.addEventListener("click", () => {
-            clicks += 1;
-            appTitle.focus();
-            document.querySelector("#cc").innerHTML = clicks;
-            if (!eastereggfoundyet && clicks === 69) {
-                eastereggfoundyet = true;
-                clicks = null;
-                document.querySelector("#cc").innerHTML = null;
-                alert("Easter Egg App Found!!! Now how to use it?😜");
-            }
+        const appTitle = document.querySelector('#appTitle');
+        appTitle.addEventListener('click', () => {
+          clicks += 1;
+          appTitle.focus();
+          document.querySelector('#cc').innerHTML = clicks;
+          if (!eastereggfoundyet && clicks === 69) {
+            eastereggfoundyet = true;
+            clicks = null;
+            document.querySelector('#cc').innerHTML = null;
+            alert('Easter Egg App Found!!! Now how to use it?😜');
+          }
         });
 
         // Message Popup Functions
         function showMessagePopup() {
-            document.getElementById("messagePopup").style.display = "block";
+          document.getElementById('messagePopup').style.display = 'block';
         }
 
         function closeMessagePopup() {
-            document.getElementById("messagePopup").style.display = "none";
+          document.getElementById('messagePopup').style.display = 'none';
         }
 
         // Page Loader and Popup Initialization
-        window.onload = function() {
-            if (typeof myFunction === "function") {
-                myFunction(); // Runs the page loader function from pageload.js
-            }
-            showMessagePopup(); // Show the message popup
+        window.onload = function () {
+          if (typeof myFunction === 'function') {
+            myFunction(); // Runs the page loader function from pageload.js
+          }
+          showMessagePopup(); // Show the message popup
         };
-    </script>
+      </script>
+      <!-- Particles.JS Background -->
+      <div id="particles-js"></div>
+      <script src="/javascript/panic.js"></script>
+      <script src="/javascript/screentimetracking.js"></script>
+      <script src="/javascript/cloaking.js"></script>
+      <script src="/javascript/antitabclose.js"></script>
+      <script src="/javascript/particles.js"></script>
+      <script src="/javascript/particles-config.js"></script>
+      <script src="/javascript/notifications.js"></script>
+      <!-- Scheduler -->
 
-    <!-- Particles.JS Background -->
-    <div id="particles-js"></div>
-    <script src="/javascript/panic.js"></script>
-    <script src="/javascript/screentimetracking.js"></script>
-    <script src="/javascript/cloaking.js"></script>
-    <script src="/javascript/antitabclose.js"></script>
-    <script src="/javascript/particles.js"></script>
-    <script src="/javascript/particles-config.js"></script>
-  <script src="/javascript/notifications.js"></script>
-  <!-- Scheduler -->
-  <script src="/javascript/schedule.js"></script>
-    <!-- Scrollbar Customization -->
-    <script src="/javascript/scrollbar.js"></script>
-</body>
+      <script src="/javascript/schedule.js"></script>
+      <!-- Scrollbar Customization -->
+
+      <script src="/javascript/scrollbar.js"></script>
+    </center>
+  </body>
 </html>
