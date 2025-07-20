@@ -1,35 +1,39 @@
-name: Auto Fix HTML
+name: Auto Fix HTML and Format
 
 on:
   push:
     branches:
       - main
   pull_request:
-  workflow_dispatch:  # Allows manual runs from the Actions tab
+  workflow_dispatch:
 
 jobs:
   fix-html:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
+
+      - name: Install tidy
+        run: sudo apt-get update && sudo apt-get install -y tidy
+
+      - name: Auto-fix HTML with tidy
+        run: |
+          find . -name '*.html' -exec tidy -m -q --tidy-mark no --show-warnings no --force-output yes {} \; || true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      - name: Install dependencies
-        run: |
-          npm install --save-dev prettier prettier-plugin-organize-attributes htmlhint
+      - name: Install prettier
+        run: npm install --save-dev prettier prettier-plugin-organize-attributes
 
-      - name: Auto-fix HTML and format code
-        run: |
-          npx htmlhint --fix "**/*.html" || true
-          npx prettier --write "**/*.{html,js,css,json,md}"
+      - name: Format with prettier
+        run: npx prettier --write "**/*.{html,js,css,json,md}"
 
-      - name: Commit and push changes
+      - name: Commit & push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
