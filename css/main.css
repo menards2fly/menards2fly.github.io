@@ -127,11 +127,6 @@ button:hover {
   box-shadow: 0 0 15px rgba(174, 84, 255, 0.6);
 }
 
-button:nth-child(2) {
-
-      background-color: rgba(34, 34, 34, 0.2); 
-}
-
 button:nth-child(2):hover {
     background-color: rgba(174, 84, 255, 0.3);
   box-shadow: 0 0 20px rgba(174, 84, 255, 0.7);
