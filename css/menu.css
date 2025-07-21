@@ -516,13 +516,16 @@ body {
 /* Optimize for ~12.6-inch screens (around 1024px–1366px width) */
 @media (max-width: 1366px) and (min-width: 1024px) {
   #gameMenu {
-    grid-template-columns: repeat(3, 1fr) !important; /* Use 3 columns instead of 4 */
+    grid-template-columns: repeat(
+      3,
+      1fr
+    ) !important; /* Use 3 columns instead of 4 */
     gap: 16px;
     padding: 20px 30px; /* Reduce side padding */
   }
 
   .card {
-    max-width: 360px;  /* Slightly smaller cards */
+    max-width: 360px; /* Slightly smaller cards */
     min-height: 140px;
     border-radius: 24px;
   }
