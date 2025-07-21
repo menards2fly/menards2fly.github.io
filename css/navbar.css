@@ -202,3 +202,14 @@
     padding-top: 100px;
   }
 }
+/* Default state - no padding (sidebar overlays at full width) */
+body {
+  transition: padding-left 0.3s ease;
+  padding-left: 0;
+}
+
+/* Push the page by collapsed width only when sidebar is collapsed */
+.starship-sidebar.collapsed ~ body,
+body:has(.starship-sidebar.collapsed) {
+  padding-left: var(--sidebar-collapsed);
+}

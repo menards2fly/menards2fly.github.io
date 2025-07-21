@@ -140,6 +140,12 @@ a {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+.feature-title1 {
+  font-size: 1.25em;
+  font-weight: 700;
+  margin-bottom: 10px;
+
+}
 .feature-desc {
   color: #eaeaea;
   font-size: 1.05em;
@@ -1250,4 +1256,12 @@ button:active {
     transform: scale(1.15);
     filter: drop-shadow(0 0 20px #ff4b2bcc);
   }
+}
+.card-loader-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 0;
+  max-width: 280px; /* or whatever size fits your loaders */
+  margin: 1rem auto 2rem auto;
 }

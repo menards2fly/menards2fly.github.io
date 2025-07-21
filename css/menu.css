@@ -84,6 +84,8 @@ body {
   border-color: #ae54ff; /* Change border color on focus */
   box-shadow: 0 0 25px rgba(174, 84, 255, 0.8); /* Enhanced glow on focus */
   transform: scale(1.05); /* Slightly grow the input field */
+  width: 95%; /* Adjust width on focus for better visibility */
+  max-width: 550px; /* Ensure it doesn't exceed the container width */
   z-index: 99999999;
 }
 .controls {
@@ -510,4 +512,41 @@ body {
   background: #ae54ff !important; /* purple vibe */
   box-shadow: 0 0 8px 2px rgba(174, 84, 255, 0.7) !important;
   z-index: 10 !important;
+}
+/* Optimize for ~12.6-inch screens (around 1024px–1366px width) */
+@media (max-width: 1366px) and (min-width: 1024px) {
+  #gameMenu {
+    grid-template-columns: repeat(3, 1fr) !important; /* Use 3 columns instead of 4 */
+    gap: 16px;
+    padding: 20px 30px; /* Reduce side padding */
+  }
+
+  .card {
+    max-width: 360px;  /* Slightly smaller cards */
+    min-height: 140px;
+    border-radius: 24px;
+  }
+
+  .card-body {
+    gap: 12px; /* Tighten spacing */
+    padding: 16px;
+  }
+
+  .card-image img {
+    width: 90px;
+    height: 90px;
+  }
+
+  .card-title {
+    font-size: 1.2rem;
+  }
+
+  .card-text {
+    font-size: 0.9rem;
+  }
+
+  .stat {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
 }
