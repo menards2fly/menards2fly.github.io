@@ -1,34 +1,34 @@
 UnityCallPlayJs = function () {
-  console.log("--UnityCallPlayJs--");
-}
+  console.log('--UnityCallPlayJs--');
+};
 
 UnityCallAgainJs = function () {
-  console.log("--UnityCallAgainJs--");
-}
+  console.log('--UnityCallAgainJs--');
+};
 
 UnityCallBackHomeJs = function () {
-  console.log("--UnityCallBackHomeJs--");
-}
+  console.log('--UnityCallBackHomeJs--');
+};
 
 UnityCallLeaderboardJs = function () {
-  console.log("--UnityCallLeaderboardJs--");
-}
+  console.log('--UnityCallLeaderboardJs--');
+};
 UnityCallEndgameJs = function () {
-  console.log("--UnityCallEndgameJs--");
-}
+  console.log('--UnityCallEndgameJs--');
+};
 
 UnityCallPassLevel = function () {
-  console.log("--UnityCallPassLevel--");
-}
+  console.log('--UnityCallPassLevel--');
+};
 
 UnityCallMiniMapJs = function () {
-  console.log("--UnityCallMiniMapJs--");
-}
+  console.log('--UnityCallMiniMapJs--');
+};
 
 UnityCallChangeDayLeaderboardJs = function () {
-  console.log("--UnityCallChangeDayLeaderboardJs--");
-}
+  console.log('--UnityCallChangeDayLeaderboardJs--');
+};
 
 UnityCallCloseLeaderboardJs = function () {
-  console.log("--UnityCallCloseLeaderboardJs--");
-}
+  console.log('--UnityCallCloseLeaderboardJs--');
+};

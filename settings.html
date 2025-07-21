@@ -1,352 +1,431 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <title>starship - settings</title>
-  <link rel="icon" type="image/x-icon" href="/uploads/branding/favicon.png">
-  <link rel="stylesheet" href="/css/navbar.css">
-  <link rel="stylesheet" href="/css/main.css">
-  <link rel="stylesheet" href="/css/home.css">
-  <style>    .section {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 20px;
-      padding: 30px;
-      margin: 40px auto;
-      max-width: 700px;
-      text-align: left;
-      color: #fff;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 0 30px rgba(174, 84, 255, 0.2);
-    }
-
-    .settings-card {
-      background: rgba(30, 30, 40, 0.85);
-      border-radius: 14px;
-      padding: 24px;
-      margin: 20px 0;
-      box-shadow: 0 0 20px rgba(174, 84, 255, 0.2);
-    }
-
-    .profile-container {
-      background: rgba(30, 30, 40, 0.85);
-      border-radius: 14px;
-      padding: 24px;
-      margin: 20px auto;
-      width: 350px;
-      box-shadow: 0 0 20px rgba(174, 84, 255, 0.2);
-      text-align: center;
-    }
-
-    .time-display {
-      font-size: 1.5rem;
-      color: white;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      color: white;
-      font-weight: 500;
-    }
-
-    input,
-    select {
-      width: 100%;
-      padding: 10px;
-      font-size: 1rem;
-      font-family: 'Inter', sans-serif;
-      border-radius: 10px;
-      border: 1px solid #555;
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      margin-bottom: 15px;
-      box-sizing: border-box;
-
-    }
-
-    input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
-      appearance: none;
-      border-radius: 4px;
-      border: 1px solid #888;
-      background-color: black;
-      position: relative;
-      cursor: pointer;
-      margin-right: 8px;
-    }
-
-    input[type="checkbox"]:checked::after {
-      content: '';
-      position: absolute;
-      top: 2px;
-      left: 6px;
-      width: 6px;
-      height: 12px;
-      border: solid white;
-      border-width: 0 2px 2px 0;
-      transform: rotate(45deg);
-    }
-
-    input[type="checkbox"]:hover {
-      border-color: #AE54FF;
-    }
-
-    button {
-      background: #AE54FF;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 10px 20px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s;
-    }
-
-    button:hover {
-      background: #9337e9;
-      transform: scale(1.05);
-    }
-
-    .site-footer {
-      background: linear-gradient(90deg, #1a1a1a 60%, #8a2be2 100%);
-      color: white;
-      padding: 32px 0 18px 0;
-      text-align: center;
-      margin-top: 80px;
-      box-shadow: 0 -2px 16px rgba(174, 84, 255, 0.2);
-    }
-
-    .footer-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .footer-social a {
-      display: inline-block;
-      margin: 0 8px;
-      transition: transform 0.2s;
-    }
-
-    .footer-social a:hover {
-      transform: scale(1.2) rotate(-8deg);
-    }
-
-    .footer-social img {
-      width: 28px;
-      height: 28px;
-      filter: drop-shadow(0 2px 6px #AE54FF);
-    }
-
-    @media (max-width: 900px) {
+  <head>
+    <title>starship - settings</title>
+    <link rel="icon" type="image/x-icon" href="/uploads/branding/favicon.png" />
+    <link rel="stylesheet" href="/css/navbar.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/home.css" />
+    <style>
       .section {
-        padding: 24px 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 40px auto;
+        max-width: 700px;
+        text-align: left;
+        color: #fff;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 30px rgba(174, 84, 255, 0.2);
+      }
+
+      .settings-card {
+        background: rgba(30, 30, 40, 0.85);
+        border-radius: 14px;
+        padding: 24px;
+        margin: 20px 0;
+        box-shadow: 0 0 20px rgba(174, 84, 255, 0.2);
       }
 
       .profile-container {
-        width: 95%;
-        padding: 20px;
+        background: rgba(30, 30, 40, 0.85);
+        border-radius: 14px;
+        padding: 24px;
+        margin: 20px auto;
+        width: 350px;
+        box-shadow: 0 0 20px rgba(174, 84, 255, 0.2);
+        text-align: center;
       }
-    }
-  </style>
-</head>
-<body>
-  <!-- Navigation bar -->
-  <div  id="navbar"></div>
 
-  <!-- Hero Banner -->
-  <section class="hero124" style="min-height: 280px; background: none; position: relative;">
-    <div class="hero-content" style="position:relative; z-index:2; background:rgba(20,20,30,0.82); border-radius:20px; padding:36px 32px 30px 32px; box-shadow:0 8px 48px #8a2be244; max-width:520px; margin:48px auto;">
-      <div class="hero-title" style="font-size:2.2em; font-weight:800; margin-bottom:12px; background:linear-gradient(90deg,#ff4b2b,#8a2be2 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:1px;">
-        Settings
+      .time-display {
+        font-size: 1.5rem;
+        color: white;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        color: white;
+        font-weight: 500;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 10px;
+        font-size: 1rem;
+        font-family: 'Inter', sans-serif;
+        border-radius: 10px;
+        border: 1px solid #555;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        margin-bottom: 15px;
+        box-sizing: border-box;
+      }
+
+      input[type='checkbox'] {
+        width: 20px;
+        height: 20px;
+        appearance: none;
+        border-radius: 4px;
+        border: 1px solid #888;
+        background-color: black;
+        position: relative;
+        cursor: pointer;
+        margin-right: 8px;
+      }
+
+      input[type='checkbox']:checked::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 6px;
+        width: 6px;
+        height: 12px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+
+      input[type='checkbox']:hover {
+        border-color: #ae54ff;
+      }
+
+      button {
+        background: #ae54ff;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition:
+          background 0.3s ease,
+          transform 0.2s;
+      }
+
+      button:hover {
+        background: #9337e9;
+        transform: scale(1.05);
+      }
+
+      .site-footer {
+        background: linear-gradient(90deg, #1a1a1a 60%, #8a2be2 100%);
+        color: white;
+        padding: 32px 0 18px 0;
+        text-align: center;
+        margin-top: 80px;
+        box-shadow: 0 -2px 16px rgba(174, 84, 255, 0.2);
+      }
+
+      .footer-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .footer-social a {
+        display: inline-block;
+        margin: 0 8px;
+        transition: transform 0.2s;
+      }
+
+      .footer-social a:hover {
+        transform: scale(1.2) rotate(-8deg);
+      }
+
+      .footer-social img {
+        width: 28px;
+        height: 28px;
+        filter: drop-shadow(0 2px 6px #ae54ff);
+      }
+
+      @media (max-width: 900px) {
+        .section {
+          padding: 24px 12px;
+        }
+
+        .profile-container {
+          width: 95%;
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation bar -->
+    <div id="navbar"></div>
+    <!-- Hero Banner -->
+    <section
+      class="hero124"
+      style="min-height: 280px; background: none; position: relative"
+    >
+      <div
+        class="hero-content"
+        style="
+          position: relative;
+          z-index: 2;
+          background: rgba(20, 20, 30, 0.82);
+          border-radius: 20px;
+          padding: 36px 32px 30px 32px;
+          box-shadow: 0 8px 48px #8a2be244;
+          max-width: 520px;
+          margin: 48px auto;
+        "
+      >
+        <div
+          class="hero-title"
+          style="
+            font-size: 2.2em;
+            font-weight: 800;
+            margin-bottom: 12px;
+            background: linear-gradient(90deg, #ff4b2b, #8a2be2 80%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+          "
+        >
+          Settings
+        </div>
+        <div class="hero-desc" style="font-size: 1.15em; color: #eaeaea">
+          Personalize your starship experience.
+        </div>
       </div>
-      <div class="hero-desc" style="font-size:1.15em; color:#eaeaea;">
-        Personalize your starship experience.
+    </section>
+    <div class="section" style="margin-top: 32px">
+      <h2 class="gradient-red">Cloaking Settings</h2>
+      <p>Disguises the tab with a click of a button!</p>
+      <select name="cloak" data-cloak-select="">
+        <option value="gdoc">Fake Google Doc</option>
+        <option value="gslides">Fake Google Slides</option>
+        <option value="gsheets">Fake Google Sheets</option>
+        <option value="calculator">Fake Calculator Search</option>
+        <option value="desmoscalc">Desmos Calculator</option>
+        <option value="gdrive">Google Drive</option>
+        <option value="google">Google</option>
+        <option value="gassign">Google Assignments</option>
+        <option value="blank">Transparent Cloak</option>
+        <option disabled style="opacity: 50%" value="sparkles">
+          More cloaks coming soon!
+        </option>
+      </select>
+      <button onclick="cloak.reset();">Reset Cloak (uncloaks the site)</button>
+    </div>
+    <div class="section">
+      <h2 class="gradient-red">Panic Key</h2>
+      <p>
+        Set a custom key that redirects to a page, based on your cloak. [For
+        those who used The Arcade, it's like the Emergency Canvas button.]
+      </p>
+      <button onclick="listenForKey()">Start Listening</button>
+    </div>
+    <div class="section">
+      <h2 class="gradient-red">Anti-Tab Close</h2>
+      <p>
+        Stops teachers, or anyone from closing your tab. Say goodbye to lost
+        progress.
+      </p>
+      <label for="toggleAntiTabClose">Enable Anti-Tab Close:</label>
+      <input
+        type="checkbox"
+        id="toggleAntiTabClose"
+        name="toggleAntiTabClose"
+        onchange="toggleAntiTabClose(this.checked)"
+      />
+    </div>
+    <div class="section">
+      <h2 class="gradient-red">Performance Mode</h2>
+      <p><label>Disables animations to give you max performance.</label></p>
+      <label
+        ><input type="checkbox" id="performanceModeToggle" /> Enable Performance
+        Mode (disable animations)</label
+      >
+    </div>
+    <div class="section">
+      <h2 class="gradient-red">about:blank</h2>
+      <p>
+        Open GameVerse in about:blank. Virtually undetectable (even from
+        Blocksi), and makes the site less prone to get blocked.
+      </p>
+      <button onclick="cloak.aboutBlank();">Open in about:blank</button>
+    </div>
+    <div class="section">
+      <h2 class="gradient-red">Particle Customization</h2>
+      <p>Customize the particles animation to your liking!</p>
+      <div class="profile-container">
+        <label>Number of Particles:</label>
+        <input type="number" id="numParticles" min="10" max="500" /><br />
+        <br />
+        <label>Particle Color:</label>
+        <input type="color" id="particleColor" /><br />
+        <br />
+        <label>Shape:</label>
+        <select id="particleShape">
+          <option value="circle">Circle</option>
+          <option value="triangle">Triangle</option>
+          <option value="star">Star</option>
+          <option value="polygon">Polygon</option></select
+        ><br />
+        <br />
+        <label>Size:</label>
+        <input type="number" id="particleSize" min="1" max="10" /><br />
+        <br />
+        <label>Speed:</label>
+        <input type="number" id="particleSpeed" step="0.1" /><br />
+        <br />
+        <label>Opacity:</label>
+        <input
+          type="number"
+          id="particleOpacity"
+          step="0.1"
+          min="0.1"
+          max="1"
+        /><br />
+        <br />
+        <button
+          onclick="applySettings()"
+          style="
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+          "
+        >
+          Apply & Save
+        </button>
+        <button
+          onclick="resetSettings()"
+          style="
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+          "
+        >
+          Reset to Default
+        </button>
       </div>
     </div>
-  </section>
-
-  <div class="section" style="margin-top:32px;">
-    <h2 class="gradient-red">Cloaking Settings</h2>
-    <p>Disguises the tab with a click of a button!</p>
-    <select name="cloak" data-cloak-select>
-      <option value="gdoc">Fake Google Doc</option>
-      <option value="gslides">Fake Google Slides</option>
-      <option value="gsheets">Fake Google Sheets</option>
-      <option value="calculator">Fake Calculator Search</option>
-      <option value="desmoscalc">Desmos Calculator</option>
-      <option value="gdrive">Google Drive</option>
-      <option value="google">Google</option>
-      <option value="gassign">Google Assignments</option>
-      <option value="blank">Transparent Cloak</option>
-      <option disabled style="opacity:50%" value="sparkles">More cloaks coming soon!</option>
-    </select>
-    <button onClick="cloak.reset();">Reset Cloak (uncloaks the site)</button>
-  </div>
-
-  <div class="section">
-    <h2 class="gradient-red">Panic Key</h2>
-    <p>Set a custom key that redirects to a page, based on your cloak. [For those who used The Arcade, it's like the Emergency Canvas button.]</p>
-    <button onClick="listenForKey()">Start Listening</button>
-  </div>
-
-  <div class="section">
-    <h2 class="gradient-red">Anti-Tab Close</h2>
-    <p>Stops teachers, or anyone from closing your tab. Say goodbye to lost progress.</p>
-    <label for="toggleAntiTabClose">Enable Anti-Tab Close:</label>
-    <input type="checkbox" id="toggleAntiTabClose" name="toggleAntiTabClose" onchange="toggleAntiTabClose(this.checked)">
-  </div>
-
-<div class="section">
-  <h2 class="gradient-red">Performance Mode</h2>
-  <label>
-    <p>Disables animations to give you max performance.</p>
-    <input type="checkbox" id="performanceModeToggle" />
-    Enable Performance Mode (disable animations)
-  </label>
-</div>
-
-
-  <div class="section">
-    <h2 class="gradient-red">about:blank</h2>
-    <p>Open GameVerse in about:blank. Virtually undetectable (even from Blocksi), and makes the site less prone to get blocked.</p>
-    <button onClick="cloak.aboutBlank();">Open in about:blank</button>
-  </div>
-
-  <div class="section">
-    <h2 class="gradient-red">Particle Customization</h2>
-    <p>Customize the particles animation to your liking!</p>
-    <div class="profile-container">
-      <label>Number of Particles:</label>
-      <input type="number" id="numParticles" min="10" max="500" /><br /><br />
-      <label>Particle Color:</label>
-      <input type="color" id="particleColor" /><br /><br />
-      <label>Shape:</label>
-      <select id="particleShape">
-        <option value="circle">Circle</option>
-        <option value="triangle">Triangle</option>
-        <option value="star">Star</option>
-        <option value="polygon">Polygon</option>
-      </select><br /><br />
-      <label>Size:</label>
-      <input type="number" id="particleSize" min="1" max="10" /><br /><br />
-      <label>Speed:</label>
-      <input type="number" id="particleSpeed" step="0.1" /><br /><br />
-      <label>Opacity:</label>
-      <input type="number" id="particleOpacity" step="0.1" min="0.1" max="1" /><br /><br />
-      <button onclick="applySettings()" style="padding:10px 20px; font-size:16px; background:#007bff; color:white; border:none; border-radius:5px; cursor:pointer;">Apply & Save</button>
-      <button onclick="resetSettings()" style="padding:10px 20px; font-size:16px; background:#ff0000; color:white; border:none; border-radius:5px; cursor:pointer; margin-left:10px;">Reset to Default</button>
+    <div class="section">
+      <h2 class="gradient-red">Screen Time Settings</h2>
+      <p>Look at your usage data, and set a time limit if necessary.</p>
+      <!-- Display Section -->
+      <div class="settings-card" id="trackerDisplay">
+        <p>
+          Time Spent Today:
+          <span id="timeSpent" class="time-display">00:00:00</span>
+        </p>
+        <p>
+          Time Remaining: <span id="timeRemaining" class="time-display">-</span>
+        </p>
+      </div>
+      <!-- Settings Form Section -->
+      <div class="settings-card" id="settings">
+        <h2>Settings</h2>
+        <form id="settingsForm" name="settingsForm">
+          <label
+            ><input type="checkbox" id="limitActiveCheckbox" /> Enable Usage
+            Limit</label
+          >
+          <label
+            >Usage Limit:
+            <select id="presetTimeDropdown">
+              <option value="900">00:15:00</option>
+              <option value="1800">00:30:00</option>
+              <option value="3600" selected>01:00:00</option>
+              <option value="7200">02:00:00</option>
+              <option value="10800">03:00:00</option>
+              <option value="custom">Custom</option>
+            </select>
+            <span id="customTimeContainer" style="display: none"
+              >Custom Time (HH:MM:SS):
+              <input
+                type="text"
+                id="customTimeInput"
+                placeholder="HH:MM:SS" /></span
+          ></label>
+          <label
+            >Action on Limit Reached:
+            <select id="limitActionDropdown">
+              <option value="reminder">
+                Redirect every 5 minutes (Reminder)
+              </option>
+              <option value="lockout">Immediate Lockout</option>
+            </select></label
+          >
+          <label
+            >Disable Tracking for:
+            <select id="disableDaysDropdown">
+              <option value="0">Today</option>
+              <option value="1">1 Day</option>
+              <option value="2">2 Days</option>
+              <option value="3">3 Days</option>
+            </select>
+            <button type="button" id="disableButton">
+              Disable Tracking
+            </button></label
+          >
+          <button type="button" id="saveSettingsButton">Save Settings</button>
+        </form>
+      </div>
     </div>
-  </div>
-
-  <div class="section">
-    <h2 class="gradient-red">Screen Time Settings</h2>
-    <p>Look at your usage data, and set a time limit if necessary.</p>
-    <!-- Display Section -->
-    <div class="settings-card" id="trackerDisplay">
-      <p>
-        Time Spent Today: <span id="timeSpent" class="time-display">00:00:00</span>
-      </p>
-      <p>
-        Time Remaining: <span id="timeRemaining" class="time-display">-</span>
-      </p>
-    </div>
-    <!-- Settings Form Section -->
-    <div class="settings-card" id="settings">
-      <h2>Settings</h2>
-      <form id="settingsForm">
-        <label>
-          <input type="checkbox" id="limitActiveCheckbox">
-          Enable Usage Limit
-        </label>
-        <label>
-          Usage Limit:
-          <select id="presetTimeDropdown">
-            <option value="900">00:15:00</option>
-            <option value="1800">00:30:00</option>
-            <option value="3600" selected>01:00:00</option>
-            <option value="7200">02:00:00</option>
-            <option value="10800">03:00:00</option>
-            <option value="custom">Custom</option>
-          </select>
-          <span id="customTimeContainer" style="display: none;">
-            Custom Time (HH:MM:SS): 
-            <input type="text" id="customTimeInput" placeholder="HH:MM:SS">
-          </span>
-        </label>
-        <label>
-          Action on Limit Reached:
-          <select id="limitActionDropdown">
-            <option value="reminder">Redirect every 5 minutes (Reminder)</option>
-            <option value="lockout">Immediate Lockout</option>
-          </select>
-        </label>
-        <label>
-          Disable Tracking for:
-          <select id="disableDaysDropdown">
-            <option value="0">Today</option>
-            <option value="1">1 Day</option>
-            <option value="2">2 Days</option>
-            <option value="3">3 Days</option>
-          </select>
-          <button type="button" id="disableButton">Disable Tracking</button>
-        </label>
-        <button type="button" id="saveSettingsButton">Save Settings</button>
-      </form>
-    </div>
-  </div>
-
-
-
-  <div id="particles-js"></div>
-
-  <!-- Scripts: Place ALL scripts here, at the end of body -->
-  <script type="module" src="/javascript/navbar.js"></script>
-  <script src="/javascript/cloaking.js"></script>
-  <script src="/javascript/antitabclose.js"></script>
-  <script src="/javascript/screentimetracking.js"></script>
-  <script src="/javascript/scrollbar.js"></script>
-  <script src="/javascript/particles.js"></script>
-  <script src="/javascript/particles-config.js"></script>
-  <script src="/javascript/panic.js"></script>
+    <div id="particles-js"></div>
+    <!-- Scripts: Place ALL scripts here, at the end of body -->
+    <script type="module" src="/javascript/navbar.js"></script>
+    <script src="/javascript/cloaking.js"></script>
+    <script src="/javascript/antitabclose.js"></script>
+    <script src="/javascript/screentimetracking.js"></script>
+    <script src="/javascript/scrollbar.js"></script>
+    <script src="/javascript/particles.js"></script>
+    <script src="/javascript/particles-config.js"></script>
+    <script src="/javascript/panic.js"></script>
     <script src="/javascript/notifications.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      var presetDropdown = document.getElementById('presetTimeDropdown');
-      var customTimeContainer = document.getElementById('customTimeContainer');
-      if (presetDropdown && customTimeContainer) {
-        presetDropdown.addEventListener('change', function() {
-          if (this.value === 'custom') {
-            customTimeContainer.style.display = 'inline';
-          } else {
-            customTimeContainer.style.display = 'none';
-          }
-        });
-      }
-    });
-    
-function togglePerformanceMode(enable) {
-  console.log(`Performance mode ${enable ? 'enabled' : 'disabled'}`);
-  if (enable) {
-    // If not already added, create the style tag
-    if (!document.getElementById(perfStyleId)) {
-      const styleTag = document.createElement('style');
-      styleTag.id = perfStyleId;
-      styleTag.textContent = `* { animation: none !important; transform: none !important; }`;
-      document.head.appendChild(styleTag);
-    }
-  } else {
-    // Remove the style tag if it exists
-    const existingTag = document.getElementById(perfStyleId);
-    if (existingTag) existingTag.remove();
-  }
-  // Save user choice
-  localStorage.setItem('performanceMode', enable ? 'true' : 'false');
-}
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        var presetDropdown = document.getElementById('presetTimeDropdown');
+        var customTimeContainer = document.getElementById(
+          'customTimeContainer'
+        );
+        if (presetDropdown && customTimeContainer) {
+          presetDropdown.addEventListener('change', function () {
+            if (this.value === 'custom') {
+              customTimeContainer.style.display = 'inline';
+            } else {
+              customTimeContainer.style.display = 'none';
+            }
+          });
+        }
+      });
 
-  </script>
-  <!-- Scheduler -->
-  <script src="/javascript/schedule.js"></script>
-</body>
+      function togglePerformanceMode(enable) {
+        console.log(`Performance mode ${enable ? 'enabled' : 'disabled'}`);
+        if (enable) {
+          // If not already added, create the style tag
+          if (!document.getElementById(perfStyleId)) {
+            const styleTag = document.createElement('style');
+            styleTag.id = perfStyleId;
+            styleTag.textContent = `* { animation: none !important; transform: none !important; }`;
+            document.head.appendChild(styleTag);
+          }
+        } else {
+          // Remove the style tag if it exists
+          const existingTag = document.getElementById(perfStyleId);
+          if (existingTag) existingTag.remove();
+        }
+        // Save user choice
+        localStorage.setItem('performanceMode', enable ? 'true' : 'false');
+      }
+    </script>
+    <!-- Scheduler -->
+
+    <script src="/javascript/schedule.js"></script>
+  </body>
 </html>

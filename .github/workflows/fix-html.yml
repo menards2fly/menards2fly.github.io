@@ -1,0 +1,45 @@
+name: Auto Fix HTML and Format
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  fix-html:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install tidy
+        run: sudo apt-get update && sudo apt-get install -y tidy 
+
+      - name: Auto-fix HTML with tidy
+        run: |
+          find . -name '*.html' -exec tidy -m -q --tidy-mark no --show-warnings no --force-output yes {} \; || true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install prettier
+        run: npm install --save-dev prettier prettier-plugin-organize-attributes
+
+      - name: Format with prettier
+        run: npx prettier --write "**/*.{html,js,css,json,md}" || true
+
+      - name: Commit & push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: auto-fix HTML and format code" || echo "No changes to commit"
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/starship-site/starship-site.github.io.git
+          git push

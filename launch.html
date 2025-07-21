@@ -1,226 +1,228 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
+  <head>
     <title>starship - launching an app</title>
-    <link rel="icon" type="image/x-icon" href="/uploads/branding/favicon.png">
-    <meta name="description" content="Play games, level up, and explore Starship - your new favorite gaming site.">
-<link rel="canonical" href="https://starship-app.com/launch" />
-    <link rel="stylesheet" href="/css/launch.css">
-    <link rel="stylesheet" href="/css/navbar.css">
-    <link rel="stylesheet" href="/css/menu.css">
+    <link rel="icon" type="image/x-icon" href="/uploads/branding/favicon.png" />
+    <meta
+      name="description"
+      content="Play games, level up, and explore Starship - your new favorite gaming site."
+    />
+    <link rel="canonical" href="https://starship-app.com/launch" />
+    <link rel="stylesheet" href="/css/launch.css" />
+    <link rel="stylesheet" href="/css/navbar.css" />
+    <link rel="stylesheet" href="/css/menu.css" />
     <script src="/javascript/menu-apps.js"></script>
     <script src="/javascript/scrollbar.js"></script>
-
     <!-- Google AdSense and Google Analytics -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4851718454212779"
-     crossorigin="anonymous"></script>
 
-     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZZH4JE7RJF"></script>
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4851718454212779"
+      crossorigin="anonymous"
+    ></script>
+    <!-- Google tag (gtag.js) -->
+
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-ZZH4JE7RJF"
+    ></script>
     <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
 
       gtag('config', 'G-ZZH4JE7RJF');
     </script>
-
     <style>
-        /* Animate the body background color */
-        body {
-            background-color: black;
-            animation: fadeInBackground 2s ease-in-out forwards;
-            margin-top: 1px;
-            overflow: auto;
-        }
-        
-        @keyframes fadeInBackground {
-            from {
-                background-color: black;
-            }
-            to {
-                background-color: black; /* Ensure the final color is black */
-            }
-        }
-        
-        /* New Scale and Slide-Up Animation */
-        @keyframes scaleAndSlideUp {
-            from {
-                opacity: 0;
-                transform: scale(0.9) translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-        
-        /* Animate the iframe */
-        iframe {
-            background-color: black;
-            opacity: 0;
-            transform: scale(0.9) translateY(20px);
-            animation: scaleAndSlideUp 1s ease-in-out forwards;
-        }
-        
-        /* Animate the navbar */
-        #navbar {
-            opacity: 0;
-            transform: scale(0.9) translateY(-30px); /* Slide from above */
-            animation: scaleAndSlideUp 1s ease-in-out forwards;
-        }
-        
-        /* Animate the controls */
-        .controls {
-            opacity: 0;
-            transform: scale(0.9) translateY(20px);
-            animation: scaleAndSlideUp 1s ease-in-out 1.5s forwards;
-        }
-        
-        /* Animate the buttons */
-        .buttons button {
-            opacity: 0;
-            transform: scale(0.9) translateY(20px);
-            animation: scaleAndSlideUp 0.5s ease-in-out forwards;
-        }
-        
+      /* Animate the body background color */
+      body {
+        background-color: black;
+        animation: fadeInBackground 2s ease-in-out forwards;
+        margin-top: 1px;
+        overflow: auto;
+      }
 
-                </style>
-</head>
+      @keyframes fadeInBackground {
+        from {
+          background-color: black;
+        }
+        to {
+          background-color: black; /* Ensure the final color is black */
+        }
+      }
 
-<body>
+      /* New Scale and Slide-Up Animation */
+      @keyframes scaleAndSlideUp {
+        from {
+          opacity: 0;
+          transform: scale(0.9) translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      /* Animate the iframe */
+      iframe {
+        background-color: black;
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+        animation: scaleAndSlideUp 1s ease-in-out forwards;
+      }
+
+      /* Animate the navbar */
+      #navbar {
+        opacity: 0;
+        transform: scale(0.9) translateY(-30px); /* Slide from above */
+        animation: scaleAndSlideUp 1s ease-in-out forwards;
+      }
+
+      /* Animate the controls */
+      .controls {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+        animation: scaleAndSlideUp 1s ease-in-out 1.5s forwards;
+      }
+
+      /* Animate the buttons */
+      .buttons button {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+        animation: scaleAndSlideUp 0.5s ease-in-out forwards;
+      }
+    </style>
+  </head>
+  <body>
     <!-- Navigation Bar -->
     <div type="module" id="navbar"></div>
     <script src="/javascript/navbar.js"></script>
-
-
-
     <div class="app-container">
-        <iframe id="myIframe" src="" allowfullscreen></iframe>
-  <div class="app-info">
-    <div class="app-details">
-      <img src="" alt="App Icon" class="app-img" />
-      <h2 class="gradient-red">App Title</h2>
+      <iframe id="myIframe" src="" allowfullscreen name="myIframe"></iframe>
+      <div class="app-info">
+        <div class="app-details">
+          <img src="" alt="App Icon" class="app-img" />
+          <h2 class="gradient-red">App Title</h2>
+        </div>
+        <div class="buttons">
+          <button id="homeButton"></button> <button id="reloadButton"></button>
+          <button id="fullscreenButton"></button>
+          <button id="switchDomainButton"></button>
+        </div>
+      </div>
     </div>
-    <div class="buttons">
-      <button id="homeButton"><i class="fa fa-home fa-lg"></i></button>
-      <button id="reloadButton"><i class="fa fa-refresh fa-lg"></i></button>
-      <button id="fullscreenButton"><i class="fa fa-arrows-alt fa-lg"></i></button>
-      <button id="switchDomainButton"><i class="fa-solid fa-group-arrows-rotate fa-lg"></i></button>
-    </div>
-  </div>
-  </div>
-</div>
-
-
     <script>
-        // List of domains
-        const domains = [
-            "sportpersist1.global.ssl.fastly.net",
-            "sportpersist2.global.ssl.fastly.net",
-            "sportpersist3.global.ssl.fastly.net",
-            "sportpersist4.global.ssl.fastly.net",
-            "sportpersist5.global.ssl.fastly.net",
-            "sportpersist6.global.ssl.fastly.net",
-            "sportpersist7.global.ssl.fastly.net",
-            "sportpersist8.global.ssl.fastly.net",
-            "sportpersist9.global.ssl.fastly.net",
-            "sportpersist10.global.ssl.fastly.net"
-        ];
-        let currentDomainIndex = 0;
+      // List of domains
+      const domains = [
+        'sportpersist1.global.ssl.fastly.net',
+        'sportpersist2.global.ssl.fastly.net',
+        'sportpersist3.global.ssl.fastly.net',
+        'sportpersist4.global.ssl.fastly.net',
+        'sportpersist5.global.ssl.fastly.net',
+        'sportpersist6.global.ssl.fastly.net',
+        'sportpersist7.global.ssl.fastly.net',
+        'sportpersist8.global.ssl.fastly.net',
+        'sportpersist9.global.ssl.fastly.net',
+        'sportpersist10.global.ssl.fastly.net',
+      ];
+      let currentDomainIndex = 0;
 
-        // Function to update the iframe with the current domain and path
-        function updateIframe() {
-            const path = localStorage.getItem('launchPath') || "/";
-            const domain = domains[currentDomainIndex];
-            const iframe = document.getElementById('myIframe');
-            iframe.src = `https://${domain}${path}`;
-        }
+      // Function to update the iframe with the current domain and path
+      function updateIframe() {
+        const path = localStorage.getItem('launchPath') || '/';
+        const domain = domains[currentDomainIndex];
+        const iframe = document.getElementById('myIframe');
+        iframe.src = `https://${domain}${path}`;
+      }
 
-        // Function to switch to the next domain
-        function switchDomain() {
-            currentDomainIndex = (currentDomainIndex + 1) % domains.length; // Cycle through domains
-            updateIframe();
-        }
+      // Function to switch to the next domain
+      function switchDomain() {
+        currentDomainIndex = (currentDomainIndex + 1) % domains.length; // Cycle through domains
+        updateIframe();
+      }
 
-        // Redirect iframe with the saved path
-        function redirectIframe(path, name) {
-            const iframe = document.getElementById('myIframe');
-            const tempLink = '/storage/loading';
+      // Redirect iframe with the saved path
+      function redirectIframe(path, name) {
+        const iframe = document.getElementById('myIframe');
+        const tempLink = '/storage/loading';
 
-            // Temporarily redirect to loading page
-            iframe.src = tempLink;
+        // Temporarily redirect to loading page
+        iframe.src = tempLink;
 
-            // Update the app info
-            const appInfo = document.querySelector('.app-info h2');
-            const appImage = document.querySelector('.app-img');
-            const savedImage = localStorage.getItem("appImage"); // Retrieve the saved game image
-            appInfo.textContent = name;
-            if (savedImage) {
+        // Update the app info
+        const appInfo = document.querySelector('.app-info h2');
+        const appImage = document.querySelector('.app-img');
+        const savedImage = localStorage.getItem('appImage'); // Retrieve the saved game image
+        appInfo.textContent = name;
+        if (savedImage) {
           appImage.src = savedImage; // Set the game image
           appImage.alt = name; // Set the alt text for accessibility
         }
 
-            // Save the path to localStorage
-            localStorage.setItem('launchPath', path);
+        // Save the path to localStorage
+        localStorage.setItem('launchPath', path);
 
-            // Set a timeout to redirect to the actual app link after 4 seconds
-            setTimeout(() => {
-                currentDomainIndex = 0; // Start with the first domain
-                updateIframe();
-            }, 4000); // 4000 milliseconds = 4 seconds
+        // Set a timeout to redirect to the actual app link after 4 seconds
+        setTimeout(() => {
+          currentDomainIndex = 0; // Start with the first domain
+          updateIframe();
+        }, 4000); // 4000 milliseconds = 4 seconds
+      }
+
+      window.addEventListener('load', function () {
+        const appPath = localStorage.getItem('launchPath');
+        const appName = localStorage.getItem('appName');
+        if (appPath && appName) {
+          redirectIframe(appPath, appName);
         }
 
-        window.addEventListener('load', function() {
-            const appPath = localStorage.getItem('launchPath');
-            const appName = localStorage.getItem('appName');
-            if (appPath && appName) {
-                redirectIframe(appPath, appName);
-            }
+        // Set a timer to detect iframe unresponsiveness
+        const iframe = document.getElementById('myIframe');
+        let iframeUnresponsive = setTimeout(() => {
+          iframe.src = '/errors/contentblocked'; // Redirect to error page if unresponsive
+        }, 5000); // 5000 milliseconds = 5 seconds
 
-            // Set a timer to detect iframe unresponsiveness
-            const iframe = document.getElementById('myIframe');
-            let iframeUnresponsive = setTimeout(() => {
-                iframe.src = '/errors/contentblocked'; // Redirect to error page if unresponsive
-            }, 5000); // 5000 milliseconds = 5 seconds
-
-            // Add an event listener to reset the timer on successful load
-            iframe.addEventListener('load', () => {
-                clearTimeout(iframeUnresponsive);
-            });
+        // Add an event listener to reset the timer on successful load
+        iframe.addEventListener('load', () => {
+          clearTimeout(iframeUnresponsive);
         });
+      });
 
-        // Iframe controls for viewers
-        const reloadButton = document.getElementById('reloadButton');
-        const fullscreenButton = document.getElementById('fullscreenButton');
-        const homeButton = document.getElementById('homeButton');
-        const switchDomainButton = document.getElementById('switchDomainButton');
+      // Iframe controls for viewers
+      const reloadButton = document.getElementById('reloadButton');
+      const fullscreenButton = document.getElementById('fullscreenButton');
+      const homeButton = document.getElementById('homeButton');
+      const switchDomainButton = document.getElementById('switchDomainButton');
 
-        reloadButton.addEventListener('click', () => {
-            const iframe = document.getElementById('myIframe');
-            iframe.src = iframe.src;
-        });
+      reloadButton.addEventListener('click', () => {
+        const iframe = document.getElementById('myIframe');
+        iframe.src = iframe.src;
+      });
 
-        fullscreenButton.addEventListener('click', () => {
-            const iframe = document.getElementById('myIframe');
-            if (iframe.requestFullscreen) {
-                iframe.requestFullscreen();
-            } else if (iframe.mozRequestFullScreen) { // Firefox
-                iframe.mozRequestFullScreen();
-            } else if (iframe.webkitRequestFullscreen) { // Chrome, Safari, Opera
-                iframe.webkitRequestFullscreen();
-            } else if (iframe.msRequestFullscreen) { // IE/Edge
-                iframe.msRequestFullscreen();
-            }
-        });
+      fullscreenButton.addEventListener('click', () => {
+        const iframe = document.getElementById('myIframe');
+        if (iframe.requestFullscreen) {
+          iframe.requestFullscreen();
+        } else if (iframe.mozRequestFullScreen) {
+          // Firefox
+          iframe.mozRequestFullScreen();
+        } else if (iframe.webkitRequestFullscreen) {
+          // Chrome, Safari, Opera
+          iframe.webkitRequestFullscreen();
+        } else if (iframe.msRequestFullscreen) {
+          // IE/Edge
+          iframe.msRequestFullscreen();
+        }
+      });
 
-        homeButton.addEventListener('click', () => {
-            location.replace("/apps.html"); // Redirect to the apps menu
-        });
+      homeButton.addEventListener('click', () => {
+        location.replace('/apps.html'); // Redirect to the apps menu
+      });
 
-        switchDomainButton.addEventListener('click', switchDomain);
+      switchDomainButton.addEventListener('click', switchDomain);
     </script>
-
     <!-- Particles.JS Background -->
     <div id="particles-js"></div>
     <script src="/javascript/particles.js"></script>
@@ -228,9 +230,10 @@
     <script src="/javascript/panic.js"></script>
     <script src="/javascript/cloaking.js"></script>
     <script src="/javascript/antitabclose.js"></script>
-      <script src="/javascript/notifications.js"></script>
-      <script src="/javascript/screentimetracking.js"></script>
-      <!-- Scheduler -->
-  <script src="/javascript/schedule.js"></script>
-</body>
+    <script src="/javascript/notifications.js"></script>
+    <script src="/javascript/screentimetracking.js"></script>
+    <!-- Scheduler -->
+
+    <script src="/javascript/schedule.js"></script>
+  </body>
 </html>

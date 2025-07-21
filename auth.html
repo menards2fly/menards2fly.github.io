@@ -1,179 +1,293 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>starship - authentication</title>
+    <link rel="icon" type="image/x-icon" href="/uploads/branding/favicon.png" />
+    <meta
+      name="description"
+      content="Play games, level up, and explore Starship - your new favorite gaming site."
+    />
+    <link rel="canonical" href="https://starship-app.com/auth" />
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/css/navbar.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <!-- JS & Analytics -->
+  </head>
+  <body>
+    <div id="particles-js"></div>
+    <script src="/javascript/particles.js"></script>
+    <script src="/javascript/particles-config.js"></script>
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4851718454212779"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-ZZH4JE7RJF"
+    ></script>
 
-<head>
-  <meta charset="UTF-8" />
-  <title>starship - authentication</title>
-  <link rel="icon" type="image/x-icon" href="/uploads/branding/favicon.png">
-  <meta name="description" content="Play games, level up, and explore Starship - your new favorite gaming site.">
-  <link rel="canonical" href="https://starship-app.com/auth" />
-
-  <!-- Stylesheets -->
-  <link rel="stylesheet" href="/css/navbar.css">
-  <link rel="stylesheet" href="/css/main.css">
-
-  <!-- JS & Analytics -->
-  <div id="particles-js"></div>
-  <script src="/javascript/particles.js"></script>
-  <script src="/javascript/particles-config.js"></script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4851718454212779"
-    crossorigin="anonymous"></script>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZZH4JE7RJF"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
-    gtag('config', 'G-ZZH4JE7RJF');
-  </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
-  <link rel="stylesheet" href="/css/auth.css">
-</head>
-
-<body>
-
-  <center>
-    <div id="navbar"></div>
-    <script type="module" src="/javascript/navbar.js"></script>
-
-
-
-    <!-- Auth Options -->
-    <div id="auth-options">
-      <p>Been around here before?</p>
-      <button onclick="showLogin()">Log In</button>
-      <p>New to this galaxy?</p>
-      <button onclick="showSignup()">Create an Account</button>
-    </div>
-
-    <!-- Login Section -->
-    <div id="login-section" style="display:none;">
-      <input id="email" type="email" placeholder="Email" /><br>
-      <input id="password" type="password" placeholder="Password" /><br>
-      <button id="login-btn">Log In</button>
-      <p id="status-lo"></p>
-      <p>New to this galaxy? <a href="#" onclick="showSignup()"
-          style="text-decoration: underline; cursor: pointer;">Sign up</a></p>
-    </div>
-
-    <div id="signup-section" style="display:none;">
-      <input id="signup-email" type="email" placeholder="Email" /><br>
-      <div style="position:relative;display:inline-block;width:500px;">
-        <input id="signup-password" type="password" placeholder="Password" style="width:calc(100% - 50px);" />
-        <button type="button" id="toggle-signup-password" style="position:absolute;right:0;top:8px;padding:2px 8px;"><i
-            class="fa-solid fa-eye"></i></button>
-      </div><br>
-      <div style="position:relative;display:inline-block;width:500px;">
-        <input id="signup-confirm-password" type="password" placeholder="Confirm Password"
-          style="width:calc(100% - 50px);" />
-        <button type="button" id="toggle-signup-confirm-password"
-          style="position:absolute;right:0;top:8px;padding:2px 8px;"><i class="fa-solid fa-eye"></i></button>
-      </div><br>
-      <input id="signup-username" type="text" placeholder="Username (for sign up)" /><br>
-      <p id="status">By signing up, you automatically agree to the Privacy Policy and Terms of Service. You also state
-        that you are 13 or older, and that you know that you can delete your data at anytime by emailing
-        "starship.site@gmail.com" or using the contact page.</p>
-      <button id="signup-btn">Sign Up</button>
-    </div>
-
-    <!-- Profile Info -->
-    <div id="profile-info" style="display:none;">
-      <img id="profile-avatar" src="" alt="Profile Picture" style="cursor:pointer;" />
-      <p id="profile-username">Username: </p>
-
-      
-    
-
-    <pre id="status"></pre>
-
-    <div id="avatar-upload-popup"
-      style="display:none; position:fixed; top:0; left:0;  height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
-      <div
-        style="background:#222; color:#fff; padding:30px 40px; border-radius:16px; font-size:1.3em; box-shadow:0 0 30px #AE54FF;">
-        <div class="spinner"></div>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'G-ZZH4JE7RJF');
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <link rel="stylesheet" href="/css/auth.css" />
+    <center>
+      <div id="navbar"></div>
+      <script type="module" src="/javascript/navbar.js"></script>
+      <!-- Auth Options -->
+      <div id="auth-options">
+        <p>Been around here before?</p>
+        <button onclick="showLogin()">Log In</button>
+        <p>New to this galaxy?</p>
+        <button onclick="showSignup()">Create an Account</button>
       </div>
-    </div>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-    <div class="privacy-settings">
-  <h3><i class="fa-solid fa-address-card"></i> Profile Settings</h3>
-
-      <div class="username-update">
-        <input id="new-username" type="text" placeholder="New username" />
-        <button id="update-username-btn">Update Username</button>
+      <!-- Login Section -->
+      <div id="login-section" style="display: none">
+        <input id="email" type="email" placeholder="Email" /><br />
+        <input id="password" type="password" placeholder="Password" /><br />
+        <button id="login-btn">Log In</button>
+        <p id="status-lo"></p>
+        <p>
+          New to this galaxy?
+          <a
+            href="#"
+            onclick="showSignup()"
+            style="text-decoration: underline; cursor: pointer"
+            >Sign up</a
+          >
+        </p>
       </div>
-      <div class="avatar-update" style="margin-top:10px;">
-        <input id="profile-avatar-input" type="file" accept="image/*" style="display:inline-block;" />
-        <button id="update-avatar-btn">Update Avatar</button>
+      <div id="signup-section" style="display: none">
+        <input id="signup-email" type="email" placeholder="Email" /><br />
+        <div style="position: relative; display: inline-block; width: 500px">
+          <input
+            id="signup-password"
+            type="password"
+            placeholder="Password"
+            style="width: calc(100% - 50px)"
+          />
+          <button
+            type="button"
+            id="toggle-signup-password"
+            style="position: absolute; right: 0; top: 8px; padding: 2px 8px"
+          ></button>
+        </div>
+        <br />
+        <div style="position: relative; display: inline-block; width: 500px">
+          <input
+            id="signup-confirm-password"
+            type="password"
+            placeholder="Confirm Password"
+            style="width: calc(100% - 50px)"
+          />
+          <button
+            type="button"
+            id="toggle-signup-confirm-password"
+            style="position: absolute; right: 0; top: 8px; padding: 2px 8px"
+          ></button>
+        </div>
+        <br />
+        <input
+          id="signup-username"
+          type="text"
+          placeholder="Username (for sign up)"
+        /><br />
+        <p id="status">
+          By signing up, you automatically agree to the Privacy Policy and Terms
+          of Service. You also state that you are 13 or older, and that you know
+          that you can delete your data at anytime by emailing
+          "starship.site@gmail.com" or using the contact page.
+        </p>
+        <button id="signup-btn">Sign Up</button>
       </div>
-</div>
+      <!-- Profile Info -->
+      <div id="profile-info" style="display: none">
+        <img
+          id="profile-avatar"
+          src=""
+          alt="Profile Picture"
+          style="cursor: pointer"
+        />
+        <p id="profile-username">Username:</p>
+        <a id="viewprofile">View My Profile</a>
+        <script>
+          // Get username from profile-username element
+          document
+            .getElementById('viewprofile')
+            .addEventListener('click', function (e) {
+              e.preventDefault();
+              // Assumes username is in the format "Username: actualname"
+              const usernameText =
+                document.getElementById('profile-username').textContent;
+              const username = usernameText.replace('Username: ', '').trim();
+              if (username) {
+                window.location.href =
+                  '/profile?username=' + encodeURIComponent(username);
+              }
+            });
+        </script>
+        <pre id="status"></pre>
+        <div
+          id="avatar-upload-popup"
+          style="
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+          "
+        >
+          <div
+            style="
+              background: #222;
+              color: #fff;
+              padding: 30px 40px;
+              border-radius: 16px;
+              font-size: 1.3em;
+              box-shadow: 0 0 30px #ae54ff;
+            "
+          >
+            <div class="spinner"></div>
+          </div>
+        </div>
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        />
+        <div class="privacy-settings">
+          <h3>Profile Settings</h3>
+          <div class="username-update">
+            <input id="new-username" type="text" placeholder="New username" />
+            <button id="update-username-btn">Update Username</button>
+          </div>
+          <div class="avatar-update" style="margin-top: 10px">
+            <input
+              id="profile-avatar-input"
+              type="file"
+              accept="image/*"
+              style="display: inline-block"
+            />
+            <button id="update-avatar-btn">Update Avatar</button>
+          </div>
+          <div class="bio-edit">
+            <textarea
+              id="bio-textarea"
+              rows="4"
+              placeholder="Tell the galaxy about yourself..."
+            ></textarea>
+            <br />
+            <button id="save-bio-btn">Save Bio</button>
+            <p id="bio-status" style="color: #aaa; margin-top: 5px"></p>
+          </div>
+        </div>
+        <div class="privacy-settings">
+          <h3>Account Settings</h3>
+          <button id="logout-btn">Log Out</button>
+          <button
+            onclick="alert('To delete your account, please email support@starship-app.com, with your account name, email, and proof of ownership.')"
+            id="delete-btn"
+            style="background: red !important"
+          >
+            Delete My Account
+          </button>
+        </div>
+        <div class="privacy-settings">
+          <h3>Privacy Settings</h3>
+          <div class="privacy-option">
+            <div class="option-info">
+              <p class="option-title">Private Profile</p>
+              <p class="option-description">
+                Make your profile private. When enabled, your avatar will be
+                blurred to others, your bio will show "This profile is private,"
+                and following will be disabled.
+              </p>
+            </div>
+            <label class="switch"
+              ><input type="checkbox" id="private-toggle" />
+            </label>
+          </div>
+          <div class="visibility-options" style="margin-top: 20px">
+            <div class="option-info">
+              <p class="option-title">Status Visibility</p>
+              <p class="option-description">
+                Make your profile private. When enabled, your avatar will be
+                blurred to others, your bio will show "This profile is private,"
+                and following will be disabled.
+              </p>
+            </div>
+            <label style="display: block; margin-bottom: 8px; cursor: pointer"
+              ><input
+                type="radio"
+                name="status-visibility"
+                value="everyone"
+                checked
+              />
+              <span style="margin-left: 8px">Visible to everyone</span></label
+            >
+            <label style="display: block; margin-bottom: 8px; cursor: pointer"
+              ><input type="radio" name="status-visibility" value="mutual" />
+              <span style="margin-left: 8px"
+                >Visible only to mutual followers</span
+              ></label
+            >
+            <label style="display: block; cursor: pointer"
+              ><input type="radio" name="status-visibility" value="noone" />
+              <span style="margin-left: 8px">Visible to no one</span></label
+            >
+          </div>
+          <div class="privacy-option">
+            <div class="option-info">
+              <p class="option-title">Store My Favorites In Starbase</p>
+              <p class="option-description">
+                Saves your favorites in starbase, and allows them to be saved to
+                and pulled from across devices. This is always on, and can't be
+                turned off.
+              </p>
+            </div>
+            <label class="switch"
+              ><input
+                type="checkbox"
+                checked
+                id="toggle-online-status"
+                disabled
+              />
+            </label>
+          </div>
+          <div class="privacy-option">
+            <div class="option-info">
+              <p class="option-title">Blur My Avatar In Starchat</p>
+              <p class="option-description">
+                Blurs your avatar in starchat. This is always on, and can't be
+                turned off.
+              </p>
+            </div>
+            <label class="switch"
+              ><input
+                type="checkbox"
+                id="toggle-public-profile"
+                checked
+                disabled
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+    </center>
+    <script src="/javascript/auth.js"></script>
+    <!-- Scheduler -->
 
-    <div class="privacy-settings">
-  <h3><i class="fa-solid fa-user-gear"></i> Account Settings</h3>
-
-<button id="logout-btn">Log Out</button>
-<button onClick="alert('To delete your account, please email support@starship-app.com, with your account name, email, and proof of ownership.')" id="delete-btn" style="background:red !important;">Delete My Account</button>
-
-</div>
-
-    <div class="privacy-settings">
-  <h3><i class="fa-solid fa-user-shield"></i> Privacy Settings</h3>
-
-  <div class="privacy-option">
-    <div class="option-info">
-      <p class="option-title"><i class="fa-solid fa-heart-circle-bolt"></i> Store My Favorites In Starbase</p>
-      <p class="option-description">Saves your favorites in starbase, and allows them to be saved to and pulled from across devices. This is always on, and can't be turned off.</p>
-    </div>
-    <label class="switch">
-      <input type="checkbox" checked id="toggle-online-status" disabled>
-      <span class="slider"></span>
-    </label>
-  </div>
-
-  <div class="privacy-option">
-    <div class="option-info">
-      <p class="option-title"><i class="fa-solid fa-eye-low-vision"></i> Blur My Avatar In Starchat</p>
-      <p class="option-description">Blurs your avatar in starchat. This is always on, and can't be turned off.</p>
-    </div>
-    <label class="switch">
-      <input type="checkbox" id="toggle-public-profile" checked disabled>
-      <span class="slider"></span>
-    </label>
-  </div>
-
-
-  <!-- Hidden settings (not available yet) 
-  
-  <div class="privacy-option">
-    <div class="option-info">
-      <p class="option-title"><i class="fa-solid fa-paintbrush"></i> Personalize Reccomendations </p>
-      <p class="option-description">Uses your game data to reccomend games to you. This feature is not implemented yet, so it's off.</p>
-    </div>
-    <label class="switch">
-      <input type="checkbox" id="toggle-public-profile" disabled>
-      <span class="slider"></span>
-    </label>
-  </div>
-
-
-  <div class="privacy-option">
-    <div class="option-info">
-      <p class="option-title"><i class="fa-solid fa-circle-dot"></i> Show My Online Status </p>
-      <p class="option-description">Allow friends to see my online status, and allow starship to see your online status.</p>
-    </div>
-    <label class="switch">
-      <input type="checkbox" id="toggle-public-profile" >
-      <span class="slider"></span>
-    </label>
-  </div>
-</div>
- -->
-</div></div>
-  </center>
-  <script src="/javascript/auth.js"></script><!-- Scheduler -->
-  <script src="/javascript/schedule.js"></script>
-</body>
-<script src="/javascript/notifications.js"></script>
-
+    <script src="/javascript/schedule.js"></script>
+    <script src="/javascript/notifications.js"></script>
+  </body>
 </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 
 <head>
@@ -6,31 +6,30 @@
   <!-- Page Title and Favicon -->
   <title>starship - admin dashboard</title>
   <link rel="icon" type="image/x-icon" href="/uploads/branding/favicon.png" />
-
   <!-- Stylesheets -->
   <link rel="stylesheet" href="/css/navbar.css" />
   <link rel="stylesheet" href="/css/main.css" />
   <link rel="stylesheet" href="/css/admin.css" />
-
   <!-- Google AdSense and Google Analytics -->
+
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4851718454212779"
     crossorigin="anonymous"></script>
   <!-- End Google AdSense -->
-
   <!-- Google tag (gtag.js) -->
+
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZZH4JE7RJF"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag() {
       dataLayer.push(arguments);
     }
-    gtag("js", new Date());
+    gtag('js', new Date());
 
-    gtag("config", "G-ZZH4JE7RJF");
+    gtag('config', 'G-ZZH4JE7RJF');
   </script>
   <!-- End Google Tag -->
-
   <!-- Inline Styles for Popup -->
+
   <style>
     /* Popup styling */
     .messagePopup {
@@ -88,13 +87,11 @@
       pointer-events: none;
     }
   </style>
-
   <!-- Markdown Support -->
   <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css" />
   <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
-
   <style>
-    @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css");
+    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css');
   </style>
   <!-- #endregion -->
 </head>
@@ -102,26 +99,27 @@
 <body style="margin: 0">
   <!-- Make sure they are an admin -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+
   <script>
-    const supabaseUrl = "https://jbekjmsruiadbhaydlbt.supabase.co";
+    const supabaseUrl = 'https://jbekjmsruiadbhaydlbt.supabase.co';
     const supabaseKey =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY";
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY';
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
     async function checkIfAdmin() {
-      const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+      const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
       if (!loggedInUser) {
-        window.location.href = "/errors/403";
+        window.location.href = '/errors/403';
         return;
       }
 
       const { data, error } = await supabaseClient
-        .from("adminpanel_access")
-        .select("username");
+        .from('adminpanel_access')
+        .select('username');
 
       if (error || !data) {
-        console.error("Error fetching admin list:", error);
-        window.location.href = "/errors/403";
+        console.error('Error fetching admin list:', error);
+        window.location.href = '/errors/403';
         return;
       }
 
@@ -130,135 +128,154 @@
       );
 
       if (!isAdmin) {
-        window.location.href = "/errors/403";
+        window.location.href = '/errors/403';
       }
     }
 
     checkIfAdmin();
   </script>
-
   <!-- Navigation Bar -->
   <div id="navbar"></div>
-
   <!-- NoScript Fallback -->
   <noscript>
     <meta http-equiv="refresh" content="0; url=/errors/noscript" />
   </noscript>
-
   <div class="centercontainer">
     <br />
     <h2 class="welcome" style="font-family: Inter">
       Welcome, <span id="user"></span>!
     </h2>
-
-    <div class="admin-tab-wrapper" style="display: flex; gap: 2rem;">
-      <!-- Sidebar tab buttons -->
-      <div class="sidebar">
-        <button class="tab-button active" data-tab="bandg">Blog & Games</button>
-        <button class="tab-button" data-tab="admins">Admins</button>
-        <button class="tab-button" data-tab="reviews">Reviews</button>
-        <button class="tab-button" data-tab="tools">Image to Data URL</button>
+    <div class="admin-container">
+      <div class="blog" style="font-family: Inter">
+        <div class="controls">
+          <h3>Blog Posts</h3>
+          <h3 id="createBlogPost"><a href="">+</a></h3>
+        </div>
+        <div class="blogposts">
+          <div class="post-card">
+            <img class="post-thumbnail" src="./uploads/covers/blog/screentime.png" alt="Blog cover" />
+            <div class="post-info">
+              <h4 class="post-title">This is a post.</h4>
+            </div>
+            <p class="markdown-preview"
+              data-markdown="# Fleet Upgrade 2025: Lightspeed Just Got an Update ![Fleet Upgrade 2025](/uploads/covers/blog/fleet-upgrade-2025.png) **Posted on:** June 4, 2025 **Author:** **Nova Lin**, Fleet Systems Architect --- Buckle up, commanders — Starship just dropped a massive fleet upgrade that’s pushing our capabilities straight into warp territory. We’ve reworked core systems, overhauled ship AI, and introduced dynamic starpath routing to reduce average mission times by 34%. ## 🚀 What’s New? - **Reactive Shielding 2.0:** Shields now adapt in real-time to threats. Photon blasts? Barely a scratch. - **Quantum Drive Syncing:** Multi-ship jumps now operate on entangled frequencies, allowing perfect coordination. - **Onboard AI Avatars:** All ships now feature customizable AI copilots with deep learning. Name yours anything. Yes, even “Jeff”. ## 📡 StarNet Linkage Fleet Command is now fully integrated with StarNet V, enabling real-time data streams across systems. Want live heatmaps of pirate activity near Drelon’s Belt? Done. It’s like Waze, but for interstellar chaos. ## 🌌 Ready to Upgrade? Your dashboard will prompt you for the upgrade at your next login. Or hit the override command `/upgrade_fleet_now` in your Command Console. --- This is only the beginning. The 2025 roadmap still has two major updates coming — one of which rhymes with “wormhole crafting.” Stay tuned. Stay dangerous. **Tags:** `#FleetUpgrade` `#StarshipTech` `#2025Roadmap`">
+              Preview text
+            </p>
+          </div>
+        </div>
       </div>
 
-      <!-- Tab contents -->
-      <div class="admin-container" style="flex-grow: 1;">
-        <div id="blog" class="blog tab-content active bandg" style="font-family: Inter">
-          <div class="controls">
-            <h3>Blog Posts</h3>
-            <h3 id="createBlogPost"><a href="">+</a></h3>
-          </div>
-          <div class="blogposts">
-            <div class="post-card">
-              <img class="post-thumbnail" src="./uploads/covers/blog/screentime.png" alt="Blog cover" />
-              <div class="post-info">
-                <h4 class="post-title">This is a post.</h4>
-                <button class="edit-btn" title="Edit">
-                  <i class="fa-solid fa-pen-to-square"></i>
-                </button>
+      <div id="games" class="games tab-content active bandg">
+        <div class="controls">
+          <h3>Games</h3>
+          <h3 id="createGame"><a href="">+</a></h3>
+        </div>
+        <div class="gamedisplay">
+          <div class="game-card" data-url="https://example.com/game">
+            <img class="game-thumbnail" src="https://placehold.co/150x150/png?text=REALLY+COOL+GAME"
+              alt="Game Thumbnail" />
+            <div class="game-meta-row">
+              <div class="game-info">
+                <h4 class="game-title">Cool Game Title</h4>
               </div>
-              <p class="markdown-preview" data-markdown="...">
-                Preview text
-              </p>
+              <button class="edit-btn" title="Edit">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
             </div>
           </div>
         </div>
+      </div>
 
-        <div id="games" class="games tab-content active bandg">
-          <div class="controls">
-            <h3>Games</h3>
-            <h3 id="createGame"><a href="">+</a></h3>
-          </div>
-          <div class="gamedisplay">
-            <div class="game-card" data-url="https://example.com/game">
-              <img class="game-thumbnail" src="https://placehold.co/150x150/png?text=REALLY+COOL+GAME"
-                alt="Game Thumbnail" />
-              <div class="game-meta-row">
-                <div class="game-info">
-                  <h4 class="game-title">Cool Game Title</h4>
-                </div>
-                <button class="edit-btn" title="Edit">
-                  <i class="fa-solid fa-pen-to-square"></i>
-                </button>
-              </div>
-            </div>
-          </div>
+      <div id="reviews" class="reviews tab-content">
+        <div class="controls">
+          <h3>Reviews</h3>
         </div>
+        <div class="reviewlist"></div>
+        <hr id="review-hr" />
+        <div class="approve"></div>
+      </div>
 
-        <div id="reviews" class="reviews tab-content">
-          <div class="controls">
-            <h3>Reviews</h3>
-          </div>
-          <div class="reviewlist"></div>
-          <hr id="review-hr" />
-          <div class="approve"></div>
+      <div id="admins" class="admins tab-content">
+        <div class="controls">
+          <h3>Admins</h3>
+          <h3 id="addAdminTrigger"><a href="#">+</a></h3>
         </div>
-
-        <div id="admins" class="admins tab-content">
-          <div class="controls">
-            <h3>Admins</h3>
-            <h3 id="addAdminTrigger"><a href="#">+</a></h3>
-          </div>
-          <div class="admin-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Avatar</th>
-                  <th>Username</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="adminList">
-                <tr>
-                  <td><img src="https://api.dicebear.com/7.x/thumbs/svg?seed=Nova" alt="Avatar" /></td>
-                  <td>Nova Lin</td>
-                  <td>nova@starship.global</td>
-                  <td>Fleet Architect</td>
-                  <td><button class="remove-btn" title="Remove admin">✖</button></td>
-                </tr>
-                <!-- Repeat rows as needed -->
-              </tbody>
-            </table>
-          </div>
+        <div class="admin-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Avatar</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="adminList">
+              <tr>
+                <td>
+                  <img src="https://api.dicebear.com/7.x/thumbs/svg?seed=Nova" alt="Nova Lin's avatar" style="
+                        width: 36px;
+                        height: 36px;
+                        border-radius: 999px;
+                        object-fit: cover;
+                      " />
+                </td>
+                <td>Nova Lin</td>
+                <td>nova@starship.global</td>
+                <td>Fleet Architect</td>
+                <td>
+                  <button class="remove-btn" title="Remove admin">✖</button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <img src="https://api.dicebear.com/7.x/thumbs/svg?seed=Nova" alt="Nova Lin's avatar" style="
+                        width: 36px;
+                        height: 36px;
+                        border-radius: 999px;
+                        object-fit: cover;
+                      " />
+                </td>
+                <td>Nova Lin</td>
+                <td>nova@starship.global</td>
+                <td>Fleet Architect</td>
+                <td>
+                  <button class="remove-btn" title="Remove admin">✖</button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <img src="https://api.dicebear.com/7.x/thumbs/svg?seed=Nova" alt="Nova Lin's avatar" style="
+                        width: 36px;
+                        height: 36px;
+                        border-radius: 999px;
+                        object-fit: cover;
+                      " />
+                </td>
+                <td>Nova Lin</td>
+                <td>nova@starship.global</td>
+                <td>Fleet Architect</td>
+                <td>
+                  <button class="remove-btn" title="Remove admin">✖</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-
-        <div id="imgtdata" class="imgtdata tab-content tools">
-          <h2>Upload Image → Get Data URL</h2>
-          <input type="file" id="fileInput" accept="image/*" />
-          <p><strong>Data URL:</strong></p>
-          <textarea id="dataUrlOutput" rows="10" readonly></textarea><br />
-          <button id="copyBtn">Copy to Clipboard</button>
-        </div>
+      </div>
+      <div class="imgtdata">
+        <h2>Upload Image → Get Data URL</h2>
+        <input type="file" id="fileInput" accept="image/*" />
+        <p><strong>Data URL:</strong></p>
+        <textarea id="dataUrlOutput" rows="10" readonly></textarea>
+        <br />
+        <button id="copyBtn">Copy to Clipboard</button>
       </div>
     </div>
   </div>
-
-
-
   <!-- Particles.JS Background -->
   <div id="particles-js"></div>
-
   <!-- Overlay HTML -->
   <div id="overlay" class="overlay hidden">
     <div class="overlay-content">
@@ -266,29 +283,16 @@
       <div id="overlay-body"></div>
     </div>
   </div>
-
   <!-- All Script Links -->
   <!-- Navbar -->
   <script type="module" src="/javascript/navbar.js"></script>
   <!-- Footer -->
+
   <script src="/javascript/footer.js"></script>
   <!-- Panic Button -->
+
   <script src="/javascript/panic.js"></script>
   <!-- Cloaking -->
-  <script src="/javascript/cloaking.js"></script>
-  <!-- Anti Tab-Close -->
-  <script src="/javascript/antitabclose.js"></script>
-  <!-- Particles (not used anymore) -->
-  <script src="/javascript/particles.js"></script>
-  <script src="/javascript/particles-config.js"></script>
-  <!-- Notifications -->
-  <script src="/javascript/notifications.js"></script>
-  <!-- Scheduler -->
-  <script src="/javascript/schedule.js"></script>
-  <!-- All Admin Scripts -->
-
-  <!-- Scrollbar -->
-  <script src="/javascript/scrollbar.js"></script>
 
   <!-- All non-linked scripts -->
   <!-- Tab Switcher -->
@@ -312,7 +316,25 @@
       });
     });
   </script>
+
+  <script src="/javascript/antitabclose.js"></script>
+  <!-- Particles (not used anymore) -->
+
+  <script src="/javascript/particles.js"></script>
+  <script src="/javascript/particles-config.js"></script>
+  <!-- Notifications -->
+
+  <script src="/javascript/notifications.js"></script>
+  <!-- Scheduler -->
+
+  <script src="/javascript/schedule.js"></script>
+  <!-- All Admin Scripts -->
+  <!-- Scrollbar -->
+
+  <script src="/javascript/scrollbar.js"></script>
+  <!-- All non-linked scripts -->
   <!-- Img -> Data URL tool -->
+
   <script>
     const input = document.getElementById('fileInput');
     const output = document.getElementById('dataUrlOutput');
@@ -333,15 +355,16 @@
       output.select();
       output.setSelectionRange(0, 999999); // For mobile
       document.execCommand('copy');
-      copyBtn.textContent = "Copied!";
-      setTimeout(() => copyBtn.textContent = "Copy to Clipboard", 1500);
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => (copyBtn.textContent = 'Copy to Clipboard'), 1500);
     });
   </script>
   <!-- UI Helper Script -->
+
   <script>
     // Say Hi to the user
-    let user = "Admin";
-    const stored = localStorage.getItem("loggedInUser");
+    let user = 'Admin';
+    const stored = localStorage.getItem('loggedInUser');
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
@@ -349,7 +372,7 @@
       } catch (e) { }
     }
     console.log(`Welcome, ${user}!`);
-    const welcomeElement = document.querySelector("#user");
+    const welcomeElement = document.querySelector('#user');
     if (welcomeElement) welcomeElement.textContent = user;
     // If you want to change the greeting after 5 seconds, define 'greeting' first:
     // const greeting = `Hello again, ${user}!`;
@@ -358,65 +381,67 @@
     // }, 5000);
   </script>
   <!-- Overlay -->
+
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <!-- Markdown Parser & everything else lol -->
+
   <script>
     let easyMDE;
 
     async function openOverlay1(contentHTML) {
-      console.log("#2");
-      document.getElementById("overlay-body").innerHTML = contentHTML;
-      document.getElementById("overlay").classList.remove("hidden");
+      console.log('#2');
+      document.getElementById('overlay-body').innerHTML = contentHTML;
+      document.getElementById('overlay').classList.remove('hidden');
 
       setTimeout(() => {
-        if (document.getElementById("postContent")) {
+        if (document.getElementById('postContent')) {
           easyMDE = new EasyMDE({
-            element: document.getElementById("postContent"),
+            element: document.getElementById('postContent'),
           });
         }
       }, 50);
 
-      console.log("Overlay opened");
-      console.log("gameForm exists?", document.getElementById("gameForm"));
+      console.log('Overlay opened');
+      console.log('gameForm exists?', document.getElementById('gameForm'));
       console.log(
-        "gameSubmitBtn exists?",
-        document.getElementById("gameSubmitBtn")
+        'gameSubmitBtn exists?',
+        document.getElementById('gameSubmitBtn')
       );
 
       setupAutoResizeForTextareas();
 
       // Delay attaching event listener to ensure form is in the DOM
 
-      console.log("#1");
-      const gameForm = document.getElementById("gameForm");
-      console.log("#2");
+      console.log('#1');
+      const gameForm = document.getElementById('gameForm');
+      console.log('#2');
       if (gameForm) {
-        console.log("#3");
-        gameForm.addEventListener("submit", async (e) => {
+        console.log('#3');
+        gameForm.addEventListener('submit', async (e) => {
           console.log(gameForm.dataset.coe);
-          if (gameForm.dataset.coe === "Create") {
-            console.log("#4");
+          if (gameForm.dataset.coe === 'Create') {
+            console.log('#4');
             e.preventDefault();
-            console.log("#5");
+            console.log('#5');
 
-            const gameName = document.getElementById("gameName").value;
-            const gameCover = document.getElementById("gameCover").files[0];
-            const gameURL = document.getElementById("gameURL").value;
+            const gameName = document.getElementById('gameName').value;
+            const gameCover = document.getElementById('gameCover').files[0];
+            const gameURL = document.getElementById('gameURL').value;
 
-            console.log("#6");
+            console.log('#6');
 
             addGame(gameName, gameURL, gameCover);
             closeOverlay();
-          } else if (gameForm.dataset.coe === "Edit") {
+          } else if (gameForm.dataset.coe === 'Edit') {
             e.preventDefault();
 
-            const gameName = document.getElementById("gameName").value;
-            const gameURL = document.getElementById("gameURL").value;
-            const gameCover = document.getElementById("gameCover").files[0];
+            const gameName = document.getElementById('gameName').value;
+            const gameURL = document.getElementById('gameURL').value;
+            const gameCover = document.getElementById('gameCover').files[0];
             const gameId = window._editingGameId;
 
             if (!gameId) {
-              console.error("No game ID found for edit.");
+              console.error('No game ID found for edit.');
               return;
             }
 
@@ -436,60 +461,60 @@
             }
 
             const { data, error } = await supabase
-              .from("games_menu")
+              .from('games_menu')
               .update(updateData)
-              .eq("id", gameId);
+              .eq('id', gameId);
 
             if (error) {
-              console.error("Error updating game:", error.message);
-              alert("Error updating game.");
+              console.error('Error updating game:', error.message);
+              alert('Error updating game.');
               return;
             }
 
-            console.log("✅ Game updated:", data);
+            console.log('✅ Game updated:', data);
             refreshGamesList();
             closeOverlay();
           }
         });
       } else {
         console.warn(
-          "⚠️ #gameForm not found when setting up submit listener."
+          '⚠️ #gameForm not found when setting up submit listener.'
         );
       }
-      const deleteBtn = document.getElementById("deleteGameBtn");
+      const deleteBtn = document.getElementById('deleteGameBtn');
       if (deleteBtn) {
-        deleteBtn.addEventListener("click", async (e) => {
+        deleteBtn.addEventListener('click', async (e) => {
           e.preventDefault();
           const confirmDelete = confirm(
-            "Are you sure you want to delete this game?"
+            'Are you sure you want to delete this game?'
           );
           if (!confirmDelete) return;
 
           const gameId = window._editingGameId;
           if (!gameId) return;
-          console.log("Deleting game with ID:", gameId);
+          console.log('Deleting game with ID:', gameId);
 
           await deleteGame(gameId);
 
-          alert("✅ Game deleted.");
+          alert('✅ Game deleted.');
           closeOverlay();
           refreshGamesList();
         });
       }
       setTimeout(() => {
-        const blogForm = document.getElementById("blogForm");
+        const blogForm = document.getElementById('blogForm');
         if (!blogForm) return;
 
-        if (blogForm.dataset.coe === "Create") {
-          blogForm.addEventListener("submit", async (e) => {
+        if (blogForm.dataset.coe === 'Create') {
+          blogForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const title = document.getElementById("postTitle").value;
-            const content = document.getElementById("postContent").value;
-            const imageFile = document.getElementById("blogCover").files[0];
+            const title = document.getElementById('postTitle').value;
+            const content = document.getElementById('postContent').value;
+            const imageFile = document.getElementById('blogCover').files[0];
 
             if (!title || !content || !imageFile) {
-              alert("Please fill in all fields.");
+              alert('Please fill in all fields.');
               return;
             }
 
@@ -497,58 +522,63 @@
 
             const today = new Date();
             const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, "0"); // months are zero-based, JS is weird like that
-            const day = String(today.getDate()).padStart(2, "0");
+            const month = String(today.getMonth() + 1).padStart(2, '0'); // months are zero-based, JS is weird like that
+            const day = String(today.getDate()).padStart(2, '0');
             const formattedDate = `${year}-${month}-${day}`;
             console.log(formattedDate); // example: 2025-06-10
 
             await supabase.auth.getUser().then((user) => {
               if (!user.data) {
-                alert("You must be logged in to create a blog post.");
+                alert('You must be logged in to create a blog post.');
                 return;
               }
             });
-            await supabase.from('profiles').select('username, avatar_url').eq('id', supabase.auth.user().id).single().then((profile) => {
-              if (!profile.data) {
-                alert("You must have a profile to create a blog post.");
-                return;
-              }
-              const author = profile.data.username || "Anonymous";
-            });
+            await supabase
+              .from('profiles')
+              .select('username, avatar_url')
+              .eq('id', supabase.auth.user().id)
+              .single()
+              .then((profile) => {
+                if (!profile.data) {
+                  alert('You must have a profile to create a blog post.');
+                  return;
+                }
+                const author = profile.data.username || 'Anonymous';
+              });
 
-            const { error } = await supabase.from("blog_menu").insert([
+            const { error } = await supabase.from('blog_menu').insert([
               {
                 title,
                 content,
                 date: formattedDate,
                 image: base64Image,
-                author
+                author,
               },
             ]);
 
             if (error) {
-              console.error("❌ Failed to create blog post:", error.message);
-              alert("Blog post creation failed.");
+              console.error('❌ Failed to create blog post:', error.message);
+              alert('Blog post creation failed.');
               return;
             }
 
-            alert("✅ Blog post created!");
+            alert('✅ Blog post created!');
             closeOverlay();
             refreshBlogPosts();
           });
-        } else if (blogForm.dataset.coe === "Edit") {
-          blogForm.addEventListener("submit", async (e) => {
+        } else if (blogForm.dataset.coe === 'Edit') {
+          blogForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const title = document.getElementById("postTitle").value;
-            const content = document.getElementById("postContent").value;
-            const imageFile = document.getElementById("blogCover").files[0];
+            const title = document.getElementById('postTitle').value;
+            const content = document.getElementById('postContent').value;
+            const imageFile = document.getElementById('blogCover').files[0];
             const postId = window._editingBlogId;
 
             easyMDE.value(content); // Ensure content is saved from EasyMDE
 
             if (!title || !content || !postId) {
-              alert("Please fill in all fields.");
+              alert('Please fill in all fields.');
               return;
             }
 
@@ -563,77 +593,77 @@
             }
 
             const { error } = await supabase
-              .from("blog_menu")
+              .from('blog_menu')
               .update(updateData)
-              .eq("id", postId);
+              .eq('id', postId);
 
             if (error) {
-              console.error("❌ Error updating blog post:", error.message);
-              alert("Failed to update blog post.");
+              console.error('❌ Error updating blog post:', error.message);
+              alert('Failed to update blog post.');
               return;
             }
 
-            alert("✅ Blog post updated!");
+            alert('✅ Blog post updated!');
             closeOverlay();
             refreshBlogPosts();
           });
         }
-        const deleteBtn = document.getElementById("deleteBlogPostBtn");
+        const deleteBtn = document.getElementById('deleteBlogPostBtn');
         if (deleteBtn) {
-          deleteBtn.addEventListener("click", async (e) => {
+          deleteBtn.addEventListener('click', async (e) => {
             e.preventDefault();
 
             const postId = window._editingBlogId;
             if (!postId) return;
 
             const confirmDelete = confirm(
-              "Are you sure you want to delete this blog post?"
+              'Are you sure you want to delete this blog post?'
             );
             if (!confirmDelete) return;
 
             const { error } = await supabase
-              .from("blog_menu")
+              .from('blog_menu')
               .delete()
-              .eq("id", postId);
+              .eq('id', postId);
 
             if (error) {
-              console.error("❌ Error deleting blog post:", error.message);
-              alert("Failed to delete blog post.");
+              console.error('❌ Error deleting blog post:', error.message);
+              alert('Failed to delete blog post.');
               return;
             }
 
-            alert("✅ Blog post deleted!");
+            alert('✅ Blog post deleted!');
             closeOverlay();
             refreshBlogPosts();
           });
         }
       }, 50);
       setTimeout(() => {
-        const form = document.getElementById("addAdminForm");
+        const form = document.getElementById('addAdminForm');
         if (!form) return;
 
-        form.addEventListener("submit", async (e) => {
+        form.addEventListener('submit', async (e) => {
           e.preventDefault();
 
           const username = document
-            .getElementById("adminUsername")
+            .getElementById('adminUsername')
             .value.trim();
-          const email = document.getElementById("adminEmail").value.trim();
-          const role = document.getElementById("adminRole").value;
+          const email = document.getElementById('adminEmail').value.trim();
+          const role = document.getElementById('adminRole').value;
 
           if (!username || !email || !role) {
-            alert("Please fill in all fields.");
+            alert('Please fill in all fields.');
             return;
           }
 
           // Some Tests:
-          console.log("Username: ", username);
+          console.log('Username: ', username);
 
           // Step 1: Get user_uid from `profiles` table
           const { data: userMatch, error: profileError } = await supabase
-            .from("profiles")
-            .select("id, avatar_url")
-            .eq("username", username)
+            .from('profiles')
+            .select('id, avatar_url')
+            .eq('username', username)
             .single();
 
           if (profileError || !userMatch) {
@@ -645,7 +675,7 @@
           const user_uid = userMatch.id;
 
           // Step 2: Insert into `adminpanel_access`
-          const { error } = await supabase.from("adminpanel_access").insert([
+          const { error } = await supabase.from('adminpanel_access').insert([
             {
               user_uid,
               username,
@@ -656,12 +686,12 @@
           ]);
 
           if (error) {
-            console.error("❌ Error adding admin:", error.message);
-            alert("Failed to add admin.");
+            console.error('❌ Error adding admin:', error.message);
+            alert('Failed to add admin.');
             return;
           }
 
-          alert("✅ Admin added!");
+          alert('✅ Admin added!');
           closeOverlay();
           refreshAdminList();
         });
@@ -669,110 +699,110 @@
     }
 
     function closeOverlay() {
-      document.getElementById("overlay").classList.add("hidden");
-      document.getElementById("overlay-body").innerHTML = "";
+      document.getElementById('overlay').classList.add('hidden');
+      document.getElementById('overlay-body').innerHTML = '';
     }
 
     // Hook blog post clicks to open view overlay
-    document.querySelectorAll(".post-card").forEach((post) => {
-      post.addEventListener("click", (e) => {
-        if (e.target.closest(".edit-btn")) return;
+    document.querySelectorAll('.post-card').forEach((post) => {
+      post.addEventListener('click', (e) => {
+        if (e.target.closest('.edit-btn')) return;
 
-        const title = post.querySelector(".post-title").textContent;
-        const imgSrc = post.querySelector(".post-thumbnail").src;
-        const content = post.querySelector("p").dataset.markdown || "";
+        const title = post.querySelector('.post-title').textContent;
+        const imgSrc = post.querySelector('.post-thumbnail').src;
+        const content = post.querySelector('p').dataset.markdown || '';
 
         const markedContent = marked.parse(content);
         const html = overlayScreens.viewblogpost
-          .replace("{blogpostimg}", imgSrc)
-          .replace("{blogpostitle}", title)
-          .replace("{blogpostcontent}", markedContent);
+          .replace('{blogpostimg}', imgSrc)
+          .replace('{blogpostitle}', title)
+          .replace('{blogpostcontent}', markedContent);
 
         openOverlay1(html);
       });
     });
 
     // Hook game clicks to open edit game overlay
-    document.querySelectorAll(".game-card").forEach((game) => {
-      game.addEventListener("click", () => {
-        const name = game.querySelector(".game-title").textContent;
-        const imgSrc = game.querySelector(".game-thumbnail").src;
+    document.querySelectorAll('.game-card').forEach((game) => {
+      game.addEventListener('click', () => {
+        const name = game.querySelector('.game-title').textContent;
+        const imgSrc = game.querySelector('.game-thumbnail').src;
         const gameUrl = game.dataset.url;
 
         const html = overlayScreens.editgame.replace(
-          "{createoredit}",
-          "Edit"
+          '{createoredit}',
+          'Edit'
         );
         openOverlay1(html);
 
         setTimeout(() => {
-          document.getElementById("gameName").value = name;
-          document.getElementById("gameURL").value = gameUrl;
+          document.getElementById('gameName').value = name;
+          document.getElementById('gameURL').value = gameUrl;
           // Note: file input can't be pre-filled for security
         }, 50);
       });
     });
 
     document
-      .getElementById("createBlogPost")
-      .addEventListener("click", (e) => {
+      .getElementById('createBlogPost')
+      .addEventListener('click', (e) => {
         e.preventDefault();
         const html1 = overlayScreens.editblogpost
-          .replaceAll("{createoredit}", "Create")
+          .replaceAll('{createoredit}', 'Create')
           .replace(
-            "{deleteButton}",
-            "" // Don't show delete button
+            '{deleteButton}',
+            '' // Don't show delete button
           );
         openOverlay1(html1);
       });
 
-    document.getElementById("createGame").addEventListener("click", (e) => {
+    document.getElementById('createGame').addEventListener('click', (e) => {
       e.preventDefault();
-      console.log("#1");
+      console.log('#1');
       openOverlay1(
         overlayScreens.editgame
-          .replaceAll("{createoredit}", "Create") // First replace all createoredit
-          .replace("{deleteButton}", "") // Then strip out delete button
+          .replaceAll('{createoredit}', 'Create') // First replace all createoredit
+          .replace('{deleteButton}', '') // Then strip out delete button
       );
     });
 
-    document.querySelectorAll(".post-card .edit-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
+    document.querySelectorAll('.post-card .edit-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
         e.stopPropagation(); // Prevents triggering the post overlay if needed
 
-        const post = btn.closest(".post-card");
-        const title = post.querySelector(".post-title").textContent;
-        const content = post.querySelector("p").dataset.markdown || "";
+        const post = btn.closest('.post-card');
+        const title = post.querySelector('.post-title').textContent;
+        const content = post.querySelector('p').dataset.markdown || '';
 
         const html = overlayScreens.editblogpost.replaceAll(
-          "{createoredit}",
-          "Edit"
+          '{createoredit}',
+          'Edit'
         );
 
         openOverlay1(html);
 
         setTimeout(() => {
-          document.getElementById("postTitle").value = title;
-          document.getElementById("postContent").value = content;
+          document.getElementById('postTitle').value = title;
+          document.getElementById('postContent').value = content;
         }, 50);
       });
     });
 
-    document.querySelectorAll(".game-card").forEach((game) => {
-      game.addEventListener("click", () => {
-        const name = game.querySelector(".game-title").textContent;
-        const imgSrc = game.querySelector(".game-thumbnail").src;
+    document.querySelectorAll('.game-card').forEach((game) => {
+      game.addEventListener('click', () => {
+        const name = game.querySelector('.game-title').textContent;
+        const imgSrc = game.querySelector('.game-thumbnail').src;
         const gameUrl = game.dataset.url;
 
         const html = overlayScreens.editgame.replace(
-          "{createoredit}",
-          "Edit"
+          '{createoredit}',
+          'Edit'
         );
         openOverlay1(html);
 
         setTimeout(() => {
-          document.getElementById("gameName").value = name;
-          document.getElementById("gameURL").value = gameUrl;
+          document.getElementById('gameName').value = name;
+          document.getElementById('gameURL').value = gameUrl;
           // Note: file input can't be pre-filled for security
         }, 50);
       });
@@ -780,27 +810,27 @@
 
     // Trigger overlay when + is clicked
     document
-      .getElementById("addAdminTrigger")
-      .addEventListener("click", (e) => {
+      .getElementById('addAdminTrigger')
+      .addEventListener('click', (e) => {
         e.preventDefault();
 
-        const html = overlayScreens.addAdmin.replace("{createoredit}", "Add");
+        const html = overlayScreens.addAdmin.replace('{createoredit}', 'Add');
         openOverlay1(html);
 
         // Attach form handler after overlay is injected
         setTimeout(() => {
-          const form = document.getElementById("addAdminForm");
-          const usernameInput = document.getElementById("adminUsername");
-          const emailInput = document.getElementById("adminEmail");
+          const form = document.getElementById('addAdminForm');
+          const usernameInput = document.getElementById('adminUsername');
+          const emailInput = document.getElementById('adminEmail');
 
-          form.addEventListener("submit", (e) => {
+          form.addEventListener('submit', (e) => {
             e.preventDefault();
 
             const username = usernameInput.value.trim();
             const email = emailInput.value.trim();
 
             if (!username || !email) {
-              alert("Please fill in both fields.");
+              alert('Please fill in both fields.');
               return;
             }
 
@@ -816,25 +846,25 @@
       });
   </script>
   <!-- CSS Helper -->
+
   <script>
     function autoResizeTextarea(textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = textarea.scrollHeight + "px";
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
     }
 
     function setupAutoResizeForTextareas() {
       document
-        .querySelectorAll(".overlay-content textarea")
+        .querySelectorAll('.overlay-content textarea')
         .forEach((textarea) => {
           autoResizeTextarea(textarea);
-          textarea.addEventListener("input", () =>
+          textarea.addEventListener('input', () =>
             autoResizeTextarea(textarea)
           );
         });
     }
   </script>
   <script src="/javascript/alladmin.js"></script>
-
 </body>
 
 </html>

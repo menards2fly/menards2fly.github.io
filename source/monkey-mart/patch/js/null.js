@@ -1,2 +1,2 @@
 // Null JS
-console.log("Null JS");
+console.log('Null JS');

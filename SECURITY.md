@@ -22,6 +22,7 @@ If you discover a security vulnerability, please follow these steps:
 ## Response Time
 
 We aim to respond to security vulnerabilities within the following timeframes:
+
 - **Acknowledgment**: Within 48 hours
 - **Resolution Plan**: Within 7 days
 - **Patch Release**: Depending on the complexity, we aim to release patches within 30 days.

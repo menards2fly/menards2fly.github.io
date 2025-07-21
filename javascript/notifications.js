@@ -1,12 +1,15 @@
 (function () {
   function showNotification(message, options = {}) {
     // Unique key for this notification (can be improved for more complex cases)
-    const notifKey = options.persistClose ? `notif_closed_${btoa(message)}` : null;
+    const notifKey = options.persistClose
+      ? `notif_closed_${btoa(message)}`
+      : null;
 
     // If persistClose is enabled and user closed this before, don't show again
     if (notifKey && localStorage.getItem(notifKey) === '1') return;
 
-    const container = document.getElementById('notifications-container') ||
+    const container =
+      document.getElementById('notifications-container') ||
       (() => {
         const c = document.createElement('div');
         c.id = 'notifications-container';
@@ -14,20 +17,23 @@
         return c;
       })();
 
-// Play sound if enabled
-if (options.sound !== false) {
-  const audio = new Audio(options.soundUrl || "/uploads/branding/notifsound.mp3");
-  audio.volume = 0.25;
-  audio.play().catch(() => {});
-}
+    // Play sound if enabled
+    if (options.sound !== false) {
+      const audio = new Audio(
+        options.soundUrl || '/uploads/branding/notifsound.mp3'
+      );
+      audio.volume = 0.25;
+      audio.play().catch(() => {});
+    }
 
-// Vibrate if enabled and supported
-if (options.vibrate && navigator.vibrate) {
-  navigator.vibrate(100);
-}
+    // Vibrate if enabled and supported
+    if (options.vibrate && navigator.vibrate) {
+      navigator.vibrate(100);
+    }
 
     // Prevent duplicate notifications with the same message within 1s
-    if ([...container.children].some(n => n.dataset.message === message)) return;
+    if ([...container.children].some((n) => n.dataset.message === message))
+      return;
 
     const notif = document.createElement('div');
     notif.className = 'notification';
@@ -35,10 +41,13 @@ if (options.vibrate && navigator.vibrate) {
 
     notif.innerHTML =
       `<div class="notification-title">${message}</div>` +
-      (options.body ? `<div class="notification-body">${options.body}</div>` : '') +
+      (options.body
+        ? `<div class="notification-body">${options.body}</div>`
+        : '') +
       `<a href="#" class="notification-close" aria-label="Close notification" tabindex="0" role="button">&times;</a>` +
       (options.duration && options.duration > 0 && !options.sticky
-        ? `<div class="notification-timer"></div>` : '');
+        ? `<div class="notification-timer"></div>`
+        : '');
 
     container.appendChild(notif);
 
@@ -56,7 +65,11 @@ if (options.vibrate && navigator.vibrate) {
     });
 
     // Timer bar
-    let timerInterval, timerBar, remaining = options.duration || 4000, start, paused = false;
+    let timerInterval,
+      timerBar,
+      remaining = options.duration || 4000,
+      start,
+      paused = false;
 
     if (options.duration && options.duration > 0 && !options.sticky) {
       timerBar = notif.querySelector('.notification-timer');
@@ -117,29 +130,19 @@ if (options.vibrate && navigator.vibrate) {
   window.showNotification = showNotification;
 
   // Example usage:
-document.addEventListener('DOMContentLoaded', () => {
-  showNotification("Welcome to the new update!", {
-    body: "We've made some exciting changes to improve your experience. <br><br> Some of the new features include: <br> - Improved performance <br> - New user interface <br> - Like/dislike buttons <br> - Sort By Trending <br> - Sort By Global Likes <br> - Larger game frames <br> - UI updates <br> - A new notification system <br> - Accounts <br> - Weather for Dynamic Island <br><br> We've also added 2 new games, from the request forms. <br><br>We hope you enjoy this update! Thank you for being a part of our community.",
-    sticky: true,         // No timer, stays until closed
-    persistClose: true,   // Don't show again if closed
-    sound: true,          // Play sound
+  document.addEventListener('DOMContentLoaded', () => {
+    showNotification('Privacy Policy and TOS Changes', {
+      body: "To accomodate recent changes to our website, we've updated our Privacy Policy, and TOS. Please <a href=/legal style='text-decoration:underline;'> review them</a>  to understand how we handle your data.",
+      persistClose: true, // Don't show again if closed
+      sound: true, // Play sound
+    });
 
+    showNotification('Leave us a review!', {
+      body: "If you enjoy using our site, please consider leaving a review. It helps us improve and reach more users! <br><br> Leave a review <a href='/reviews' style='text-decoration:underline;'>here.</a>",
+      duration: 10000, // Auto-dismiss after 10 seconds
+      persistClose: true, // Don't show again if closed
+      sound: true, // Play sound
+    });
   });
-
-  showNotification("Privacy Policy Updated", {
-    body: "We've updated our privacy policy. Please review the changes at <a href='/legal' style='text-decoration:underline;'>this link</a>.",
-    sticky: true,         // No timer, stays until closed
-    persistClose: true,   // Don't show again if closed
-    sound: true,          // Play sound
-  });
-
-    showNotification("Leave us a review!", {
-    body: "If you enjoy using our site, please consider leaving a review. It helps us improve and reach more users! <br><br> Leave a review <a href='/reviews' style='text-decoration:underline;'>here.</a>",
-    duration: 10000,      // Auto-dismiss after 10 seconds
-    persistClose: true,   // Don't show again if closed
-    sound: true,          // Play sound
-  });
-});
-
 })();
 // End of notifications.js

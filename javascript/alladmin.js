@@ -72,7 +72,7 @@ const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 // #region Game Functions
 async function addGame(gameName, gameLink, gameCoverFile) {
   if (!gameName || !gameLink || !gameCoverFile) {
-    alert("Please fill in all fields.");
+    alert('Please fill in all fields.');
     return;
   }
 
@@ -80,7 +80,7 @@ async function addGame(gameName, gameLink, gameCoverFile) {
   const base64Image = await fileToBase64(gameCoverFile);
 
   // Step 2: Insert into Supabase
-  const { data, error } = await supabase.from("games_menu").insert([
+  const { data, error } = await supabase.from('games_menu').insert([
     {
       name: gameName,
       url: gameLink,
@@ -89,41 +89,41 @@ async function addGame(gameName, gameLink, gameCoverFile) {
   ]);
 
   if (error) {
-    console.error("❌ Supabase insert error:", error.message);
-    alert("Game could not be added.");
+    console.error('❌ Supabase insert error:', error.message);
+    alert('Game could not be added.');
     return;
   }
 
-  console.log("✅ Game added to DB:", data);
+  console.log('✅ Game added to DB:', data);
   refreshGamesList();
 }
 
 async function deleteGame(gameId) {
   console.log(`Type of gameId: ${typeof gameId}, Value: ${gameId}`);
   const { error } = await supabase
-    .from("games_menu")
+    .from('games_menu')
     .delete()
-    .eq("id", parseInt(gameId));
+    .eq('id', parseInt(gameId));
 
   if (error) {
-    console.error("❌ Error deleting game:", error.message);
-    alert("Failed to delete game.");
+    console.error('❌ Error deleting game:', error.message);
+    alert('Failed to delete game.');
     return;
   }
 }
 
 async function refreshGamesList() {
   // Clear the current games list
-  const gamesList = document.querySelector(".gamedisplay");
-  gamesList.innerHTML = "";
+  const gamesList = document.querySelector('.gamedisplay');
+  gamesList.innerHTML = '';
 
   const { data, error } = await supabase
-    .from("games_menu")
-    .select("id, name, url, img_url");
+    .from('games_menu')
+    .select('id, name, url, img_url');
 
   data.forEach((game) => {
-    const gameCard = document.createElement("div");
-    gameCard.className = "game-card";
+    const gameCard = document.createElement('div');
+    gameCard.className = 'game-card';
     gameCard.dataset.url = game.url;
     gameCard.dataset.id = game.id;
     gameCard.innerHTML = `
@@ -143,32 +143,32 @@ async function refreshGamesList() {
     `;
     gamesList.appendChild(gameCard);
     // Manually trigger your existing click handler here
-    gameCard.addEventListener("click", (e) => {
+    gameCard.addEventListener('click', (e) => {
       window._editingGameId = game.id;
 
-      const name = gameCard.querySelector(".game-title").textContent;
+      const name = gameCard.querySelector('.game-title').textContent;
       const gameUrl = gameCard.dataset.url;
 
       const html = overlayScreens.editgame
-        .replaceAll("{createoredit}", "Edit")
+        .replaceAll('{createoredit}', 'Edit')
         .replace(
-          "{deleteButton}",
+          '{deleteButton}',
           `<button id="deleteGameBtn" style="margin-top: 20px; background: #dc2626; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">Delete Game</button>`
         );
       openOverlay1(html);
 
       setTimeout(() => {
-        document.getElementById("gameName").value = name;
-        document.getElementById("gameURL").value = gameUrl;
+        document.getElementById('gameName').value = name;
+        document.getElementById('gameURL').value = gameUrl;
       }, 50);
     });
   });
 }
 
 function safeRefreshGamesList() {
-  const gamesList = document.querySelector(".gamedisplay");
+  const gamesList = document.querySelector('.gamedisplay');
   if (!gamesList) {
-    console.warn("Waiting for .gamedisplay to appear...");
+    console.warn('Waiting for .gamedisplay to appear...');
     requestAnimationFrame(safeRefreshGamesList);
     return;
   }
@@ -189,25 +189,25 @@ function fileToBase64(file) {
 // #region Blog Functions
 // Blog Post Functions
 async function refreshBlogPosts() {
-  const container = document.querySelector(".blogposts");
+  const container = document.querySelector('.blogposts');
   if (!container) return;
 
-  container.innerHTML = ""; // clear previous posts
+  container.innerHTML = ''; // clear previous posts
 
   const { data: posts, error } = await supabase
-    .from("blog_menu")
-    .select("id, title, content, image");
+    .from('blog_menu')
+    .select('id, title, content, image');
 
   if (error) {
-    console.error("❌ Failed to load blog posts:", error.message);
+    console.error('❌ Failed to load blog posts:', error.message);
     container.innerHTML =
-      "<p>Error loading blog posts, look at console for more details</p>";
+      '<p>Error loading blog posts, look at console for more details</p>';
     return;
   }
 
   posts.forEach((post) => {
-    const card = document.createElement("div");
-    card.className = "post-card";
+    const card = document.createElement('div');
+    card.className = 'post-card';
     card.dataset.id = post.id;
 
     card.innerHTML = `
@@ -220,65 +220,65 @@ async function refreshBlogPosts() {
       </div>
       <p class="markdown-preview" data-markdown="${post.content.replace(
         /"/g,
-        "&quot;"
+        '&quot;'
       )}" hidden></p>
     `;
 
     container.appendChild(card);
   });
-  document.querySelectorAll(".post-card").forEach((card) => {
-    card.addEventListener("click", async (e) => {
+  document.querySelectorAll('.post-card').forEach((card) => {
+    card.addEventListener('click', async (e) => {
       // Ignore clicks on the edit button
-      if (e.target.closest(".edit-btn")) return;
+      if (e.target.closest('.edit-btn')) return;
 
       const postId = card.dataset.id;
       if (!postId) return;
 
       // Fetch full post from Supabase
       const { data: post, error } = await supabase
-        .from("blog_menu")
-        .select("title, content, image")
-        .eq("id", postId)
+        .from('blog_menu')
+        .select('title, content, image')
+        .eq('id', postId)
         .single();
 
       if (error || !post) {
-        alert("Failed to load blog post.");
+        alert('Failed to load blog post.');
         console.error(error);
         return;
       }
 
       // Render using your overlay template
       const html = overlayScreens.viewblogpost
-        .replace("{blogpostimg}", post.image)
-        .replace("{blogpostitle}", post.title)
-        .replace("{blogpostcontent}", marked.parse(post.content));
+        .replace('{blogpostimg}', post.image)
+        .replace('{blogpostitle}', post.title)
+        .replace('{blogpostcontent}', marked.parse(post.content));
 
       openOverlay1(html);
     });
   });
-  document.querySelectorAll(".post-card .edit-btn").forEach((btn) => {
-    btn.addEventListener("click", async (e) => {
+  document.querySelectorAll('.post-card .edit-btn').forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
       e.stopPropagation(); // Prevents triggering the view overlay
 
-      const post = btn.closest(".post-card");
+      const post = btn.closest('.post-card');
       const postId = post.dataset.id;
 
       const { data, error } = await supabase
-        .from("blog_menu")
-        .select("title, content, image")
-        .eq("id", postId)
+        .from('blog_menu')
+        .select('title, content, image')
+        .eq('id', postId)
         .single();
 
       if (error || !data) {
-        alert("Failed to load blog post.");
+        alert('Failed to load blog post.');
         console.error(error);
         return;
       }
 
       const html = overlayScreens.editblogpost
-        .replaceAll("{createoredit}", "Edit")
+        .replaceAll('{createoredit}', 'Edit')
         .replace(
-          "{deleteButton}",
+          '{deleteButton}',
           `<button id="deleteBlogPostBtn" style="margin-top: 20px; background: #dc2626; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">Delete Post</button>`
         );
 
@@ -286,14 +286,14 @@ async function refreshBlogPosts() {
       window._editingBlogId = postId;
 
       setTimeout(() => {
-        document.getElementById("postTitle").value = data.title;
+        document.getElementById('postTitle').value = data.title;
         easyMDE.value(data.content);
         // Note: can't prefill file input for image
       }, 50);
     });
   });
 }
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener('DOMContentLoaded', () => {
   safeRefreshGamesList();
   refreshBlogPosts();
   refreshAdminList();
@@ -303,38 +303,38 @@ window.addEventListener("DOMContentLoaded", () => {
 // #region Admin Functions
 // Admin Functions
 async function refreshAdminList() {
-  console.log("Starting Refresh...");
-  const tableBody = document.getElementById("adminList");
+  console.log('Starting Refresh...');
+  const tableBody = document.getElementById('adminList');
   if (!tableBody) return;
-  console.log("Found table body:", tableBody);
+  console.log('Found table body:', tableBody);
 
-  tableBody.innerHTML = ""; // Clear out old/fake entries
+  tableBody.innerHTML = ''; // Clear out old/fake entries
 
   const { data: admins, error } = await supabase
-    .from("adminpanel_access")
-    .select("user_uid, avatar, username, email, role");
+    .from('adminpanel_access')
+    .select('user_uid, avatar, username, email, role');
 
   if (error) {
-    console.error("❌ Failed to fetch admins:", error.message);
+    console.error('❌ Failed to fetch admins:', error.message);
     tableBody.innerHTML = `<tr><td colspan="5">Error loading admins</td></tr>`;
     return;
   }
-  console.log("Fetched admins:", admins);
+  console.log('Fetched admins:', admins);
 
   admins.forEach((admin) => {
-    const row = document.createElement("tr");
+    const row = document.createElement('tr');
 
     // Change Role display
-    if (admin.role === "super") {
-      admin.role = "Super Admin";
-    } else if (admin.role === "admin") {
-      admin.role = "Admin";
-    } else if (admin.role === "gameadd") {
-      admin.role = "Game +";
-    } else if (admin.role === "editor") {
-      admin.role = "Editor";
+    if (admin.role === 'super') {
+      admin.role = 'Super Admin';
+    } else if (admin.role === 'admin') {
+      admin.role = 'Admin';
+    } else if (admin.role === 'gameadd') {
+      admin.role = 'Game +';
+    } else if (admin.role === 'editor') {
+      admin.role = 'Editor';
     } else {
-      alert("Invalid role selected.");
+      alert('Invalid role selected.');
       return;
     }
 
@@ -358,73 +358,73 @@ async function refreshAdminList() {
   });
 
   // Hook up remove buttons
-  document.querySelectorAll(".remove-btn").forEach((btn) => {
-    btn.addEventListener("click", async (e) => {
+  document.querySelectorAll('.remove-btn').forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
       const adminId = btn.dataset.id;
       const confirmDelete = confirm(
-        "Are you sure you want to remove this admin?"
+        'Are you sure you want to remove this admin?'
       );
       if (!confirmDelete) return;
 
       const { error } = await supabase
-        .from("adminpanel_access")
+        .from('adminpanel_access')
         .delete()
-        .eq("user_uid", adminId);
+        .eq('user_uid', adminId);
 
       if (error) {
-        alert("❌ Failed to remove admin.");
+        alert('❌ Failed to remove admin.');
         console.error(error);
         return;
       }
 
-      alert("✅ Admin removed.");
+      alert('✅ Admin removed.');
       refreshAdminList();
     });
   });
 }
 
 //#region Restrictions
-document.addEventListener("DOMContentLoaded", () => {
-  const admincontainer = document.querySelector(".admincontainer");
-  const blog = document.querySelector(".blog");
-  const games = document.querySelector(".games");
-  const admin = document.querySelector(".admins");
-  const reviewsection = document.querySelector(".reviews");
+document.addEventListener('DOMContentLoaded', () => {
+  const admincontainer = document.querySelector('.admincontainer');
+  const blog = document.querySelector('.blog');
+  const games = document.querySelector('.games');
+  const admin = document.querySelector('.admins');
+  const reviewsection = document.querySelector('.reviews');
 
   async function checkRole() {
     const { data, error } = await supabaseClient
-      .from("adminpanel_access")
-      .select("username, role");
+      .from('adminpanel_access')
+      .select('username, role');
 
-    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
     if (!loggedInUser || !data) return;
 
     const matched = data.find(
       (entry) => entry.username === loggedInUser.username
     );
-    console.log("Matched user:", matched);
+    console.log('Matched user:', matched);
     console.log(games, admin, blog);
 
     if (matched) {
-      if (matched.role === "editor") {
-        console.log("User is an editor, hiding admin features");
+      if (matched.role === 'editor') {
+        console.log('User is an editor, hiding admin features');
         // Remove elements from their parent
         games.remove();
         admin.remove();
         reviewsection.remove();
-      } else if (matched.role === "gameadd") {
-        console.log("User is a game adder, hiding admin features");
+      } else if (matched.role === 'gameadd') {
+        console.log('User is a game adder, hiding admin features');
         blog.remove();
         admin.remove();
         reviewsection.remove();
-      } else if (matched.role === "admin") {
-        console.log("User is an admin, hiding admin features");
+      } else if (matched.role === 'admin') {
+        console.log('User is an admin, hiding admin features');
         // Remove elements from their parent
         admin.remove();
-      } else if (matched.role === "super") {
-        console.log("User is a super admin, showing all features");
+      } else if (matched.role === 'super') {
+        console.log('User is a super admin, showing all features');
       } else {
-        console.warn("Unknown role:", matched.role);
+        console.warn('Unknown role:', matched.role);
       }
     }
   }
@@ -434,36 +434,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // #region Review Viewing
 
-const reviewList = document.querySelector(".reviewlist");
-const approvalSection = document.querySelector(".approve");
-const reviewHr = document.getElementById("review-hr");
+const reviewList = document.querySelector('.reviewlist');
+const approvalSection = document.querySelector('.approve');
+const reviewHr = document.getElementById('review-hr');
 
 async function loadReviews() {
-  reviewList.innerHTML = ""; // Clear existing reviews
+  reviewList.innerHTML = ''; // Clear existing reviews
   const { data, error } = await supabase
-    .from("reviews")
-    .select("title, content, author, stars, allowed, id")
-    .order("id", { ascending: false });
+    .from('reviews')
+    .select('title, content, author, stars, allowed, id')
+    .order('id', { ascending: false });
 
-  if (error) return console.error("Failed to load reviews", error);
+  if (error) return console.error('Failed to load reviews', error);
 
   if (!data || data.length === 0) {
-    reviewList.innerHTML = "<p>No reviews yet. Be the first to review us!</p>";
+    reviewList.innerHTML = '<p>No reviews yet. Be the first to review us!</p>';
     return;
   }
 
   const hrshow = data.some((review) => !review.allowed);
-  reviewHr.style.display = hrshow ? "block" : "none";
-
+  reviewHr.style.display = hrshow ? 'block' : 'none';
 
   data.forEach((review) => {
     const { title, content, author, stars, allowed, id } = review;
     const user = JSON.parse(author);
-    const filledStars = "★".repeat(stars);
-    const emptyStars = "☆".repeat(5 - stars);
+    const filledStars = '★'.repeat(stars);
+    const emptyStars = '☆'.repeat(5 - stars);
 
-    const reviewEl = document.createElement("div");
-    reviewEl.className = "review";
+    const reviewEl = document.createElement('div');
+    reviewEl.className = 'review';
 
     // Build innerHTML without buttons first
     reviewEl.innerHTML = `
@@ -480,18 +479,18 @@ async function loadReviews() {
 
     // Add buttons conditionally
     if (!allowed) {
-      const allowBtn = document.createElement("button");
-      allowBtn.textContent = "✓";
-      allowBtn.className = "allowReview";
-      allowBtn.addEventListener("click", async () => {
+      const allowBtn = document.createElement('button');
+      allowBtn.textContent = '✓';
+      allowBtn.className = 'allowReview';
+      allowBtn.addEventListener('click', async () => {
         const { error } = await supabase
-          .from("reviews")
+          .from('reviews')
           .update({ allowed: true })
-          .eq("id", id);
+          .eq('id', id);
 
         if (error) {
-          console.error("❌ Failed to allow review", error);
-          alert("Failed to allow review");
+          console.error('❌ Failed to allow review', error);
+          alert('Failed to allow review');
           return;
         }
 
@@ -499,18 +498,15 @@ async function loadReviews() {
         loadReviews(); // Refresh the list
       });
 
-      const denyBtn = document.createElement("button");
-      denyBtn.textContent = "✗";
-      denyBtn.className = "denyReview";
-      denyBtn.addEventListener("click", async () => {
-        const { error } = await supabase
-          .from("reviews")
-          .delete()
-          .eq("id", id);
+      const denyBtn = document.createElement('button');
+      denyBtn.textContent = '✗';
+      denyBtn.className = 'denyReview';
+      denyBtn.addEventListener('click', async () => {
+        const { error } = await supabase.from('reviews').delete().eq('id', id);
 
         if (error) {
-          console.error("❌ Failed to delete review", error);
-          alert("Failed to delete review");
+          console.error('❌ Failed to delete review', error);
+          alert('Failed to delete review');
           return;
         }
 
@@ -524,8 +520,6 @@ async function loadReviews() {
     } else {
       reviewList.appendChild(reviewEl);
     }
-
-    
   });
 }
 

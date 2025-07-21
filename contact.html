@@ -1,87 +1,99 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
+  <head>
     <!-- Page Title and Favicon -->
     <title>starship - contact us</title>
-    <link rel="icon" type="image/x-icon" href="/uploads/branding/favicon.png">
-    <meta name="description" content="Play games, level up, and explore Starship - your new favorite gaming site.">
-<link rel="canonical" href="https://starship-app.com/contact" />
-
+    <link rel="icon" type="image/x-icon" href="/uploads/branding/favicon.png" />
+    <meta
+      name="description"
+      content="Play games, level up, and explore Starship - your new favorite gaming site."
+    />
+    <link rel="canonical" href="https://starship-app.com/contact" />
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="/css/navbar.css">
-    <link rel="stylesheet" href="/css/main.css">
-
+    <link rel="stylesheet" href="/css/navbar.css" />
+    <link rel="stylesheet" href="/css/main.css" />
     <!-- Google AdSense and Google Analytics -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4851718454212779"
-     crossorigin="anonymous"></script>
 
-     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZZH4JE7RJF"></script>
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4851718454212779"
+      crossorigin="anonymous"
+    ></script>
+    <!-- Google tag (gtag.js) -->
+
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-ZZH4JE7RJF"
+    ></script>
     <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
 
       gtag('config', 'G-ZZH4JE7RJF');
     </script>
-  <style>
-    .tabs {
-      display: flex;
-      justify-content: center;
-      margin-top: 20px;
-      background-color: #222;
-      border-bottom: 2px solid #444;
-    }
+    <style>
+      .tabs {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        background-color: #222;
+        border-bottom: 2px solid #444;
+      }
 
-    .tab {
-      padding: 15px 20px;
-      cursor: pointer;
-      color: #fff;
-      border: none;
-      background: #222;
-      outline: none;
-      transition: background 0.3s ease;
-    }
+      .tab {
+        padding: 15px 20px;
+        cursor: pointer;
+        color: #fff;
+        border: none;
+        background: #222;
+        outline: none;
+        transition: background 0.3s ease;
+      }
 
-    .tab:hover, .tab.active {
-      background: #444;
-    }
+      .tab:hover,
+      .tab.active {
+        background: #444;
+      }
 
-    .tab-content {
-      display: none;
-      padding: 20px;
-      transform: scale(0.95); /* Start slightly smaller for transition */
-      opacity: 0; /* Start invisible */
-      transition: transform 0.3s ease, opacity 0.3s ease; /* Smooth scaling and fading */
-    }
+      .tab-content {
+        display: none;
+        padding: 20px;
+        transform: scale(0.95); /* Start slightly smaller for transition */
+        opacity: 0; /* Start invisible */
+        transition:
+          transform 0.3s ease,
+          opacity 0.3s ease; /* Smooth scaling and fading */
+      }
 
-    .tab-content.active {
-      display: block;
-      transform: scale(1); /* Full size */
-      opacity: 1; /* Fully visible */
-    }
+      .tab-content.active {
+        display: block;
+        transform: scale(1); /* Full size */
+        opacity: 1; /* Fully visible */
+      }
 
-    h2 {
-      text-align: center;
-      color: #fff;
-    }
+      h2 {
+        text-align: center;
+        color: #fff;
+      }
 
-    p {
-      line-height: 1.5;
-      font-size: 1em;
-    }
+      p {
+        line-height: 1.5;
+        font-size: 1em;
+      }
     </style>
-    
-</head>
-<body>
+  </head>
+  <body>
     <!-- Navigation Bar -->
     <div id="navbar"></div>
     <script type="module" src="/javascript/navbar.js"></script>
-
     <!-- Footer -->
+
     <script src="/javascript/footer.js"></script>
     <center>
-    <!-- Main Content 
+      <!-- Main Content 
 
         
         <h1 class="gradient-red">Contact & Support</h1>
@@ -95,25 +107,57 @@
         </p>
         <hr>
 -->
-        <!-- Tab Buttons -->
-        <div class="tab">
-            <button class="tab" onclick="openPage('suggestgame', this)" id="defaultOpen">Suggest a Game <i class="fa fa-gamepad fa-lg"></i></button>
-            <button class="tab" onclick="openPage('suggestapp', this)">Suggest an App <i class="fa fa-cube fa-lg"></i></button>
-            <button class="tab" onclick="openPage('contact', this)">Contact Form <i class="fa fa-phone fa-lg"></i></button>
-        </div>
-
-        <!-- Tab Content -->
-        <div id="suggestgame" class="tabcontent">
-            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScmErEzDXvFQwLy1PohKPp5H5der3mLFwZcVOSJvmcWkuZCyA/viewform" width="100%" height="800" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
-        </div>
-        <div id="suggestapp" class="tabcontent">
-            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScrxqbzDKZWVQ_5cQn9dkb-n8Hvyv8hgNusQA6r6G_k1wrX9Q/viewform" width="100%" height="800" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
-        </div>
-        <div id="contact" class="tabcontent">
-            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSePgAncfRqlqQGWtB112q0jPEFvW_2jUYQIO4K1sR0bFztKjA/viewform" width="100%" height="800" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
-        </div>
+      <!-- Tab Buttons -->
+      <div class="tab">
+        <button
+          class="tab"
+          onclick="openPage('suggestgame', this)"
+          id="defaultOpen"
+        >
+          Suggest a Game
+        </button>
+        <button class="tab" onclick="openPage('suggestapp', this)">
+          Suggest an App
+        </button>
+        <button class="tab" onclick="openPage('contact', this)">
+          Contact Form
+        </button>
+      </div>
+      <!-- Tab Content -->
+      <div id="suggestgame" class="tabcontent">
+        <iframe
+          src="https://docs.google.com/forms/d/e/1FAIpQLScmErEzDXvFQwLy1PohKPp5H5der3mLFwZcVOSJvmcWkuZCyA/viewform"
+          width="100%"
+          height="800"
+          frameborder="0"
+          marginheight="0"
+          marginwidth="0"
+          >Loading…</iframe
+        >
+      </div>
+      <div id="suggestapp" class="tabcontent">
+        <iframe
+          src="https://docs.google.com/forms/d/e/1FAIpQLScrxqbzDKZWVQ_5cQn9dkb-n8Hvyv8hgNusQA6r6G_k1wrX9Q/viewform"
+          width="100%"
+          height="800"
+          frameborder="0"
+          marginheight="0"
+          marginwidth="0"
+          >Loading…</iframe
+        >
+      </div>
+      <div id="contact" class="tabcontent">
+        <iframe
+          src="https://docs.google.com/forms/d/e/1FAIpQLSePgAncfRqlqQGWtB112q0jPEFvW_2jUYQIO4K1sR0bFztKjA/viewform"
+          width="100%"
+          height="800"
+          frameborder="0"
+          marginheight="0"
+          marginwidth="0"
+          >Loading…</iframe
+        >
+      </div>
     </center>
-
     <!-- Particles.JS Background -->
     <div id="particles-js"></div>
     <script src="/javascript/particles.js"></script>
@@ -121,14 +165,16 @@
     <script src="/javascript/antitabclose.js"></script>
     <script src="/javascript/cloaking.js"></script>
     <script src="/javascript/particles-config.js"></script>
-  <script src="/javascript/notifications.js"></script>
-  <script src="/javascript/screentimetracking.js"></script>
+    <script src="/javascript/notifications.js"></script>
+    <script src="/javascript/screentimetracking.js"></script>
     <!-- Scrollbar Customization -->
-    <script src="/javascript/scrollbar.js"></script>
 
+    <script src="/javascript/scrollbar.js"></script>
     <!-- Tabs Script -->
+
     <script src="/javascript/tabs.js"></script>
     <!-- Scheduler -->
-  <script src="/javascript/schedule.js"></script>
-</body>
+
+    <script src="/javascript/schedule.js"></script>
+  </body>
 </html>
