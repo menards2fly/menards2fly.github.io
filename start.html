@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>stargate</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+  
+  <style>
+    /* Reset */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      height: 100vh;
+      background:
+        radial-gradient(circle at top left, #120032 0%, #0a001a 90%);
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #eee;
+      user-select: none;
+      padding: 1rem;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    /* Title */
+    h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      margin-bottom: 1.5rem;
+      text-transform: lowercase;
+      background: linear-gradient(90deg, #ae54ff 0%, #7f32ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow:
+        0 0 25px rgba(174, 84, 255, 0.85);
+      animation: pulseGlow 3.5s ease-in-out infinite;
+      user-select: text;
+    }
+    @keyframes pulseGlow {
+      0%, 100% {
+        text-shadow:
+          0 0 25px #ae54ffcc;
+      }
+      50% {
+        text-shadow:
+          0 0 40px #ae54ffdd;
+      }
+    }
+
+    /* URL Bar Container */
+    .url-bar {
+      display: flex;
+      width: 100%;
+      max-width: 480px;
+      margin-bottom: 2rem;
+      border-radius: 9999px;
+      background: rgba(174, 84, 255, 0.15);
+      backdrop-filter: saturate(180%) blur(18px);
+      box-shadow: 0 0 30px #ae54ffbb;
+      overflow: hidden;
+      transition: box-shadow 0.3s ease;
+    }
+    .url-bar:focus-within {
+      box-shadow: 0 0 45px #ae54ffdd;
+    }
+
+    /* URL Input */
+    .url-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 0.9rem 1.5rem;
+      font-size: 1.15rem;
+      font-weight: 500;
+      background: transparent;
+      color: #eee;
+      font-family: 'Inter', sans-serif;
+      user-select: text;
+    }
+    .url-input::placeholder {
+      color: rgba(255 255 255 0.6);
+    }
+
+    /* Go Button */
+    .go-btn {
+      background: linear-gradient(135deg, #ae54ff, #7f32ff);
+      border: none;
+      padding: 0 1.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: white;
+      font-size: 1.3rem;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 0 20px #ae54ffbb;
+      user-select: none;
+    }
+    .go-btn:hover {
+      background: linear-gradient(135deg, #7f32ff, #ae54ff);
+      box-shadow: 0 0 40px #ae54ffcc;
+
+    }
+    .go-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 0 15px #ae54ffbb;
+    }
+
+    /* Quick Links - flex row with wrapping */
+    .quick-links {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 600px;
+    }
+
+    /* Each link */
+    .quick-link {
+      background: rgba(255 255 255 / 0.1);
+      border-radius: 20px;
+      padding: 1.3rem 1.8rem;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #fff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      justify-content: center;
+      box-shadow: 0 0 18px #ae54ff88;
+      cursor: pointer;
+      user-select: none;
+      transition:
+        background 0.35s ease,
+        box-shadow 0.35s ease,
+        color 0.35s ease,
+        transform 0.3s ease;
+      filter: drop-shadow(0 0 10px #ae54ffcc);
+      border: 1px solid rgba(255 255 255 / 0.15);
+      min-width: 140px;
+    }
+    .quick-link:hover {
+      background: rgba(174, 84, 255, 0.3);
+      color: #ae54ff;
+      box-shadow:
+        0 0 40px #ae54ffcc,
+        0 0 65px #ae54ff99;
+      transform: translateY(-7px) scale(1.06);
+      filter: drop-shadow(0 0 22px #ae54ffcc);
+      border-color: #ae54ff;
+    }
+
+    /* Icon style */
+    .quick-link i {
+      font-size: 2rem;
+      filter: drop-shadow(0 0 8px #ae54ffcc);
+      transition: filter 0.3s ease;
+    }
+    .quick-link:hover i {
+      filter: drop-shadow(0 0 18px #ae54ffdd);
+    }
+  </style>
+</head>
+<body>
+  <img style="width:80px;height:80px;" src="/uploads/branding/favicon.png" alt="Logo"><br><br>
+
+  <form class="url-bar" id="urlForm" aria-label="URL input form" autocomplete="off">
+    <input
+      class="url-input"
+      type="text"
+      id="urlInput"
+      placeholder="Type a URL or domain like google.com"
+      aria-label="Enter website URL or domain"
+      required
+      spellcheck="false"
+    />
+    <button type="submit" class="go-btn" aria-label="Go to URL">
+      <i class="fas fa-arrow-right"></i>
+    </button>
+  </form>
+
+  <div class="quick-links">
+    <a href="https://www.google.com" class="quick-link" rel="noopener" aria-label="Google">
+      <i class="fab fa-google"></i> Google
+    </a>
+    <a href="https://www.youtube.com" class="quick-link" rel="noopener" aria-label="YouTube">
+      <i class="fab fa-youtube"></i> YouTube
+    </a>
+    <a href="https://www.instagram.com" class="quick-link" rel="noopener" aria-label="Instagram">
+      <i class="fab fa-instagram"></i> Instagram
+    </a>
+    <a href="https://www.snapchat.com" class="quick-link" rel="noopener" aria-label="Snapchat">
+      <i class="fab fa-snapchat"></i> Snapchat
+    </a>
+    <a href="https://discord.com" class="quick-link" rel="noopener" aria-label="Discord">
+      <i class="fab fa-discord"></i> Discord
+    </a>
+    <a href="https://open.spotify.com" class="quick-link" rel="noopener" aria-label="Spotify">
+      <i class="fab fa-spotify"></i> Spotify
+    </a>
+  </div>
+
+  <script>
+    const form = document.getElementById('urlForm');
+    const input = document.getElementById('urlInput');
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      let url = input.value.trim();
+
+      if (!url) return;
+
+      // Add https:// if no protocol
+      if (!/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+      }
+
+      // Validate URL & redirect
+      try {
+        const validUrl = new URL(url);
+        window.location.href = validUrl.href;
+      } catch {
+        alert('Please enter a valid URL or domain.');
+      }
+    });
+  </script>
+</body>
+</html>
