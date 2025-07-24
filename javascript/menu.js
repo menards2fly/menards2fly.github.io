@@ -325,11 +325,11 @@ async function loadMutualFriends() {
     return;
   }
 
-  // Step 2: Load profiles
+  // Step 2: Load profiles (including status)
   const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
     .select(
-      'id, username, avatar_url, last_active, current_game_id, online_status_visibility'
+      'id, username, avatar_url, last_active, current_game_id, status, online_status_visibility'
     )
     .in('id', mutualIds);
 
@@ -395,33 +395,64 @@ async function loadMutualFriends() {
       if (gameData?.url) gameUrl = gameData.url;
     }
 
-    // Decide status text
+    // Decide status text (priority: offline → game → activity status → inactive)
     let statusText = '';
     if (!isOnline) {
       statusText = 'Offline';
-    } else if (!nowPlaying) {
-      statusText = 'Inactive';
-    } else {
+    } else if (nowPlaying) {
       statusText = `${nowPlaying}`;
+    } else if (friend.status && !friend.current_game_id) {
+      switch (friend.status) {
+        case 'proxy':
+          statusText = 'Surfing the web';
+          break;
+        case 'aichat':
+          statusText = 'Chatting with AI';
+          break;
+        case 'tv':
+          statusText = 'Watching TV';
+          break;
+        case 'sitechat':
+          statusText = 'Hanging out in Chat';
+          break;
+        default:
+          statusText = 'Active';
+          break;
+      }
+    } else {
+      statusText = 'Inactive';
     }
 
-    // Create avatar wrapper, clickable if gameUrl exists
+    // Create avatar wrapper, clickable if gameUrl or known status exists
     const avatarWrapper = document.createElement('div');
     avatarWrapper.className = 'friend-avatar-wrapper';
 
+    let clickUrl = null;
+
     if (gameUrl) {
+      // If playing a game, join their game
+      clickUrl = '/play';
       avatarWrapper.style.cursor = 'pointer';
       avatarWrapper.addEventListener('click', () => {
-        // Save game info for play page
         localStorage.setItem('gameLink', gameUrl);
         localStorage.setItem('gameName', nowPlaying);
-        // You can add more info here if needed, e.g.
-        // localStorage.setItem('gameImage', someImageUrl);
-        // localStorage.setItem('gameDesc', someDescription);
-
-        // Redirect to /play
-        window.location.href = '/play';
+        window.location.href = clickUrl;
       });
+    } else if (friend.status && !friend.current_game_id) {
+      // Map status to route URLs
+      const statusRoutes = {
+        proxy: '/route',
+        aichat: '/ai',
+        tv: '/tv',
+        sitechat: '/chat',
+      };
+      if (statusRoutes[friend.status]) {
+        clickUrl = statusRoutes[friend.status];
+        avatarWrapper.style.cursor = 'pointer';
+        avatarWrapper.addEventListener('click', () => {
+          window.location.href = clickUrl;
+        });
+      }
     }
 
     const avatarImg = document.createElement('img');

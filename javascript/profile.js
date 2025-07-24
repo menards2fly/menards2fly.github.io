@@ -259,7 +259,51 @@ async function loadProfile() {
     onlineDot.classList.add('offline');
     onlineDot.style.display = 'inline-block';
   }
+  
+  // Map statuses to friendly display text and optionally route URLs
+const statusDisplayText = {
+  proxy: 'Surfing the web',
+  aichat: 'Chatting with AI',
+  tv: 'Watching TV',
+  sitechat: 'Hanging out in Chat',
+};
+
+// Show the user's status text below the bio, if available and allowed
+const profileStatusEl = document.getElementById('profile-status-text');
+
+if (canShowStatus && data.status && !data.current_game_id) {
+  const statusText = statusDisplayText[data.status] || 'Active';
+
+  profileStatusEl.textContent = statusText;
+  profileStatusEl.style.display = 'block';
+
+  // Make status clickable if you want to link to route pages
+  const statusRoutes = {
+    proxy: '/route',
+    aichat: '/ai',
+    tv: '/tv',
+    sitechat: '/chat',
+  };
+
+  if (statusRoutes[data.status]) {
+    profileStatusEl.style.cursor = 'pointer';
+    profileStatusEl.title = `Go to ${statusText}`;
+    profileStatusEl.onclick = () => {
+      window.location.href = statusRoutes[data.status];
+    };
+  } else {
+    profileStatusEl.style.cursor = 'default';
+    profileStatusEl.onclick = null;
+  }
+
+  console.log(`ℹ️ Showing status on profile: ${statusText}`);
+} else {
+  profileStatusEl.style.display = 'none';
 }
+}
+
+
+
 
 (async () => {
   currentUserId = await getCurrentUserId();
@@ -356,4 +400,78 @@ async function loadProfileGame() {
 
   console.log('👾 Current game ID for profile:', profile.current_game_id);
   await loadCurrentGame(profile.current_game_id);
+}
+const searchInput = document.getElementById('profile-search-input');
+const searchResults = document.getElementById('profile-search-results');
+
+let searchTimeout = null;
+
+
+
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    searchProfiles(searchInput.value);
+  }, 300);
+});
+
+
+async function searchProfiles(query) {
+  if (!query || query.trim().length < 2) {
+    searchResults.innerHTML = ''; // clear results if query is empty or too short
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, username, avatar_url, bio, badges')
+    .eq('private', false) // only public profiles
+    .ilike('username', `%${query}%`) // case-insensitive partial match
+    .limit(10);
+
+  if (error) {
+    console.error('❌ Error searching profiles:', error);
+    searchResults.innerHTML = '<p>Failed to load results.</p>';
+    return;
+  }
+
+  if (!data.length) {
+    searchResults.innerHTML = '<p>No profiles found.</p>';
+    return;
+  }
+
+  searchResults.innerHTML = data
+    .map((profile) => {
+      const badgesHTML = Array.isArray(profile.badges)
+        ? profile.badges
+            .map(
+              (badge) =>
+                `<img class="badge-icon" src="/uploads/badges/${badge}.png" alt="${badge}" title="${badge}" />`
+            )
+            .join('')
+        : '';
+
+      return `
+      <div class="search-result" data-username="${profile.username}">
+        <img src="${profile.avatar_url || '/default-avatar.png'}" alt="${profile.username}" class="search-avatar" />
+        <div class="search-info">
+          <div class="username-with-badges">
+            <strong class="username">@${profile.username}</strong>
+            <div class="badges-container">${badgesHTML}</div>
+          </div>
+          <small class="bio">${profile.bio ? profile.bio.substring(0, 50) + '...' : ''}</small>
+        </div>
+      </div>`;
+    })
+    .join('');
+
+  // Add click handlers to each result to go to their profile page
+  document.querySelectorAll('.search-result').forEach((el) => {
+    el.addEventListener('click', () => {
+      const username = el.getAttribute('data-username');
+      if (username) {
+        window.location.href = `/profile.html?username=${encodeURIComponent(username)}`;
+      }
+    });
+  });
 }

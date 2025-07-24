@@ -355,6 +355,7 @@ if (hasSeenIntro) {
   setTimeout(hideIntroOverlay, duration);
 }
 
+// == Update Last Seen ==
 const updateLastSeen = async () => {
   const {
     data: { user },
@@ -371,16 +372,58 @@ const updateLastSeen = async () => {
   else console.log('📡 Last seen updated.');
 };
 
-// Run once on page load (e.g., navbar load)
+// Run once on page load
 updateLastSeen();
 
-// Then set up a ping every 60 seconds
+// Ping every 60 seconds
 const lastSeenInterval = setInterval(updateLastSeen, 60 * 1000);
-
-// Optional: clear interval when user leaves page to avoid unnecessary pings
 window.addEventListener('beforeunload', () => {
   clearInterval(lastSeenInterval);
 });
+
+// == Dynamic Page Status Handling ==
+const handlePageStatus = async (statusValue) => {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) return;
+
+  const { error: statusError } = await supabase
+    .from('profiles')
+    .update({ status: statusValue })
+    .eq('id', user.id);
+
+  if (statusError) {
+    console.error(`❌ Failed to update status:`, statusError.message);
+  } else {
+    console.log(`🛰️ User status updated to: ${statusValue}`);
+  }
+};
+
+// Detect which page we're on and set status
+let pageStatus = null;
+
+if (window.location.pathname.includes('/route')) {
+  pageStatus = 'proxy';
+} else if (window.location.pathname.includes('/ai')) {
+  pageStatus = 'aichat';
+} else if (window.location.pathname.includes('/tv')) {
+  pageStatus = 'tv';
+} else if (window.location.pathname.includes('/chat')) {
+  pageStatus = 'sitechat';
+}
+
+if (pageStatus) {
+  handlePageStatus(pageStatus);
+
+  // Clear status when they leave (refresh, close, or navigate away)
+  window.addEventListener('beforeunload', () => {
+    handlePageStatus(null);
+  });
+}
+
+
 
 if (user) {
   const { data: profile, error } = await supabase

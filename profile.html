@@ -253,10 +253,141 @@
         margin-top: 4px;
         line-height: 1.4;
       }
+      /* Container for search input + results, centered */
+#profile-search-wrapper {
+  max-width: 700px;
+  margin: 40px auto 0 auto;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 0 30px rgba(138, 43, 226, 0.3);
+  animation: fadeInUp 0.8s ease-out forwards;
+  opacity: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Search input styled like your follow button vibe */
+#profile-search-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 1.1rem;
+  color: #eee;
+  background: rgba(18, 18, 30, 0.6);
+  border: 2px solid rgba(138, 43, 226, 0.7);
+  border-radius: 16px;
+  box-shadow: 0 0 12px rgba(138, 43, 226, 0.6);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transform: translateX(-15px);
+}
+
+#profile-search-input::placeholder {
+  color: #bbb;
+}
+
+#profile-search-input:focus {
+  outline: none;
+  border-color: #8a2be2; /* purple glow instead of green */
+  box-shadow: 0 0 18px #8a2be2; /* stronger purple glow */
+  background: rgba(18, 18, 30, 0.8);
+}
+
+/* Search results container */
+#profile-search-results {
+  margin-top: 16px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: rgba(18, 18, 30, 0.85);
+  border: 1.5px solid rgba(138, 43, 226, 0.8);
+  border-radius: 16px;
+  box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+}
+
+/* Individual profile result item */
+.search-result {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* center horizontally */
+  text-align: center;
+  gap: 16px;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(138, 43, 226, 0.3);
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+  color: #ddd;
+}
+
+.search-result:last-child {
+  border-bottom: none;
+}
+
+.search-result:hover {
+  background-color: rgba(0, 255, 128, 0.15);
+}
+
+/* Avatar style matching your profile picture vibe */
+.search-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(138, 43, 226, 0.7);
+  box-shadow: 0 0 12px rgba(138, 43, 226, 0.7);
+}
+
+/* Username and bio text */
+.search-result .username {
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: #d0bfff;
+}
+
+.search-result .bio {
+  font-size: 0.9rem;
+  color: #aaa;
+  margin-top: 4px;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 400px;
+}
+.username-with-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center; /* keep it centered */
+}
+
+.badges-container {
+  display: flex;
+  gap: 6px;
+}
+
+.badges-container img {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  filter: drop-shadow(0 0 1px rgba(0,0,0,0.4));
+}
+
+
+
     </style>
   </head>
   <body>
     <script type="module" src="/javascript/navbar.js"></script>
+    <div id="profile-search-wrapper">
+    <input
+  type="text"
+  id="profile-search-input"
+  placeholder="Search public profiles..."
+  autocomplete="off"
+/>
+<div id="profile-search-results"></div>
+</div>
     <div class="profile-container" id="profile">
       <div class="profile-banner"></div>
       <div class="profile-info">
@@ -273,6 +404,8 @@
         <div class="profile-details">
           <div class="username" id="profile-username">Loading...</div>
           <div class="bio" id="profile-bio"></div>
+          <div id="profile-status-text" style="margin-top: 8px; font-style: italic; color: #aaa; display: none; user-select: none;"></div>
+
           <div class="follower-count" id="follower-count">0 followers</div>
           <button class="follow-button" id="follow-btn">Follow</button>
           <button id="share-profile-btn" class="share-btn">
