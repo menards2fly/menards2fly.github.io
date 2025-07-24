@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>starship - proxy</title>
     <link rel="icon" type="image/x-icon" href="/uploads/branding/favicon.png" />
-    <meta name="description" content="Play games, level up, and explore Starship - your new favorite gaming site." />
+    <meta
+      name="description"
+      content="Play games, level up, and explore Starship - your new favorite gaming site."
+    />
     <link rel="canonical" href="https://starship-app.com/proxy" />
     <link rel="stylesheet" href="/css/navbar.css" />
     <link rel="stylesheet" href="/css/main.css" />
@@ -13,106 +16,325 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
+    <!-- Import Inter font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
     <style>
-      #proxyFrame {
-        width: 100%;
-        height: 1000px;
-        border: none;
+      /* Use Inter everywhere */
+      body,
+      button,
+      input,
+      label,
+      ul,
+      p,
+      h2 {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
       }
 
-      /* Make container relative so overlay button can be positioned */
+      /* Basic container & iframe styles */
       #proxy-container {
         position: relative;
         width: 100%;
         max-width: 100%;
+        min-height: 1000px;
       }
 
-     #switchDomainBtn {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 1000;
-  background-color: rgba(0, 0, 0, 1);
-  border: none;
-  color: #fff;
-  width: 40px;
-  height: 40px;
-  font-size: 18px;
-  border-radius: 50%; /* full circle */
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
+      .proxyFrame {
+        width: 100%;
+        height: 1000px;
+        border: none;
+        display: none;
+      }
 
-#switchDomainBtn:hover {
+      .proxyFrame.active {
+        display: block;
+      }
 
-}
+      /* Switch domain button */
+      #switchDomainBtn {
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 1000;
+        background-color: #8a2be2;
+        border: none;
+        color: #fff;
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+      }
 
+      #switchDomainBtn:hover {
+        background-color: #6e22c9;
+      }
+
+      /* Modal overlay */
+      #rulesModal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+
+        /* Animate modal entrance */
+        animation: fadeScaleIn 0.35s ease forwards;
+      }
+
+      @keyframes fadeScaleIn {
+        0% {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      /* Modal content */
+      #rulesModalContent {
+        background: #121212;
+        color: white;
+        max-width: 420px;
+        padding: 30px 25px;
+        border-radius: 12px;
+        box-shadow: 0 0 15px #8a2be2aa;
+
+        /* Center all content inside */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      #rulesModalContent h2 {
+        margin-top: 0;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        color: #8a2be2;
+      }
+
+      #rulesModalContent ul {
+        text-align: left;
+        margin: 1rem 0 1.5rem 1.2rem;
+        line-height: 1.5;
+        font-size: 1rem;
+        width: 100%;
+        max-width: 380px;
+      }
+
+      #rulesModalContent ul li {
+        margin-bottom: 0.6rem;
+      }
+
+      #rulesModalContent label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1rem;
+        cursor: pointer;
+        user-select: none;
+        margin-bottom: 1.5rem;
+        width: 100%;
+        max-width: 380px;
+        justify-content: center;
+      }
+
+      #rulesModalContent input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+      }
+
+      #rulesModalContent button {
+        background-color: #8a2be2;
+        border: none;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.1rem;
+        padding: 12px 28px;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        width: 100%;
+        max-width: 380px;
+      }
+
+      #rulesModalContent button:disabled {
+        background-color: #8a2be277;
+        cursor: not-allowed;
+      }
+
+      #rulesModalContent button:hover:not(:disabled) {
+        background-color: #6e22c9;
+      }
+
+      /* Thanks message below button */
+      #thanks {
+        margin-top: 1.5rem;
+        font-size: 0.9rem;
+        color: #8a2be2cc;
+        font-style: italic;
+      }
     </style>
   </head>
   <body>
     <div id="navbar"></div>
     <script type="module" src="/javascript/navbar.js"></script>
 
-    <div id="proxy-container">
+    <div id="proxy-container" aria-hidden="true">
       <iframe
         src="https://sportpersist1.global.ssl.fastly.net/embed.html#https://starship-app.com/start.html"
-        id="proxyFrame"
+        class="proxyFrame active"
         sandbox="allow-scripts allow-same-origin allow-forms"
         referrerpolicy="no-referrer"
+        data-domain="sportpersist1.global.ssl.fastly.net"
       ></iframe>
 
-      <button id="switchDomainBtn" title="Switch Domain">
+      <iframe
+        src="https://sportpersist2.global.ssl.fastly.net/embed.html#https://starship-app.com/start.html"
+        class="proxyFrame"
+        sandbox="allow-scripts allow-same-origin allow-forms"
+        referrerpolicy="no-referrer"
+        data-domain="sportpersist2.global.ssl.fastly.net"
+      ></iframe>
+
+      <iframe
+        src="https://sportpersist3.global.ssl.fastly.net/embed.html#https://starship-app.com/start.html"
+        class="proxyFrame"
+        sandbox="allow-scripts allow-same-origin allow-forms"
+        referrerpolicy="no-referrer"
+        data-domain="sportpersist3.global.ssl.fastly.net"
+      ></iframe>
+
+      <iframe
+        src="https://sportpersist4.global.ssl.fastly.net/embed.html#https://starship-app.com/start.html"
+        class="proxyFrame"
+        sandbox="allow-scripts allow-same-origin allow-forms"
+        referrerpolicy="no-referrer"
+        data-domain="sportpersist4.global.ssl.fastly.net"
+      ></iframe>
+
+      <iframe
+        src="https://sportpersist5.global.ssl.fastly.net/embed.html#https://starship-app.com/start.html"
+        class="proxyFrame"
+        sandbox="allow-scripts allow-same-origin allow-forms"
+        referrerpolicy="no-referrer"
+        data-domain="sportpersist5.global.ssl.fastly.net"
+      ></iframe>
+
+      <iframe
+        src="https://sportpersist6.global.ssl.fastly.net/embed.html#https://starship-app.com/start.html"
+        class="proxyFrame"
+        sandbox="allow-scripts allow-same-origin allow-forms"
+        referrerpolicy="no-referrer"
+        data-domain="sportpersist6.global.ssl.fastly.net"
+      ></iframe>
+
+      <iframe
+        src="https://sportpersist7.global.ssl.fastly.net/embed.html#https://starship-app.com/start.html"
+        class="proxyFrame"
+        sandbox="allow-scripts allow-same-origin allow-forms"
+        referrerpolicy="no-referrer"
+        data-domain="sportpersist7.global.ssl.fastly.net"
+      ></iframe>
+
+      <iframe
+        src="https://sportpersist8.global.ssl.fastly.net/embed.html#https://starship-app.com/start.html"
+        class="proxyFrame"
+        sandbox="allow-scripts allow-same-origin allow-forms"
+        referrerpolicy="no-referrer"
+        data-domain="sportpersist8.global.ssl.fastly.net"
+      ></iframe>
+
+      <iframe
+        src="https://sportpersist9.global.ssl.fastly.net/embed.html#https://starship-app.com/start.html"
+        class="proxyFrame"
+        sandbox="allow-scripts allow-same-origin allow-forms"
+        referrerpolicy="no-referrer"
+        data-domain="sportpersist9.global.ssl.fastly.net"
+      ></iframe>
+
+      <iframe
+        src="https://sportpersist10.global.ssl.fastly.net/embed.html#https://starship-app.com/start.html"
+        class="proxyFrame"
+        sandbox="allow-scripts allow-same-origin allow-forms"
+        referrerpolicy="no-referrer"
+        data-domain="sportpersist10.global.ssl.fastly.net"
+      ></iframe>
+
+      <button id="switchDomainBtn" title="Switch Domain" aria-label="Switch Domain">
         <i class="fa-solid fa-arrows-rotate"></i>
       </button>
     </div>
 
+    <!-- Modal for Rules -->
+    <div
+      id="rulesModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalTitle"
+      aria-describedby="modalDesc"
+    >
+      <div id="rulesModalContent">
+        <h2 id="modalTitle">Welcome! Please Read and Agree</h2>
+        <div id="modalDesc">
+          <p>Before you proceed, please agree to the following rules to keep our community safe and respectful:</p>
+          <ul>
+            <li>Do NOT access or share any inappropriate or illegal content.</li>
+            <li>Respect all users and do not engage in harassment or hate speech.</li>
+            <li>Use this proxy responsibly and only for lawful purposes.</li>
+          </ul>
+        </div>
+        <label>
+          <input type="checkbox" id="agreeCheckbox" />
+          I have read and agree to the rules
+        </label>
+        <button id="continueBtn" disabled>Continue</button>
+        <p id="thanks">Huge thanks to <a href="https://play.szvy.win"><strong>SZVY Central</strong></a> for this proxy service.</p>
+      </div>
+    </div>
+
     <script>
-      const domains = [
-        "sportpersist1.global.ssl.fastly.net",
-        "sportpersist2.global.ssl.fastly.net",
-        "sportpersist3.global.ssl.fastly.net",
-        "sportpersist4.global.ssl.fastly.net",
-      ];
+      // Elements
+      const modal = document.getElementById("rulesModal");
+      const agreeCheckbox = document.getElementById("agreeCheckbox");
+      const continueBtn = document.getElementById("continueBtn");
+      const proxyContainer = document.getElementById("proxy-container");
+
+      // Disable proxy container interaction while modal active
+      proxyContainer.setAttribute("aria-hidden", "true");
+
+      // Enable button only when checkbox checked
+      agreeCheckbox.addEventListener("change", () => {
+        continueBtn.disabled = !agreeCheckbox.checked;
+      });
+
+      continueBtn.addEventListener("click", () => {
+        if (agreeCheckbox.checked) {
+          modal.style.display = "none";
+          proxyContainer.setAttribute("aria-hidden", "false");
+        }
+      });
+
+      // Proxy domain switcher
+      const btn = document.getElementById("switchDomainBtn");
+      const iframes = [...document.querySelectorAll(".proxyFrame")];
       let currentIndex = 0;
 
-      const iframe = document.getElementById("proxyFrame");
-      const btn = document.getElementById("switchDomainBtn");
-
       btn.addEventListener("click", () => {
-        // Parse the current iframe URL
-        // This iframe uses a hash to embed a URL, so we need to extract that part
-        const src = iframe.src;
-        // The URL to change is after the # symbol
-        const hashIndex = src.indexOf("#");
-        if (hashIndex === -1) return; // no URL in hash, bail
-
-        const embeddedUrlStr = src.substring(hashIndex + 1);
-        try {
-          const embeddedUrl = new URL(embeddedUrlStr);
-
-          // Find current domain index in list
-          currentIndex = domains.indexOf(embeddedUrl.hostname);
-          if (currentIndex === -1) currentIndex = 0;
-
-          // Cycle to next domain
-          currentIndex = (currentIndex + 1) % domains.length;
-
-          // Replace hostname with new domain
-          embeddedUrl.hostname = domains[currentIndex];
-
-          // Compose new iframe src with updated hash URL
-          const newSrc =
-            src.substring(0, hashIndex + 1) + embeddedUrl.toString();
-
-          // Update iframe src (reloads iframe with new domain)
-          iframe.src = newSrc;
-        } catch (e) {
-          console.error("Invalid embedded URL in iframe src hash:", embeddedUrlStr);
-        }
+        iframes[currentIndex].classList.remove("active");
+        currentIndex = (currentIndex + 1) % iframes.length;
+        iframes[currentIndex].classList.add("active");
       });
     </script>
   </body>
