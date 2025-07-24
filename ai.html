@@ -5,185 +5,357 @@
   <link rel="icon" type="image/x-icon" href="/uploads/branding/favicon.png" />
   <meta name="description" content="Play games, level up, and explore Starship - your new favorite gaming site.">
   <link rel="canonical" href="https://starship-app.com/apps">
-  <script src="https://js.puter.com/v2/"></script>
-    <!-- Google AdSense and Google Analytics -->
-  <script src="https://js.puter.com/v2/"></script>
-    <script
-      async
-      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4851718454212779"
-      crossorigin="anonymous"
-    ></script>
-    <!-- Google tag (gtag.js) -->
 
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-ZZH4JE7RJF"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag('js', new Date());
+  <!-- Puter API -->
+  <script src="https://js.puter.com/v2/"></script>
 
-      gtag('config', 'G-ZZH4JE7RJF');
-    </script>
-        <!-- Stylesheets -->
-    <link rel="stylesheet" href="/css/navbar.css" />
-    <link rel="stylesheet" href="/css/main.css" />
+  <!-- Markdown & Sanitizer libs -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/css/navbar.css" />
+  <link rel="stylesheet" href="/css/main.css" />
+
+  <!-- Google AdSense -->
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4851718454212779"
+    crossorigin="anonymous"
+  ></script>
+
+  <!-- Google Analytics -->
+  <script
+    async
+    src="https://www.googletagmanager.com/gtag/js?id=G-ZZH4JE7RJF"
+  ></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-ZZH4JE7RJF');
+  </script>
+
   <style>
-    * { color: #fff; } /* Force white text everywhere */
+  * { color: #fff; } /* Force white text everywhere */
 
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-    }
-    .chat-container {
-      width: 90%;
-      max-width: 600px;
-      height: 80%;
-      display: flex;
-      flex-direction: column;
-      background: rgba(20, 20, 40, 0.7);
-      border: 1px solid rgba(150, 0, 255, 0.4);
-      border-radius: 20px;
-      backdrop-filter: blur(15px);
-      box-shadow: 0 0 40px rgba(150, 0, 255, 0.3);
-      overflow: hidden;
-    }
-    .chat-messages {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .message-wrapper {
-      display: flex;
-      flex-direction: column;
-      max-width: 75%;
-      gap: 6px;
-    }
-    .message-wrapper.user { margin-left: auto; align-items: flex-end; }
-    .message-wrapper.bot { margin-right: auto; align-items: flex-start; }
-    .message {
-      padding: 12px 16px;
-      border-radius: 16px;
-      font-size: 15px;
-      line-height: 1.4;
-      word-wrap: break-word;
-      white-space: pre-wrap;
-      max-width: 100%;
-    }
-    .user-msg {
-      background: rgba(150, 0, 255, 0.3);
-      border: 1px solid rgba(200, 100, 255, 0.5);
-      box-shadow: 0 0 15px rgba(150, 0, 255, 0.4);
-    }
-    .bot-msg {
-      background: rgba(0, 100, 200, 0.3);
-      border: 1px solid rgba(100, 200, 255, 0.4);
-      box-shadow: 0 0 15px rgba(0, 150, 255, 0.4);
-      position: relative;
-    }
-    .bot-msg.typing-text {
-      border-right: 2px solid #00d4ff;
-      animation: blinkCaret 1s steps(1) infinite;
-    }
-    @keyframes blinkCaret {
-      0%, 50% { border-color: #00d4ff; }
-      50.01%, 100% { border-color: transparent; }
-    }
-    .chat-input {
-      display: flex;
-      flex-direction: column;
-      padding: 15px;
-      background: rgba(15, 15, 35, 0.8);
-      border-top: 1px solid rgba(150, 0, 255, 0.3);
-      gap: 10px;
-    }
-    .chat-input input[type="text"] {
-      padding: 12px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(150, 0, 255, 0.4);
-      border-radius: 12px;
-      outline: none;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    .chat-input input[type="file"] {
-      display: none;
-    }
-    .chat-input button {
-      align-self: flex-end;
-      padding: 12px 20px;
-      background: linear-gradient(135deg, #ae54ff, #00d4ff);
-      border: none;
-      border-radius: 12px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .chat-input button:hover { transform: scale(1.05); }
-    .user-msg img, .bot-msg img {
-      max-width: 150px;
-      border-radius: 12px;
-      margin-top: 6px;
-      display: block;
-    }
-    .sender-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #ddd;
-      margin-top: 4px;
-    }
-    .sender-pfp {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      overflow: hidden;
-      flex-shrink: 0;
-      box-shadow: 0 0 10px #00d4ff;
-      background: #000;
-    }
-    .sender-pfp.starbot img { width: 100%; height: 100%; object-fit: cover; }
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+  .chat-container {
+    width: 90%;
+    max-width: 600px;
+    height: 80%;
+    display: flex;
+    flex-direction: column;
+    background: rgba(20,20,40,0.7);
+    border: 1px solid rgba(150,0,255,0.4);
+    border-radius: 20px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 0 40px rgba(150,0,255,0.3);
+    overflow: hidden;
+  }
+  .chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .message-wrapper { display: flex; flex-direction: column; max-width: 75%; gap: 6px; }
+  .message-wrapper.user { margin-left: auto; align-items: flex-end; }
+  .message-wrapper.bot { margin-right: auto; align-items: flex-start; }
+  .message {
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 15px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    max-width: 100%;
+  }
+  .user-msg {
+    background: rgba(150,0,255,0.3);
+    border: 1px solid rgba(200,100,255,0.5);
+    box-shadow: 0 0 15px rgba(150,0,255,0.4);
+  }
+  .bot-msg {
+    background: rgba(0,100,200,0.3);
+    border: 1px solid rgba(100,200,255,0.4);
+    box-shadow: 0 0 15px rgba(0,150,255,0.4);
+  }
+  .sender-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #ddd;
+    margin-top: 4px;
+  }
+  .sender-pfp {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 0 10px #00d4ff;
+    background: #000;
+  }
+  .sender-pfp.starbot img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* === FIXED BUTTON + INPUT STYLES (brought back) === */
+  .chat-input {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    background: rgba(15,15,35,0.8);
+    border-top: 1px solid rgba(150,0,255,0.3);
+    gap: 10px;
+  }
+  .chat-input input[type="text"] {
+    padding: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(150,0,255,0.4);
+    border-radius: 12px;
+    color: #fff;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 14px;
+  }
+  .chat-input input[type="file"] {
+    display: none;
+  }
+  .chat-input button {
+    align-self: flex-end;
+  display: inline-block;
+  padding: 16px 44px;
+  background: linear-gradient(90deg, #8a2be2 60%, #ff4b2b 100%);
+  color: #fff;
+  font-size: 14px;
+  border: none;
+  border-radius: 30px;
+  font-weight: 600;
+  box-shadow: 0 4px 24px #8a2be244;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+  cursor: pointer;
+  
+  }
+  .chat-input button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(150,0,255,0.6);
+  }
+
+  /* Loading dots animation for Starbot typing */
+  .loading-dots {
+    display: flex;
+    gap: 4px;
+  }
+  .loading-dots span {
+    width: 6px;
+    height: 6px;
+    background: #00d4ff;
+    border-radius: 50%;
+    display: inline-block;
+    animation: bounce 1.2s infinite ease-in-out;
+  }
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+  /* Simple code block styling */
+  pre {
+    background: rgba(0,0,0,0.3);
+    padding: 8px 12px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: 'Source Code Pro', monospace, monospace;
+    font-size: 14px;
+    color: #00d4ff;
+  }
+  code {
+    background: rgba(0,0,0,0.25);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Source Code Pro', monospace, monospace;
+    font-size: 13px;
+    color: #00d4ff;
+  }
+  a {
+    color: #00d4ff;
+    text-decoration: underline;
+  }
+  .loader {
+  width: 64px;
+  height: 64px;
+  position: relative;
+  background: #FFF;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.loader:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 40px;
+  height: 40px;
+  transform: rotate(45deg) translate(30%, 40%);
+  background: #ff9371;
+  box-shadow: 32px -34px 0 5px #ff3d00;
+  animation: slide 2s infinite ease-in-out alternate;
+}
+.bot-msg img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+  cursor: zoom-in;
+  transition: transform 0.3s ease;
+}
+
+.bot-msg img:hover {
+  transform: scale(1.05);
+}
+
+.loader:after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ff3d00;
+  transform: rotate(0deg);
+  transform-origin: 35px 145px;
+  animation: rotate 2s infinite ease-in-out;
+}
+
+@keyframes slide {
+  0% , 100% {
+    bottom: -35px
+  }
+
+  25% , 75% {
+    bottom: -2px
+  }
+
+  20% , 80% {
+    bottom: 2px
+  }
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(-15deg)
+  }
+
+  25% , 75% {
+    transform: rotate(0deg)
+  }
+
+  100% {
+    transform: rotate(25deg)
+  }
+}
+  .loader2 {
+  --color: #a5a5b0;
+  --size: 70px;
+  width: var(--size);
+  height: var(--size);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.loader2 span {
+  width: 100%;
+  height: 100%;
+  background-color: var(--color);
+  animation: keyframes-blink 0.6s alternate infinite linear;
+}
+
+.loader2 span:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.loader2 span:nth-child(2) {
+  animation-delay: 200ms;
+}
+
+.loader2 span:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+.loader2 span:nth-child(4) {
+  animation-delay: 400ms;
+}
+
+.loader2 span:nth-child(5) {
+  animation-delay: 500ms;
+}
+
+.loader2 span:nth-child(6) {
+  animation-delay: 600ms;
+}
+
+@keyframes keyframes-blink {
+  0% {
+    opacity: 0.3;
+    transform: scale(0.5) rotate(5deg);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
   </style>
-</head>
-<body>
-          <!-- Navigation Bar -->
-    <div id="navbar"></div>
-    <script type="module" src="/javascript/navbar.js"></script>
 
+</head>
+<body onload="starbotWelcome()">
+
+  <!-- Navbar -->
+  <div id="navbar"></div>
+  <script type="module" src="/javascript/navbar.js"></script>
+
+  <!-- Chat -->
   <div class="chat-container">
     <div id="chat" class="chat-messages"></div>
     <div class="chat-input">
       <input type="text" id="textInput" placeholder="Type your message..." autocomplete="off">
       <input type="file" id="imageInput" accept="image/*">
       <div style="display:flex; justify-content:flex-end; gap:10px;">
-        <button id="imageBtn">📷</button>
-        <button id="sendBtn">Send</button>
-      </div>
+  <button id="imageBtn"><i class="fa fa-camera"></i> Upload</button>
+  <button id="generateBtn"><i class="fa fa-paintbrush"></i> Create Image</button>
+  <button id="sendBtn"><i class="fa-solid fa-paper-plane"></i> Send</button>
+</div>
+
     </div>
   </div>
 
   <script>
     const IMGBB_API_KEY = '9ed3a8bc6c24534ec10db8afcfa1c24d';
     const STARBOT_PFP_URL = '/uploads/images/starbot.png';
-    const conversationMemory = [];
-
     const chatBox = document.getElementById('chat');
     const textInput = document.getElementById('textInput');
     const sendBtn = document.getElementById('sendBtn');
     const imageBtn = document.getElementById('imageBtn');
     const imageInput = document.getElementById('imageInput');
+    const conversationMemory = [];
 
     function createSenderInfo(sender) {
       const wrapper = document.createElement('div');
@@ -193,7 +365,8 @@
         pfp.classList.add('sender-pfp', 'starbot');
         const img = document.createElement('img');
         img.src = STARBOT_PFP_URL;
-        wrapper.appendChild(pfp).appendChild(img);
+        pfp.appendChild(img);
+        wrapper.appendChild(pfp);
       }
       const name = document.createElement('span');
       name.textContent = sender === 'user' ? 'You' : 'Starbot';
@@ -202,53 +375,120 @@
     }
 
     function addMessage(text, sender, isImage = false, isTyping = false) {
+      console.log(`💬 addMessage() — sender=${sender}, isImage=${isImage}, isTyping=${isTyping}`);
       const wrapper = document.createElement('div');
       wrapper.classList.add('message-wrapper', sender === 'user' ? 'user' : 'bot');
 
       const msg = document.createElement('div');
       msg.classList.add('message', sender === 'user' ? 'user-msg' : 'bot-msg');
-      if (isTyping) msg.classList.add('typing-text');
 
-      if (isImage) msg.innerHTML = `<img src="${text}" alt="Image">`;
-      else msg.textContent = text;
+      if (isTyping) {
+        msg.innerHTML = `<div class="loading-dots"><span></span><span></span><span></span></div>`;
+      } else if (isImage) {
+        msg.innerHTML = `<img src="${text}" alt="Image">`;
+      } else {
+        if (sender === 'starbot') {
+          // Parse the AI message as markdown & sanitize
+          const rawHTML = marked.parse(text);
+          const cleanHTML = DOMPurify.sanitize(rawHTML);
+          msg.innerHTML = cleanHTML;
+        } else {
+          // User messages plain text
+          msg.textContent = text;
+        }
+      }
 
       wrapper.appendChild(msg);
       wrapper.appendChild(createSenderInfo(sender));
       chatBox.appendChild(wrapper);
       chatBox.scrollTop = chatBox.scrollHeight;
-
       return msg;
     }
 
     async function uploadToImgBB(file) {
+      console.log('📤 Uploading image to ImgBB...', file);
       const formData = new FormData();
       formData.append('image', file);
       const url = `https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`;
       const res = await fetch(url, { method: 'POST', body: formData });
       const json = await res.json();
+      console.log('✅ ImgBB response:', json);
       if (!json.success) throw new Error('Upload failed');
       return json.data.url;
     }
 
     async function sendMessage(content, imageUrl = null) {
+      console.log('🚀 sendMessage()', { content, imageUrl });
+
       if (!imageUrl) addMessage(content, 'user');
       else addMessage(imageUrl, 'user', true);
 
-      const typing = addMessage('...', 'starbot', false, true);
+      let typing;
+if (content && content.toLowerCase().startsWith('generate:')) {
+  typing = addMessage('', 'starbot', false, false);
+  typing.innerHTML = `
+   <!-- From Uiverse.io by cosnametv --> 
+<div class="loader2">
+  <span></span>
+  <span></span>
+  <span></span>
+  <span></span>
+  <span></span>
+  <span></span>
+</div>
+`;
+} else {
+  typing = addMessage('', 'starbot', false, true);
+}
+
 
       try {
-        let response;
         let responseText = '';
 
+        // Image Generation
         if (content && content.toLowerCase().startsWith('generate:')) {
           const prompt = content.slice(9).trim();
-          const img = await puter.ai.txt2img(prompt);
+          console.log('🎨 Generating image for:', prompt);
+
+          let imgResult;
+          try {
+            imgResult = await puter.ai.txt2img(prompt);
+            console.log('🔍 txt2img raw result:', imgResult);
+          } catch (err) {
+            console.error('💥 txt2img error:', err);
+
+            typing.parentElement.remove();
+
+            // Handle specific "insufficient funds" error
+            if (err?.error?.code === 'insufficient_funds') {
+              addMessage(
+                "Looks like you’re out of image credits — Starbot needs a quick recharge ⚡. Come back tomorrow!",
+                'starbot'
+              );
+            } else {
+              addMessage(
+                `⚠️ Image generation failed: ${err?.error?.message || err.message || 'Unknown error'}`,
+                'starbot'
+              );
+            }
+            return;
+          }
+
+          const url = imgResult?.url || imgResult?.src || imgResult?.data?.url;
           typing.parentElement.remove();
+
+          if (!url) {
+            addMessage(`Error: No valid image URL returned. Check console.`, 'starbot');
+            return;
+          }
+
           addMessage(`Here's your generated image for: "${prompt}"`, 'starbot');
-          addMessage(img.src || img.url, 'starbot', true);
+          addMessage(url, 'starbot', true);
           return;
         }
 
+        // Text / Image Analysis
+        let response;
         if (imageUrl) {
           response = await puter.ai.chat("Analyze this image", [imageUrl]);
           responseText = response.message?.content || '(No response)';
@@ -259,6 +499,7 @@
           conversationMemory.push({ role: 'starbot', content: responseText });
         }
 
+        // Typewriter animation with plain text
         typing.textContent = '';
         let i = 0;
         (function type() {
@@ -267,11 +508,15 @@
             chatBox.scrollTop = chatBox.scrollHeight;
             setTimeout(type, 30);
           } else {
-            typing.classList.remove('typing-text');
+            // Replace raw text with markdown-rendered HTML after done typing
+            const rawHTML = marked.parse(responseText);
+            const cleanHTML = DOMPurify.sanitize(rawHTML);
+            typing.innerHTML = cleanHTML;
           }
         })();
 
       } catch (err) {
+        console.error('💥 sendMessage() failed:', err);
         typing.textContent = 'Error: ' + (err.message || err);
       }
     }
@@ -287,30 +532,64 @@
     imageInput.addEventListener('change', async e => {
       const file = e.target.files[0];
       if (!file) return;
-      const uploading = addMessage('Uploading image...', 'user');
+      const uploading = addMessage('', 'user');
+uploading.innerHTML = '<div class="loader"></div>';
+
       try {
         const url = await uploadToImgBB(file);
         uploading.parentElement.remove();
         sendMessage(null, url);
-      } catch {
+      } catch (err) {
+        console.error('❌ Upload failed:', err);
         uploading.textContent = 'Image upload failed.';
       }
     });
+
+    const generateBtn = document.getElementById('generateBtn');
+
+generateBtn.addEventListener('click', () => {
+  // If the input already starts with "generate:", don't add again
+  if (!textInput.value.trim().toLowerCase().startsWith('generate:')) {
+    textInput.value = 'generate: ';
+  }
+  textInput.focus();
+  // Optionally put cursor right after 'generate: ' for easy typing
+  const len = textInput.value.length;
+  textInput.setSelectionRange(len, len);
+});
+function starbotWelcome() {
+  const typing = addMessage('', 'starbot', false, true); // shows the typing dots
+
+  const welcomeText = "Hey there! I’m Starbot — what can I help you with today?";
+
+  // Typewriter effect like normal bot messages
+  typing.textContent = '';
+  let i = 0;
+  (function type() {
+    if (i < welcomeText.length) {
+      typing.textContent += welcomeText.charAt(i++);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      setTimeout(type, 30);
+    } else {
+      const rawHTML = marked.parse(welcomeText);
+      const cleanHTML = DOMPurify.sanitize(rawHTML);
+      typing.innerHTML = cleanHTML;
+    }
+  })();
+}
+
   </script>
-        <!-- Particles.JS Background -->
-      <div id="particles-js"></div>
-      <script src="/javascript/panic.js"></script>
-      <script src="/javascript/screentimetracking.js"></script>
-      <script src="/javascript/cloaking.js"></script>
-      <script src="/javascript/antitabclose.js"></script>
-      <script src="/javascript/particles.js"></script>
-      <script src="/javascript/particles-config.js"></script>
-      <script src="/javascript/notifications.js"></script>
-      <!-- Scheduler -->
 
-      <script src="/javascript/schedule.js"></script>
-      <!-- Scrollbar Customization -->
-
-      <script src="/javascript/scrollbar.js"></script>
+  <!-- Scripts for site -->
+  <div id="particles-js"></div>
+  <script src="/javascript/panic.js"></script>
+  <script src="/javascript/screentimetracking.js"></script>
+  <script src="/javascript/cloaking.js"></script>
+  <script src="/javascript/antitabclose.js"></script>
+  <script src="/javascript/particles.js"></script>
+  <script src="/javascript/particles-config.js"></script>
+  <script src="/javascript/notifications.js"></script>
+  <script src="/javascript/schedule.js"></script>
+  <script src="/javascript/scrollbar.js"></script>
 </body>
 </html>
