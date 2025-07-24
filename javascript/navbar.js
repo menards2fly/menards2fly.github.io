@@ -146,11 +146,11 @@ const navbarHTML = isPlayPage
 
  <a href="/" title="Home"><i class="fa fa-home"></i><span class="link-text">Home</span></a>
     <a href="/games" title="Games"><i class="fa fa-gamepad"></i><span class="link-text">Games</span></a>
-    <a href="/blog" title="Blog"><i class="fa fa-newspaper"></i><span class="link-text">Blog</span></a>
-    <a href="/tv" title="TV"><i class="fa fa-television"></i><span class="link-text">TV</span></a>
-    <a href="/apps" title="Apps"><i class="fa fa-cube"></i><span class="link-text">Apps</span></a>
+    <a href="/route" title="Proxy"><i class="fa fa-globe" style="transform: translateX(2px);"></i><span class="link-text">Proxy</span></a>
     <a href="/ai" title="AI"><i class="fa fa-robot"></i><span class="link-text">AI</span></a>
+    <a href="/tv" title="TV"><i class="fa fa-television"></i><span class="link-text">TV</span></a>
     <a href="/chat" title="Chat"><i class="fa-solid fa-comments"></i><span class="link-text">Chat</span></a>
+    <a href="/blog" title="Blog"><i class="fa fa-newspaper"></i><span class="link-text">Blog</span></a>
     <a href="/reviews" title="Reviews"><i class="fa fa-star"></i><span class="link-text">Reviews</span></a>
     <a href="/settings" title="Settings"><i class="fa fa-gear"></i><span class="link-text">Settings</span></a>
   </div>

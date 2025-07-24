@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>starship - proxy</title>
+    <link rel="icon" type="image/x-icon" href="/uploads/branding/favicon.png" />
+    <meta name="description" content="Play games, level up, and explore Starship - your new favorite gaming site." />
+    <link rel="canonical" href="https://starship-app.com/proxy" />
+    <link rel="stylesheet" href="/css/navbar.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <style>
+      #proxyFrame {
+        width: 100%;
+        height: 1000px;
+        border: none;
+      }
+
+      /* Make container relative so overlay button can be positioned */
+      #proxy-container {
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+      }
+
+     #switchDomainBtn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 1);
+  border: none;
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  border-radius: 50%; /* full circle */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+#switchDomainBtn:hover {
+
+}
+
+    </style>
+  </head>
+  <body>
+    <div id="navbar"></div>
+    <script type="module" src="/javascript/navbar.js"></script>
+
+    <div id="proxy-container">
+      <iframe
+        src="https://sportpersist1.global.ssl.fastly.net/embed.html#https://starship-app.com/start.html"
+        id="proxyFrame"
+        sandbox="allow-scripts allow-same-origin allow-forms"
+        referrerpolicy="no-referrer"
+      ></iframe>
+
+      <button id="switchDomainBtn" title="Switch Domain">
+        <i class="fa-solid fa-arrows-rotate"></i>
+      </button>
+    </div>
+
+    <script>
+      const domains = [
+        "sportpersist1.global.ssl.fastly.net",
+        "sportpersist2.global.ssl.fastly.net",
+        "sportpersist3.global.ssl.fastly.net",
+        "sportpersist4.global.ssl.fastly.net",
+      ];
+      let currentIndex = 0;
+
+      const iframe = document.getElementById("proxyFrame");
+      const btn = document.getElementById("switchDomainBtn");
+
+      btn.addEventListener("click", () => {
+        // Parse the current iframe URL
+        // This iframe uses a hash to embed a URL, so we need to extract that part
+        const src = iframe.src;
+        // The URL to change is after the # symbol
+        const hashIndex = src.indexOf("#");
+        if (hashIndex === -1) return; // no URL in hash, bail
+
+        const embeddedUrlStr = src.substring(hashIndex + 1);
+        try {
+          const embeddedUrl = new URL(embeddedUrlStr);
+
+          // Find current domain index in list
+          currentIndex = domains.indexOf(embeddedUrl.hostname);
+          if (currentIndex === -1) currentIndex = 0;
+
+          // Cycle to next domain
+          currentIndex = (currentIndex + 1) % domains.length;
+
+          // Replace hostname with new domain
+          embeddedUrl.hostname = domains[currentIndex];
+
+          // Compose new iframe src with updated hash URL
+          const newSrc =
+            src.substring(0, hashIndex + 1) + embeddedUrl.toString();
+
+          // Update iframe src (reloads iframe with new domain)
+          iframe.src = newSrc;
+        } catch (e) {
+          console.error("Invalid embedded URL in iframe src hash:", embeddedUrlStr);
+        }
+      });
+    </script>
+  </body>
+</html>
