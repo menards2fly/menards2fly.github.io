@@ -481,3 +481,80 @@ if (user) {
   }
 }
 window.supabase = supabase;
+
+// --- ToS & Privacy Popup ---
+function injectTosPopup() {
+  if (localStorage.getItem('acceptedTOS')) return; // already accepted
+
+  const popupHTML = `
+<div id="tosPopup" style="
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 200000;
+  font-family: 'Inter', sans-serif;
+">
+  <div style="
+  background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 0 40px rgba(138, 43, 226, 0.4);
+    color: white;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    animation: fadeIn 0.4s ease-out;
+  ">
+    <h2 style="margin-bottom: 16px; color: #fff; font-family:Inter;">Welcome to Starship</h2>
+    <p style="font-size: 14px; color: #ddd;">
+      Please read and accept our 
+      <a href="/tos" style="color:#8a2be2; text-decoration: underline;">Terms of Service</a>
+      and 
+      <a href="/privacy" style="color:#8a2be2; text-decoration: underline;">Privacy Policy</a>
+      before using the site.
+    </p>
+    <button id="acceptTOSBtn" style="
+      margin-top: 20px;
+      background: rgba(138, 43, 226, 0.7);
+      backdrop-filter: blur(6px);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 10px 18px;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+    ">I Agree</button>
+  </div>
+</div>
+
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  #acceptTOSBtn:hover {
+    background: rgba(138, 43, 226, 0.9);
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(138, 43, 226, 0.7);
+  }
+</style>
+
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', popupHTML);
+
+  document.getElementById('acceptTOSBtn').addEventListener('click', () => {
+    localStorage.setItem('acceptedTOS', 'true');
+    document.getElementById('tosPopup').remove();
+  });
+}
+
+// Call it after navbar injection
+injectTosPopup();
