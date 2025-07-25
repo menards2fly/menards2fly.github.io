@@ -513,9 +513,9 @@ function injectTosPopup() {
     <h2 style="margin-bottom: 16px; color: #fff; font-family:Inter;">Welcome to Starship</h2>
     <p style="font-size: 14px; color: #ddd;">
       Please read and accept our 
-      <a href="/tos" style="color:#8a2be2; text-decoration: underline;">Terms of Service</a>
+      <a href="/legal" style="color:#8a2be2; text-decoration: underline;">Terms of Service</a>
       and 
-      <a href="/privacy" style="color:#8a2be2; text-decoration: underline;">Privacy Policy</a>
+      <a href="/legal" style="color:#8a2be2; text-decoration: underline;">Privacy Policy</a>
       before using the site.
     </p>
     <button id="acceptTOSBtn" style="
