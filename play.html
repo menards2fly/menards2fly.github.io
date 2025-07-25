@@ -251,9 +251,19 @@
     <!-- Supabase UMD -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
 
-    <script>
+<script type="module">
+const { createClient } = window.supabase;
 
-      let redirectTimeout;
+const supabase = createClient(
+  'https://jbekjmsruiadbhaydlbt.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY'
+);
+
+
+let redirectTimeout;
+let gameId = null;      // Global so we can use it for likes/dislikes
+let currentUserId = null; // Global so we can clear the game on unload
+
 function redirectIframe(link, name) {
   console.log('⏳ Redirecting iframe...');
 
@@ -265,14 +275,12 @@ function redirectIframe(link, name) {
   const savedImage = localStorage.getItem('gameImage');
 
   clearTimeout(redirectTimeout);
-
-  // Show loading screen
   iframe.style.opacity = '0';
   iframe.src = loaderPage;
 
   iframe.onload = () => {
     console.log('🎬 Loader loaded');
-    iframe.style.opacity = '1'; // fade loader in
+    iframe.style.opacity = '1';
   };
 
   gameInfo.textContent = name;
@@ -281,11 +289,9 @@ function redirectIframe(link, name) {
     gameImage.alt = name;
   }
 
-  // After 4s, load the game
   redirectTimeout = setTimeout(() => {
     console.log('🚀 Loading game:', link);
-
-    iframe.style.opacity = '0'; // fade out loader
+    iframe.style.opacity = '0';
     iframe.onload = null;
 
     iframe.addEventListener('load', function onGameLoad() {
@@ -298,328 +304,203 @@ function redirectIframe(link, name) {
   }, 4000);
 }
 
-
-window.addEventListener('load', function () {
+window.addEventListener('load', async () => {
   console.log('📦 Window loaded');
-
   const gameLink = localStorage.getItem('gameLink');
   const gameName = localStorage.getItem('gameName');
-  console.log('📦 Stored game link:', gameLink);
-  console.log('📦 Stored game name:', gameName);
 
   if (gameLink && gameName) {
     redirectIframe(gameLink, gameName);
   }
+
+
+
+
+  // Get logged-in user for later
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) currentUserId = user.id;
+
+  // Fetch game and update UI
+  async function fetchAndShowGame() {
+    if (!gameLink) return;
+    const { data: game, error } = await supabase
+      .from('games_menu')
+      .select('id, name, description, img_url, url')
+      .eq('url', gameLink)
+      .maybeSingle();
+
+    if (error || !game) return;
+
+    gameId = game.id; // Save ID for likes/dislikes
+    document.querySelector('.game-info h2').textContent = game.name;
+    document.querySelector('.game-info img').src = game.img_url || '/uploads/default-game-icon.png';
+    document.getElementById('gameDescText').textContent = game.description || 'No description available.';
+    localStorage.setItem('gameImage', game.img_url || '');
+
+    if (user) {
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ current_game_id: game.id })
+        .eq('id', user.id);
+      if (!updateError) console.log('✅ current_game_id updated to:', game.id);
+    }
+  }
+
+  // Increment play count
+  async function incrementPlayCount() {
+    if (!gameLink) return;
+    const { data: row } = await supabase.from('games_menu').select('id').eq('url', gameLink).maybeSingle();
+    if (row) {
+      gameId = row.id;
+      await supabase.rpc('increment_play_count_int', { gid: gameId });
+      console.log('✅ play_count incremented');
+    }
+  }
+
+  // Clear current game when leaving
+  function clearCurrentGame() {
+    if (!currentUserId) return;
+    navigator.sendBeacon(
+      'https://jbekjmsruiadbhaydlbt.supabase.co/functions/v1/clear-current-game',
+      JSON.stringify({ user_id: currentUserId })
+    );
+    console.log('📤 Cleared current game for user', currentUserId);
+  }
+
+  window.addEventListener('beforeunload', clearCurrentGame);
+  window.addEventListener('pagehide', clearCurrentGame);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') clearCurrentGame();
+  });
+
+  await fetchAndShowGame();
+  await incrementPlayCount();
 });
+// --- Like/Dislike System (Fixed) ---
+function initLikeDislikeSystem() {
+  const likeBtn = document.getElementById('likeBtn');
+  const dislikeBtn = document.getElementById('dislikeBtn');
+  const likeCount = document.getElementById('likeCount');
+  const dislikeCount = document.getElementById('dislikeCount');
 
+  if (!likeBtn || !dislikeBtn || !likeCount || !dislikeCount || !gameId) {
+    console.log("⏳ Navbar or gameId not ready yet...");
+    return false; // Try again later
+  }
 
+  console.log("✅ Found like/dislike buttons. Initializing.");
 
-      const waitForElements = setInterval(() => {
-        const reloadButton = document.getElementById('reloadButton');
-        const fullscreenButton = document.getElementById('fullscreenButton');
-        const homeButton = document.getElementById('homeButton');
-        const likeBtn = document.getElementById('likeBtn');
-        const dislikeBtn = document.getElementById('dislikeBtn');
-        const likeCount = document.getElementById('likeCount');
-        const dislikeCount = document.getElementById('dislikeCount');
+  const likeKey = `liked_${gameId}`;
+  const dislikeKey = `disliked_${gameId}`;
 
-        if (
-          reloadButton &&
-          fullscreenButton &&
-          homeButton &&
-          likeBtn &&
-          dislikeBtn &&
-          likeCount &&
-          dislikeCount
-        ) {
-          console.log(
-            '🎯 All interactive elements found. Initializing event listeners.'
-          );
-          clearInterval(waitForElements);
+  function updateButtonStates() {
+    const liked = !!localStorage.getItem(likeKey);
+    const disliked = !!localStorage.getItem(dislikeKey);
 
-          reloadButton.addEventListener('click', () => {
-            console.log('🔁 Reloading iframe');
-            const iframe = document.getElementById('myIframe');
-            iframe.src = iframe.src;
-          });
+    likeBtn.disabled = false;
+    dislikeBtn.disabled = false;
+    if (liked) dislikeBtn.disabled = true;
+    if (disliked) likeBtn.disabled = true;
 
-          fullscreenButton.addEventListener('click', () => {
-            const iframe = document.getElementById('myIframe');
-            console.log('🖥️ Entering fullscreen mode');
-            if (iframe.requestFullscreen) iframe.requestFullscreen();
-            else if (iframe.webkitRequestFullscreen)
-              iframe.webkitRequestFullscreen();
-            else if (iframe.mozRequestFullScreen) iframe.mozRequestFullScreen();
-            else if (iframe.msRequestFullscreen) iframe.msRequestFullscreen();
-          });
+    likeBtn.classList.toggle('active', liked);
+    dislikeBtn.classList.toggle('active', disliked);
 
-          homeButton.addEventListener('click', () => {
-            console.log('🏠 Navigating home');
-            const currentURL = window.location.href;
-            if (currentURL.includes('/storage/tv')) location.replace('/tv');
-            else if (currentURL.includes('/storage/games'))
-              location.replace('/games');
-            else if (currentURL.includes('/storage/music'))
-              location.replace('/music');
-            else location.replace('/games');
-          });
+    likeBtn.innerHTML = liked
+      ? '<i class="fa-solid fa-thumbs-up fa-lg"></i> <span class="link-text">Like</span>'
+      : '<i class="fa-regular fa-thumbs-up fa-lg"></i> <span class="link-text">Like</span>';
+    dislikeBtn.innerHTML = disliked
+      ? '<i class="fa-solid fa-thumbs-down fa-lg"></i> <span class="link-text">Dislike</span>'
+      : '<i class="fa-regular fa-thumbs-down fa-lg"></i> <span class="link-text">Dislike</span>';
+  }
+function updateLikeRatioBar(likes, dislikes) {
+  const bar = document.getElementById('likeRatioBar');
+  const likeDiv = document.getElementById('likeRatioLike');
+  const dislikeDiv = document.getElementById('likeRatioDislike');
 
-          const supabaseUrl = 'https://jbekjmsruiadbhaydlbt.supabase.co';
-          const supabaseKey =
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY';
-          const supabase = window.supabase.createClient(
-            supabaseUrl,
-            supabaseKey
-          );
+  const total = likes + dislikes;
+  const likePercent = total > 0 ? (likes / total) * 100 : 0;
+  const dislikePercent = total > 0 ? (dislikes / total) * 100 : 0;
 
-          const gameLink = localStorage.getItem('gameLink');
-          const gameName = localStorage.getItem('gameName');
+  likeDiv.style.width = likePercent + '%';
+  dislikeDiv.style.width = dislikePercent + '%';
 
-          const iframe = document.getElementById('myIframe');
+  // Optional: color the bar segments
+  likeDiv.style.background = '#4caf50';  // green for likes
+  dislikeDiv.style.background = '#f44336';  // red for dislikes
 
+  bar.title = `${likes} Likes / ${dislikes} Dislikes`;
+}
 
+  async function loadVotes() {
+    console.log('📊 Loading vote counts...');
 
-          async function fetchAndShowGame() {
-            if (!gameLink) return;
+    const { data: row, error } = await supabase
+      .from('games_menu')
+      .select('likes, dislikes')
+      .eq('id', gameId)
+      .maybeSingle();
 
-            console.log('🔍 Fetching game from games_menu with URL:', gameLink);
+    if (error || !row) {
+      likeCount.textContent = '0';
+      dislikeCount.textContent = '0';
+      console.error('❌ Failed to fetch votes:', error);
+      return;
+    }
 
-            const { data: game, error } = await supabase
-              .from('games_menu')
-              .select('id, name, description, img_url, url')
-              .eq('url', gameLink)
-              .maybeSingle();
+    const likes = row.likes || 0;
+    const dislikes = row.dislikes || 0;
+    likeCount.textContent = likes;
+    dislikeCount.textContent = dislikes;
 
-            if (error) {
-              console.error('❌ Error fetching game:', error);
-              return;
-            }
+    updateButtonStates();
+    updateLikeRatioBar(likes, dislikes);
+  }
 
-            if (!game) {
-              console.warn('❓ No game found with URL:', gameLink);
-              return;
-            }
+  likeBtn.addEventListener('click', async () => {
+    const liked = !!localStorage.getItem(likeKey);
+    const disliked = !!localStorage.getItem(dislikeKey);
 
-            console.log('🎮 Game found:', game);
+    if (liked) {
+      await supabase.rpc('increment_likes', { gid: gameId, delta: -1 });
+      localStorage.removeItem(likeKey);
+    } else if (!disliked) {
+      await supabase.rpc('increment_likes', { gid: gameId, delta: 1 });
+      localStorage.setItem(likeKey, '1');
+      localStorage.removeItem(dislikeKey);
+    }
 
-            // Update game info UI
-            document.querySelector('.game-info h2').textContent =
-              game.name || 'Unknown Game';
-            document.querySelector('.game-info img').src =
-              game.img_url || '/uploads/default-game-icon.png';
-            document.getElementById('gameDescText').textContent =
-              game.description || 'No description available.';
+    updateButtonStates();
+    loadVotes();
+  });
 
-            // Set localStorage image
-            localStorage.setItem('gameImage', game.img_url || '');
+  dislikeBtn.addEventListener('click', async () => {
+    const liked = !!localStorage.getItem(likeKey);
+    const disliked = !!localStorage.getItem(dislikeKey);
 
-            // Get current user
-            const {
-              data: { user },
-              error: userError,
-            } = await supabase.auth.getUser();
+    if (disliked) {
+      await supabase.rpc('increment_dislikes', { gid: gameId, delta: -1 });
+      localStorage.removeItem(dislikeKey);
+    } else if (!liked) {
+      await supabase.rpc('increment_dislikes', { gid: gameId, delta: 1 });
+      localStorage.setItem(dislikeKey, '1');
+      localStorage.removeItem(likeKey);
+    }
 
-            if (userError || !user) {
-              console.warn(
-                '⚠️ Not logged in. Skipping current_game_id update.'
-              );
-              return;
-            }
+    updateButtonStates();
+    loadVotes();
+  });
 
-            // Update current_game_id
-            const { error: updateError } = await supabase
-              .from('profiles')
-              .update({ current_game_id: game.id })
-              .eq('id', user.id);
+  loadVotes(); // initial load
+  return true; // done, stop polling
+}
 
-            if (updateError) {
-              console.error(
-                '❌ Failed to update current_game_id:',
-                updateError
-              );
-            } else {
-              console.log('✅ current_game_id updated to:', game.id);
-            }
-          }
+// Keep retrying every 200ms until navbar and gameId are ready
+const waitForNavbar = setInterval(() => {
+  if (initLikeDislikeSystem()) clearInterval(waitForNavbar);
+}, 200);
 
-          async function clearCurrentGame() {
-            const {
-              data: { user },
-              error,
-            } = await supabase.auth.getUser();
-            if (error || !user) {
-              console.warn(
-                '⚠️ Not logged in on unload. Skipping current_game_id clear.'
-              );
-              return;
-            }
+</script>
 
-            const { error: clearError } = await supabase
-              .from('profiles')
-              .update({ current_game_id: null })
-              .eq('id', user.id);
-
-            if (clearError) {
-              console.error('❌ Failed to clear current_game_id:', clearError);
-            } else {
-              console.log('🧹 Cleared current_game_id on unload');
-            }
-          }
-
-          window.addEventListener('beforeunload', clearCurrentGame);
-
-          fetchAndShowGame();
-
-          fetchAndShowGame();
-
-          const gameId = gameLink || gameName || 'unknown';
-          supabase.rpc('increment_clicks', { gid: gameId });
-
-          const likeKey = `liked_${gameId}`;
-          const dislikeKey = `disliked_${gameId}`;
-
-          function updateButtonStates() {
-            console.log('🔁 Updating like/dislike button states...');
-            const liked = !!localStorage.getItem(likeKey);
-            const disliked = !!localStorage.getItem(dislikeKey);
-
-            likeBtn.disabled = false;
-            dislikeBtn.disabled = false;
-            if (liked) dislikeBtn.disabled = true;
-            if (disliked) likeBtn.disabled = true;
-
-            likeBtn.classList.toggle('active', liked);
-            dislikeBtn.classList.toggle('active', disliked);
-
-            likeBtn.innerHTML = liked
-              ? '<i class="fa-solid fa-thumbs-up fa-lg"></i> <span class="link-text">Like</span>'
-              : '<i class="fa-regular fa-thumbs-up fa-lg"></i> <span class="link-text">Like</span>';
-            dislikeBtn.innerHTML = disliked
-              ? '<i class="fa-solid fa-thumbs-down fa-lg"></i> <span class="link-text">Dislike</span>'
-              : ' <i class="fa-regular fa-thumbs-down fa-lg"></i> <span class="link-text">Dislike</span>';
-          }
-
-          async function loadVotes() {
-            console.log('📊 Loading vote counts...');
-            const { data, error } = await supabase
-              .from('game_votes')
-              .select('likes, dislikes')
-              .eq('game_id', gameId)
-              .single();
-
-            let likes = 0,
-              dislikes = 0;
-            if (data) {
-              likes = data.likes;
-              dislikes = data.dislikes;
-            } else {
-              await supabase
-                .from('game_votes')
-                .insert([{ game_id: gameId, likes: 0, dislikes: 0 }], {
-                  upsert: true,
-                });
-            }
-
-            likeCount.textContent = likes;
-            dislikeCount.textContent = dislikes;
-            updateButtonStates();
-            updateLikeRatioBar(likes, dislikes);
-          }
-
-          likeBtn.addEventListener('click', async () => {
-            console.log('👍 Like button clicked');
-            const liked = !!localStorage.getItem(likeKey);
-            const disliked = !!localStorage.getItem(dislikeKey);
-
-            if (liked) {
-              await supabase.rpc('decrement_like', { gid: gameId });
-              localStorage.removeItem(likeKey);
-            } else if (!disliked) {
-              await supabase.rpc('increment_like', { gid: gameId });
-              localStorage.setItem(likeKey, '1');
-              localStorage.removeItem(dislikeKey);
-            }
-
-            updateButtonStates();
-            loadVotes();
-          });
-
-          dislikeBtn.addEventListener('click', async () => {
-            console.log('👎 Dislike button clicked');
-            const liked = !!localStorage.getItem(likeKey);
-            const disliked = !!localStorage.getItem(dislikeKey);
-
-            if (disliked) {
-              await supabase.rpc('decrement_dislike', { gid: gameId });
-              localStorage.removeItem(dislikeKey);
-            } else if (!liked) {
-              await supabase.rpc('increment_dislike', { gid: gameId });
-              localStorage.setItem(dislikeKey, '1');
-              localStorage.removeItem(likeKey);
-            }
-
-            updateButtonStates();
-            loadVotes();
-          });
-
-          loadVotes();
-        }
-      }, 100);
-
-      function updateLikeRatioBar(likes, dislikes) {
-        console.log('📈 Updating like ratio bar:', { likes, dislikes });
-
-        const likeDiv = document.getElementById('likeRatioLike');
-        const dislikeDiv = document.getElementById('likeRatioDislike');
-        const bar = document.getElementById('likeRatioBar');
-
-        const total = likes + dislikes;
-        let likePercent = 0,
-          dislikePercent = 0;
-        let titleText = 'No votes yet';
-
-        if (total > 0) {
-          likePercent = Math.round((likes / total) * 100);
-          dislikePercent = 100 - likePercent;
-          titleText = `${likePercent}% like (${likes}👍 / ${dislikes}👎)`;
-        }
-
-        likeDiv.style.width = likePercent + '%';
-        dislikeDiv.style.width = dislikePercent + '%';
-        bar.title = titleText;
-      }
-
-      const gameDesc = localStorage.getItem('gameDesc');
-      const gameDescText = document.getElementById('gameDescText');
-
-      if (gameDesc && gameDescText) {
-        gameDescText.textContent = gameDesc;
-      } else if (gameDescText) {
-        gameDescText.textContent = 'No description available.';
-      }
-      function clearCurrentGame(userId) {
-        if (!userId) return;
-        const payload = JSON.stringify({ user_id: userId });
-
-        navigator.sendBeacon(
-          'https://jbekjmsruiadbhaydlbt.supabase.co/functions/v1/clear-current-game',
-          payload
-        );
-        console.log('📤 sendBeacon called to clear current game');
-      }
-
-      // On tab close or reload
-      window.addEventListener('pagehide', () => {
-        clearCurrentGame(currentUserId);
-      });
-
-      // On tab switch / backgrounding
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') {
-          clearCurrentGame(currentUserId);
-        }
-      });
-    </script>
     <!-- Particles.JS -->
     <div id="particles-js"></div>
     <script src="/javascript/particles.js"></script>

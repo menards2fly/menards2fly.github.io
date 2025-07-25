@@ -480,3 +480,4 @@ if (user) {
     });
   }
 }
+window.supabase = supabase;

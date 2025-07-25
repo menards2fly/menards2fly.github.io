@@ -25,7 +25,7 @@ function getCardHTML(game) {
         <h5 class="card-title">${game.name}</h5>
         <p style="display:none;" class="card-text">${game.description || ''}</p>
         <div class="card-stats">
-          <div class="stat"><i class="fa fa-clock"></i> ${game.globalClicks || 0} plays</div>
+          <div class="stat"><i class="fa fa-clock"></i> ${game.clickCount} plays</div>
           <div class="stat"><i class="fa fa-thumbs-up"></i> ${game.globalLikes || 0} likes</div>
         </div>
       </div>
@@ -37,29 +37,31 @@ function getCardHTML(game) {
 
 async function loadGamesFromSupabase() {
   showSkeletonLoader();
-  const { data, error } = await supabase
-    .from('games_menu')
-    .select('id, name, url, img_url, description');
+const { data, error } = await supabase
+  .from('games_menu')
+  .select('id, name, url, img_url, description, tags, play_count');
   if (error) {
     console.error('Supabase error:', error.message);
     alert('Error loading games from Supabase');
     return;
   }
-  games = data.map((row) => ({
-    id: row.id,
-    name: row.name,
-    image: row.img_url,
-    link: row.url,
-    description: row.description,
-    clickCount: 0,
-    isFavorited: false,
-    path: '/play',
-    globalLikes: 0,
-    globalClicks: 0,
-  }));
+games = data.map((row) => ({
+  id: row.id,
+  name: row.name,
+  image: row.img_url,
+  link: row.url,
+  description: row.description,
+  tags: row.tags || [],
+  clickCount: row.play_count || 0,  // Use actual play_count
+  isFavorited: false,
+  path: '/play',
+  globalLikes: 0,
+  globalClicks: row.play_count || 0 // Also use it here for "trending" sort
+}));
+
   await loadFavoritesFromSupabase();
 
-  loadClickCountsFromLocalStorage();
+
   await fetchGlobalLikes();
   await fetchGlobalClicks();
   displayGamesWithSkeleton();
@@ -151,26 +153,32 @@ function displayGames(filter = '') {
   const searchBar = document.getElementById('search');
   menu.innerHTML = '';
 
-  const filtered = games
-    .filter((g) => g.name.toLowerCase().includes(filter.toLowerCase()))
-    .sort((a, b) => {
-      switch (currentSortOption) {
-        case 'favorites':
-          return b.isFavorited === a.isFavorited ? 0 : b.isFavorited ? 1 : -1;
-        case 'clickCount':
-          return b.clickCount - a.clickCount;
-        case 'alphabetical':
-          return a.name.localeCompare(b.name);
-        case 'liked':
-          return isGameLiked(b) - isGameLiked(a);
-        case 'globalLikes':
-          return (b.globalLikes || 0) - (a.globalLikes || 0);
-        case 'trending':
-          return (b.globalClicks || 0) - (a.globalClicks || 0);
-        default:
-          return 0;
-      }
-    });
+const filtered = games
+  .filter((g) => {
+    const term = filter.toLowerCase();
+    const nameMatch = g.name.toLowerCase().includes(term);
+    const tagMatch = g.tags?.some((tag) => tag.toLowerCase().includes(term));
+    return nameMatch || tagMatch;
+  })
+  .sort((a, b) => {
+    switch (currentSortOption) {
+      case 'favorites':
+        return b.isFavorited === a.isFavorited ? 0 : b.isFavorited ? 1 : -1;
+      case 'clickCount':
+        return b.clickCount - a.clickCount;
+      case 'alphabetical':
+        return a.name.localeCompare(b.name);
+      case 'liked':
+        return isGameLiked(b) - isGameLiked(a);
+      case 'globalLikes':
+        return (b.globalLikes || 0) - (a.globalLikes || 0);
+      case 'trending':
+        return (b.globalClicks || 0) - (a.globalClicks || 0);
+      default:
+        return 0;
+    }
+  });
+
 
   filtered.forEach((game) => {
     const wrapper = document.createElement('div');
@@ -206,7 +214,7 @@ function displayGames(filter = '') {
 
     wrapper.addEventListener('click', () => {
       game.clickCount++;
-      saveClickCountsToLocalStorage();
+
 
       localStorage.setItem('gameImage', game.image);
       localStorage.setItem('gameName', game.name);
