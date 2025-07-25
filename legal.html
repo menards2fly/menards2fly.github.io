@@ -37,7 +37,9 @@
         background-color: #222;
         border-bottom: 2px solid #444;
       }
-
+body {
+  color:#fff !important;
+}
       .tab {
         padding: 15px 20px;
         cursor: pointer;
@@ -88,6 +90,9 @@
       .privacy-section ul,
       .terms-section ul {
         margin-left: 20px;
+      }
+      .li {
+        color:white !important;
       }
     </style>
   </head>
@@ -171,134 +176,185 @@
     <!-- === PRIVACY POLICY === -->
     <div id="privacy-policy" class="tab-content">
       <h2>Privacy Policy</h2>
-      <div class="privacy-section">
-        <h3>1. Information We Collect</h3>
-        <p>
-          We collect only the minimum information necessary to provide and
-          improve our services. This may include:
-        </p>
-        <ul>
-          <li>
-            Your email address (if you contact us for support or feedback, or if
-            you create an account).
-          </li>
-          <li>
-            Account information such as your username, avatar, and optional bio.
-          </li>
-          <li>
-            Your online status (whether you are online, offline, or invisible)
-            and your "now playing" game status, if you use these features.
-          </li>
-          <li>
-            Follower and following relationships (who you follow and who follows
-            you), which are only visible to logged-in users and are not shared
-            with third parties.
-          </li>
-          <li>
-            Anonymous usage data, such as game likes, dislikes, and game
-            popularity statistics.
-          </li>
-          <li>
-            YouTube API interaction data if you use our video features (e.g.
-            video playback, or embedded content).
-          </li>
-        </ul>
-        <h3>2. Use of YouTube API Services</h3>
-        <p>
-          Our site uses YouTube API Services to power some features, such as
-          embedded video content or simplified YouTube playback experiences. By
-          using these features, you are agreeing to the
-          <a
-            href="https://www.youtube.com/t/terms"
-            target="_blank"
-            rel="noopener noreferrer"
-            >YouTube Terms of Service</a
-          >.
-        </p>
-        <p>
-          Your use of YouTube through our services is also subject to the
-          <a
-            href="https://www.google.com/policies/privacy"
-            target="_blank"
-            rel="noopener noreferrer"
-            >Google Privacy Policy</a
-          >.
-        </p>
-        <h3>3. How We Use Your Information</h3>
-        <ul>
-          <li>Provide, maintain, and improve our services.</li>
-          <li>
-            Display your username, avatar, and bio on your public profile
-            (unless you set your profile to private).
-          </li>
-          <li>
-            Show your online status and now playing status to other users,
-            according to your privacy settings.
-          </li>
-          <li>Enable social features such as following and followers.</li>
-          <li>Respond to your inquiries or feedback.</li>
-          <li>Ensure the security and functionality of the platform.</li>
-          <li>
-            Understand which games or content are popular, using only aggregated
-            and anonymous data.
-          </li>
-        </ul>
-        <h3>4. Profile Privacy and Status Visibility</h3>
-        <p>
-          You can control the visibility of your profile, online status, and now
-          playing status in your account settings. If you set your profile to
-          private, your avatar will be blurred to others, your bio will show
-          "This profile is private," and following will be disabled. You can
-          also choose who can see your online status: everyone, only mutual
-          followers, or no one.
-        </p>
-        <h3>5. API Data and Access</h3>
-        <p>
-          When using YouTube-powered features, we may access non-sensitive
-          public data such as video titles, channel names, and playback stats.
-          This information is used only to enhance your experience and is not
-          stored beyond the current session. We do not access or store personal
-          data from your Google or YouTube account.
-        </p>
-        <h3>6. Data Sharing</h3>
-        <p>
-          We do <strong>not</strong> sell, rent, or share your personal
-          information or account data with third parties, except in the
-          following cases:
-        </p>
-        <ul>
-          <li>If required by law or legal processes.</li>
-          <li>
-            To protect the rights, property, or safety of Starship, its users,
-            or others.
-          </li>
-        </ul>
-        <h3>7. Game Likes, Dislikes, and Popularity</h3>
-        <p>
-          This data is
-          <strong>never linked to your identity or account</strong> and is
-          always stored in an anonymous or aggregated form.
-        </p>
-        <h3>8. Account Data and Deletion</h3>
-        <p>
-          You can request deletion of your account and all data at any time by
-          contacting us at
-          <a href="mailto:starship.site@gmail.com">starship.site@gmail.com</a>.
-          Deleting your account will remove your profile, online status, now
-          playing status, followers, and all associated data from our systems.
-        </p>
-        <h3>9. Cookies and Tracking</h3>
-        <p>
-          We may use cookies or similar technologies to enhance your experience.
-          You can disable cookies in your browser settings, but this may limit
-          some functionality.
-        </p>
-        <h3>10. Changes to This Policy</h3>
-        <p>
-          This Privacy Policy may be updated. We'll notify users of significant
-          changes on our website.
-        </p>
-      </div>
+<div class="privacy-section">
+  <h3>1. Information We Collect</h3>
+  <p>
+    We collect only the minimum information necessary to provide and
+    improve our services. This may include:
+  </p>
+  <ul>
+    <li>
+      Your email address (if you contact us for support or feedback, or if
+      you create an account).
+    </li>
+    <li>
+      Account information such as your username, avatar, and optional bio.
+    </li>
+    <li>
+      Your online status (whether you are online, offline, or invisible)
+      and your "now playing" game status, if you use these features.
+    </li>
+    <li>
+      Follower and following relationships (who you follow and who follows
+      you), which are only visible to logged-in users and are not shared
+      with third parties.
+    </li>
+    <li>
+      Anonymous usage data, such as game likes, dislikes, and game
+      popularity statistics.
+    </li>
+    <li>
+      YouTube API interaction data if you use our video features (e.g.
+      video playback, or embedded content).
+    </li>
+  </ul>
+
+  <h3>2. Use of YouTube API Services</h3>
+  <p>
+    Our site uses YouTube API Services to power some features, such as
+    embedded video content or simplified YouTube playback experiences. By
+    using these features, you are agreeing to the
+    <a
+      href="https://www.youtube.com/t/terms"
+      target="_blank"
+      rel="noopener noreferrer"
+      >YouTube Terms of Service</a
+    >.
+  </p>
+  <p>
+    Your use of YouTube through our services is also subject to the
+    <a
+      href="https://www.google.com/policies/privacy"
+      target="_blank"
+      rel="noopener noreferrer"
+      >Google Privacy Policy</a
+    >.
+  </p>
+
+  <h3>3. How We Use Your Information</h3>
+  <ul>
+    <li>Provide, maintain, and improve our services.</li>
+    <li>
+      Display your username, avatar, and bio on your public profile
+      (unless you set your profile to private).
+    </li>
+    <li>
+      Show your online status, last active time, and now playing status to
+      other users, according to your privacy settings.
+    </li>
+    <li>
+      Enable social features such as following, followers, and mutual
+      friend indicators.
+    </li>
+    <li>
+      Let friends join your game sessions if you have your status public.
+    </li>
+    <li>Respond to your inquiries or feedback.</li>
+    <li>Ensure the security and functionality of the platform.</li>
+    <li>
+      Understand which games or content are popular, using only aggregated
+      and anonymous data.
+    </li>
+  </ul>
+
+  <h3>4. Profile Privacy and Status Visibility</h3>
+  <p>
+    You can control the visibility of your profile, online status, last
+    active time, and now playing status in your account settings. If you
+    set your profile to private, your avatar will be blurred to others,
+    your bio will show "This profile is private," and following will be
+    disabled.
+  </p>
+  <p>
+    You can also choose who can see your online and last active status:
+    everyone, only mutual followers, or no one. When set to “mutual
+    followers,” only users who follow you and are followed back by you can
+    see your activity.
+  </p>
+
+  <h3>5. Friends and Social Features</h3>
+<p>
+  Starship includes optional social features that allow you to connect with other users. 
+  These features include:
+</p>
+<ul>
+  <li>
+    Becoming “friends” by mutually following another user. Friendship is only established 
+    when both users follow each other.
+  </li>
+  <li>
+    Seeing when your friends were last online or active, depending on each user’s privacy 
+    settings. You can choose to make this visible to everyone, only friends, or no one.
+  </li>
+  <li>
+    Allowing friends to join your active game sessions or parties, if you enable 
+    people to view your status in your privacy settings. You can change this setting at any time.
+  </li>
+  <li>
+    Friends cannot see your private profile details or join your games unless you have 
+    chosen to enable these options.
+  </li>
+</ul>
+<p>
+  All friend-related features can be disabled or restricted through your account privacy 
+  settings at any time.
+</p>
+
+
+  <h3>6. API Data and Access</h3>
+  <p>
+    When using YouTube-powered features, we may access non-sensitive
+    public data such as video titles, channel names, and playback stats.
+    This information is used only to enhance your experience and is not
+    stored beyond the current session. We do not access or store personal
+    data from your Google or YouTube account.
+  </p>
+
+  <h3>7. Data Sharing</h3>
+  <p>
+    We do <strong>not</strong> sell, rent, or share your personal
+    information or account data with third parties, except in the
+    following cases:
+  </p>
+  <ul>
+    <li>If required by law or legal processes.</li>
+    <li>
+      To protect the rights, property, or safety of Starship, its users,
+      or others.
+    </li>
+  </ul>
+
+  <h3>8. Game Likes, Dislikes, and Popularity</h3>
+  <p>
+    This data is
+    <strong>never linked to your identity or account</strong> and is
+    always stored in an anonymous or aggregated form.
+  </p>
+
+  <h3>9. Account Data and Deletion</h3>
+  <p>
+    You can request deletion of your account and all data at any time by
+    contacting us at
+    <a href="mailto:starship.site@gmail.com">starship.site@gmail.com</a>.
+    Deleting your account will remove your profile, online status, last
+    active time, now playing status, followers, mutual connections, and all
+    associated data from our systems.
+  </p>
+
+  <h3>10. Cookies and Tracking</h3>
+  <p>
+    We may use cookies or similar technologies to enhance your experience.
+    You can disable cookies in your browser settings, but this may limit
+    some functionality.
+  </p>
+
+  <h3>11. Changes to This Policy</h3>
+  <p>
+    This Privacy Policy may be updated. We'll notify users of significant
+    changes on our website.
+  </p>
+</div>
+
     </div>
     <!-- === CODE LICENSE === -->
     <div id="code-license" class="tab-content">
