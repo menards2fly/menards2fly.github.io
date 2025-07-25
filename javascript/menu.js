@@ -1,7 +1,7 @@
 // Supabase config
 const supabaseUrl = 'https://jbekjmsruiadbhaydlbt.supabase.co';
 const supabaseKey =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY'; // Don't change this line
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 let games = [];
@@ -9,13 +9,15 @@ let showClickCounts = false;
 let currentSortOption = 'favorites';
 let typingTimeout;
 
-// CARD TEMPLATE FOR EACH GAME
+/* ----------------- GAME LIST ----------------- */
 function getCardHTML(game) {
   return `
 <div class="card game-card">
   <div class="card-body">
     <div class="favorite-icon">
-      ${game.isFavorited ? '<i class="fa-solid fa-heart-circle-check"></i>' : '<i class="fa-solid fa-heart-circle-plus"></i>'}
+      ${game.isFavorited
+        ? '<i class="fa-solid fa-heart-circle-check"></i>'
+        : '<i class="fa-solid fa-heart-circle-plus"></i>'}
     </div>
     <div class="card-content">
       <div class="card-image">
@@ -36,76 +38,50 @@ function getCardHTML(game) {
 }
 
 async function loadGamesFromSupabase() {
+  console.log('🎮 Loading games from Supabase...');
   showSkeletonLoader();
-const { data, error } = await supabase
-  .from('games_menu')
-  .select('id, name, url, img_url, description, tags, play_count');
+
+  const { data, error } = await supabase
+    .from('games_menu')
+    .select('id, name, url, img_url, description, tags, play_count, likes');
+
   if (error) {
-    console.error('Supabase error:', error.message);
+    console.error('❌ Error loading games:', error.message);
     alert('Error loading games from Supabase');
     return;
   }
-games = data.map((row) => ({
-  id: row.id,
-  name: row.name,
-  image: row.img_url,
-  link: row.url,
-  description: row.description,
-  tags: row.tags || [],
-  clickCount: row.play_count || 0,  // Use actual play_count
-  isFavorited: false,
-  path: '/play',
-  globalLikes: 0,
-  globalClicks: row.play_count || 0 // Also use it here for "trending" sort
-}));
+  console.log(`✅ Loaded ${data.length} games.`);
+
+  games = data.map((row) => ({
+    id: row.id,
+    name: row.name,
+    image: row.img_url,
+    link: row.url,
+    description: row.description,
+    tags: row.tags || [],
+    clickCount: row.play_count || 0,
+    isFavorited: false,
+    path: '/play',
+    globalLikes: row.likes || 0,
+    globalClicks: row.play_count || 0,
+  }));
 
   await loadFavoritesFromSupabase();
-
-
-  await fetchGlobalLikes();
-  await fetchGlobalClicks();
   displayGamesWithSkeleton();
 }
 
-function toggleClickCounts() {
-  showClickCounts = !showClickCounts;
-  document.getElementById('toggleUsageData').textContent = showClickCounts
-    ? 'Hide Usage Data'
-    : 'Show Usage Data';
-  displayGames();
-}
-
-function filterGames() {
-  clearTimeout(typingTimeout);
-  typingTimeout = setTimeout(() => {
-    const search = document.getElementById('search').value;
-    showSkeletonLoader();
-
-    setTimeout(() => {
-      displayGames(search);
-    }, 1000);
-  }, 300);
-}
-
 async function saveFavoritesToSupabase() {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
   const favs = games.filter((g) => g.isFavorited).map((g) => g.id);
-  const { error } = await supabase
-    .from('profiles')
-    .update({ favorites: favs })
-    .eq('id', user.id);
-
-  if (error) console.error('Error saving favorites:', error.message);
+  console.log(`💾 Saving ${favs.length} favorites for user ${user.id}`);
+  const { error } = await supabase.from('profiles').update({ favorites: favs }).eq('id', user.id);
+  if (error) console.error('❌ Error saving favorites:', error.message);
 }
 
 async function loadFavoritesFromSupabase() {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
   const { data: profile, error } = await supabase
@@ -115,31 +91,19 @@ async function loadFavoritesFromSupabase() {
     .maybeSingle();
 
   if (error) {
-    console.error('Error loading favorites:', error.message);
+    console.error('❌ Error loading favorites:', error.message);
     return;
   }
 
-  // Normalize IDs to strings for consistent comparison
   const favIds = (profile?.favorites || []).map((id) => String(id));
-  games.forEach((g) => {
-    g.isFavorited = favIds.includes(String(g.id));
-  });
-}
-
-function saveClickCountsToLocalStorage() {
-  const counts = {};
-  games.forEach((g) => (counts[g.name] = g.clickCount));
-  localStorage.setItem('clickCounts', JSON.stringify(counts));
-}
-
-function loadClickCountsFromLocalStorage() {
-  const stored = JSON.parse(localStorage.getItem('clickCounts') || '{}');
-  games.forEach((g) => (g.clickCount = stored[g.name] || 0));
+  console.log(`⭐ Loaded ${favIds.length} favorite IDs for user ${user.id}`);
+  games.forEach((g) => (g.isFavorited = favIds.includes(String(g.id))));
 }
 
 function sortGames() {
   const sel = document.getElementById('sortOptions');
   currentSortOption = sel ? sel.value : 'favorites';
+  console.log(`🔀 Sorting games by: ${currentSortOption}`);
   displayGames();
 }
 
@@ -148,37 +112,30 @@ function isGameLiked(game) {
 }
 
 function displayGames(filter = '') {
+  console.log(`📜 Displaying games (filter: "${filter}")`);
   const menu = document.getElementById('gameMenu');
   const countEl = document.getElementById('gameCount');
   const searchBar = document.getElementById('search');
   menu.innerHTML = '';
 
-const filtered = games
-  .filter((g) => {
-    const term = filter.toLowerCase();
-    const nameMatch = g.name.toLowerCase().includes(term);
-    const tagMatch = g.tags?.some((tag) => tag.toLowerCase().includes(term));
-    return nameMatch || tagMatch;
-  })
-  .sort((a, b) => {
-    switch (currentSortOption) {
-      case 'favorites':
-        return b.isFavorited === a.isFavorited ? 0 : b.isFavorited ? 1 : -1;
-      case 'clickCount':
-        return b.clickCount - a.clickCount;
-      case 'alphabetical':
-        return a.name.localeCompare(b.name);
-      case 'liked':
-        return isGameLiked(b) - isGameLiked(a);
-      case 'globalLikes':
-        return (b.globalLikes || 0) - (a.globalLikes || 0);
-      case 'trending':
-        return (b.globalClicks || 0) - (a.globalClicks || 0);
-      default:
-        return 0;
-    }
-  });
-
+  const filtered = games
+    .filter((g) => {
+      const term = filter.toLowerCase();
+      const nameMatch = g.name.toLowerCase().includes(term);
+      const tagMatch = g.tags?.some((tag) => tag.toLowerCase().includes(term));
+      return nameMatch || tagMatch;
+    })
+    .sort((a, b) => {
+      switch (currentSortOption) {
+        case 'favorites': return b.isFavorited - a.isFavorited;
+        case 'clickCount': return b.clickCount - a.clickCount;
+        case 'alphabetical': return a.name.localeCompare(b.name);
+        case 'liked': return isGameLiked(b) - isGameLiked(a);
+        case 'globalLikes': return (b.globalLikes || 0) - (a.globalLikes || 0);
+        case 'trending': return (b.globalClicks || 0) - (a.globalClicks || 0);
+        default: return 0;
+      }
+    });
 
   filtered.forEach((game) => {
     const wrapper = document.createElement('div');
@@ -188,39 +145,27 @@ const filtered = games
     const favEl = wrapper.querySelector('.favorite-icon');
     favEl.addEventListener('click', async (e) => {
       e.stopPropagation();
-
-      // Check if user is logged in
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         showNotification('Favorites Error', {
-          body: "You need to be signed in to use favorites. Create an account or log in <a href='/auth'>here</a>.",
+          body: "You need to be signed in to use favorites. Log in <a href='/auth'>here</a>.",
           sound: true,
           duration: 10000,
         });
         return;
       }
-
-      // Toggle favorite
       game.isFavorited = !game.isFavorited;
-
-      // Save to Supabase
       await saveFavoritesToSupabase();
-
-      // Refresh UI
       displayGames(filter);
     });
 
     wrapper.addEventListener('click', () => {
       game.clickCount++;
-
-
+      console.log(`▶️ Launching game: ${game.name}`);
       localStorage.setItem('gameImage', game.image);
       localStorage.setItem('gameName', game.name);
       localStorage.setItem('gameLink', game.link);
       localStorage.setItem('gameDesc', game.description);
-
       displayGames(filter);
       window.location.href = game.path;
     });
@@ -228,12 +173,12 @@ const filtered = games
     menu.appendChild(wrapper);
   });
 
-  if (countEl)
-    countEl.textContent = `${filtered.length} of ${games.length} games loaded.`;
+  if (countEl) countEl.textContent = `${filtered.length} of ${games.length} games loaded.`;
   if (searchBar) searchBar.placeholder = `Search ${games.length} games...`;
 }
 
 function showSkeletonLoader() {
+  console.log('⏳ Showing skeleton loader...');
   const menu = document.getElementById('gameMenu');
   menu.innerHTML = '';
   for (let i = 0; i < 90; i++) {
@@ -244,15 +189,13 @@ function showSkeletonLoader() {
 }
 
 async function displayGamesWithSkeleton() {
+  console.log('🖼️ Rendering skeleton before games...');
   const ids = ['search', 'sortOptions', 'gameCount', 'card'];
-
   ids.forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
-
   showSkeletonLoader();
-
   setTimeout(async () => {
     await loadFavoritesFromSupabase();
     displayGames();
@@ -263,182 +206,89 @@ async function displayGamesWithSkeleton() {
   }, 500);
 }
 
-async function fetchGlobalLikes() {
-  const { data } = await supabase.from('game_votes').select('game_id, likes');
-  data.forEach((r) => {
-    const g = games.find((x) => x.link === r.game_id || x.name === r.game_id);
-    if (g) g.globalLikes = r.likes;
-  });
-}
-
-async function fetchGlobalClicks() {
-  const { data } = await supabase.from('game_votes').select('game_id, clicks');
-  data.forEach((r) => {
-    const g = games.find((x) => x.link === r.game_id || x.name === r.game_id);
-    if (g) g.globalClicks = r.clicks;
-  });
-}
-
-window.addEventListener('load', loadGamesFromSupabase);
-window.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('search')?.addEventListener('input', filterGames);
-  document.getElementById('sortOptions')?.addEventListener('change', sortGames);
-});
+/* ----------------- MUTUAL FRIENDS ----------------- */
 async function loadMutualFriends() {
-  console.log('🚀 Starting loadMutualFriends...');
-
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (userError) {
-    console.warn('⚠️ Error fetching user:', userError);
-  }
+  console.log('🚀 Loading mutual friends...');
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError) console.warn('⚠️ User fetch error:', userError);
   if (!user) {
-    console.log('🔒 No user logged in. Showing signup message.');
     document.getElementById('friends-list').innerHTML = `
       <div class="signup-box" style="padding:20px; text-align:center; border: 2px dashed #888; border-radius: 8px; color: white;">
         ✨ Sign up or log in to see what your friends are playing! ✨
-      </div>
-    `;
+      </div>`;
     return;
   }
-  console.log(`👤 Logged in as user ID: ${user.id}`);
+  console.log(`👤 Logged in as ${user.id}`);
 
-  // Step 1: Get mutual friend IDs
-  const { data: followingRows, error: followingError } = await supabase
-    .from('follows')
-    .select('following_id')
-    .eq('follower_id', user.id);
-
-  const { data: followerRows, error: followerError } = await supabase
-    .from('follows')
-    .select('follower_id')
-    .eq('following_id', user.id);
-
-  if (followingError || followerError) {
-    console.error('❌ Error loading follows:', followingError || followerError);
-    document.getElementById('friends-list').innerHTML =
-      '<p>Error loading friends.</p>';
-    return;
-  }
-
-  const followingIds = (followingRows || []).map((row) => row.following_id);
-  const followerIds = (followerRows || []).map((row) => row.follower_id);
+  // Fetch follows
+  const { data: followingRows } = await supabase.from('follows').select('following_id').eq('follower_id', user.id);
+  const { data: followerRows } = await supabase.from('follows').select('follower_id').eq('following_id', user.id);
+  const followingIds = (followingRows || []).map((r) => r.following_id);
+  const followerIds = (followerRows || []).map((r) => r.follower_id);
   const mutualIds = followingIds.filter((id) => followerIds.includes(id));
+  console.log(`🔗 Found ${mutualIds.length} mutual friends.`);
 
-  if (mutualIds.length === 0) {
+  if (!mutualIds.length) {
     document.getElementById('friends-list').innerHTML =
       "<p>No mutual friends yet. When you follow someone who follows you back, they'll show up here!</p>";
     return;
   }
 
-  // Step 2: Load profiles (including status)
-  const { data: profiles, error: profilesError } = await supabase
+  // Preload all follow relationships (batch)
+  const { data: allFollows } = await supabase
+    .from('follows')
+    .select('follower_id, following_id')
+    .in('follower_id', [user.id, ...mutualIds])
+    .in('following_id', [user.id, ...mutualIds]);
+
+  const isMutualFollow = (fid) =>
+    allFollows?.some(f => f.follower_id === user.id && f.following_id === fid) &&
+    allFollows?.some(f => f.follower_id === fid && f.following_id === user.id);
+
+  // Load profiles
+  const { data: profiles } = await supabase
     .from('profiles')
-    .select(
-      'id, username, avatar_url, last_active, current_game_id, status, online_status_visibility'
-    )
+    .select('id, username, avatar_url, last_active, current_game_id, status, online_status_visibility')
     .in('id', mutualIds);
 
-  if (profilesError) {
-    console.error('❌ Error loading profiles:', profilesError);
-    document.getElementById('friends-list').innerHTML =
-      '<p>Error loading profiles.</p>';
-    return;
-  }
+  // Preload all games (batch)
+  const activeGameIds = profiles.filter(p => p.current_game_id).map(p => p.current_game_id);
+  const { data: gamesData } = activeGameIds.length
+    ? await supabase.from('games_menu').select('id, name, url').in('id', activeGameIds)
+    : { data: [] };
+  const gameMap = Object.fromEntries(gamesData.map(g => [g.id, g]));
 
-  // Step 3: Sort — active players first
-  profiles.sort((a, b) => {
-    const aPlaying = !!a.current_game_id;
-    const bPlaying = !!b.current_game_id;
-    return bPlaying - aPlaying;
-  });
-
+  profiles.sort((a, b) => (!!b.current_game_id) - (!!a.current_game_id));
   const list = document.getElementById('friends-list');
   list.innerHTML = '';
 
   for (const friend of profiles) {
-    let canView = false;
     const visibility = friend.online_status_visibility || 'everyone';
+    const canView = visibility === 'everyone' || (visibility === 'mutual_follow' && isMutualFollow(friend.id));
 
-    const { data: viewerFollows } = await supabase
-      .from('follows')
-      .select('id')
-      .eq('follower_id', user.id)
-      .eq('following_id', friend.id)
-      .maybeSingle();
+    const isOnline = canView && friend.last_active &&
+      ((Date.now() - new Date(friend.last_active.replace(' ', 'T') + 'Z').getTime()) / 60000) < 5;
 
-    const { data: friendFollowsViewer } = await supabase
-      .from('follows')
-      .select('id')
-      .eq('follower_id', friend.id)
-      .eq('following_id', user.id)
-      .maybeSingle();
+    const game = canView && friend.current_game_id ? gameMap[friend.current_game_id] : null;
+    const nowPlaying = game?.name || null;
+    const gameUrl = game?.url || null;
 
-    const isMutual = viewerFollows && friendFollowsViewer;
-
-    if (visibility === 'everyone') canView = true;
-    else if (visibility === 'mutual_follow' && isMutual) canView = true;
-    else if (visibility === 'no_one') canView = false;
-
-    // Online check
-    let isOnline = false;
-    if (canView && friend.last_active) {
-      const lastActive = new Date(friend.last_active.replace(' ', 'T') + 'Z');
-      const minutesAgo = (Date.now() - lastActive.getTime()) / 60000;
-      isOnline = minutesAgo >= 0 && minutesAgo < 5;
+    let statusText = 'Inactive';
+    if (!isOnline) statusText = 'Offline';
+    else if (nowPlaying) statusText = nowPlaying;
+    else if (friend.status && !friend.current_game_id) {
+      const statuses = {
+        proxy: 'Surfing the web', aichat: 'Chatting with AI',
+        tv: 'Watching TV', sitechat: 'Hanging out in Chat'
+      };
+      statusText = statuses[friend.status] || 'Active';
     }
 
-    // Fetch game if any, including URL now
-    let nowPlaying = null;
-    let gameUrl = null;
-    if (canView && friend.current_game_id) {
-      const { data: gameData } = await supabase
-        .from('games_menu')
-        .select('name, url')
-        .eq('id', friend.current_game_id)
-        .maybeSingle();
-      if (gameData?.name) nowPlaying = gameData.name;
-      if (gameData?.url) gameUrl = gameData.url;
-    }
-
-    // Decide status text (priority: offline → game → activity status → inactive)
-    let statusText = '';
-    if (!isOnline) {
-      statusText = 'Offline';
-    } else if (nowPlaying) {
-      statusText = `${nowPlaying}`;
-    } else if (friend.status && !friend.current_game_id) {
-      switch (friend.status) {
-        case 'proxy':
-          statusText = 'Surfing the web';
-          break;
-        case 'aichat':
-          statusText = 'Chatting with AI';
-          break;
-        case 'tv':
-          statusText = 'Watching TV';
-          break;
-        case 'sitechat':
-          statusText = 'Hanging out in Chat';
-          break;
-        default:
-          statusText = 'Active';
-          break;
-      }
-    } else {
-      statusText = 'Inactive';
-    }
-
-    // Create avatar wrapper, clickable if gameUrl or known status exists
     const avatarWrapper = document.createElement('div');
     avatarWrapper.className = 'friend-avatar-wrapper';
-
     let clickUrl = null;
 
     if (gameUrl) {
-      // If playing a game, join their game
       clickUrl = '/play';
       avatarWrapper.style.cursor = 'pointer';
       avatarWrapper.addEventListener('click', () => {
@@ -447,19 +297,11 @@ async function loadMutualFriends() {
         window.location.href = clickUrl;
       });
     } else if (friend.status && !friend.current_game_id) {
-      // Map status to route URLs
-      const statusRoutes = {
-        proxy: '/route',
-        aichat: '/ai',
-        tv: '/tv',
-        sitechat: '/chat',
-      };
-      if (statusRoutes[friend.status]) {
-        clickUrl = statusRoutes[friend.status];
+      const routes = { proxy: '/route', aichat: '/ai', tv: '/tv', sitechat: '/chat' };
+      if (routes[friend.status]) {
+        clickUrl = routes[friend.status];
         avatarWrapper.style.cursor = 'pointer';
-        avatarWrapper.addEventListener('click', () => {
-          window.location.href = clickUrl;
-        });
+        avatarWrapper.addEventListener('click', () => window.location.href = clickUrl);
       }
     }
 
@@ -467,38 +309,95 @@ async function loadMutualFriends() {
     avatarImg.className = 'friend-avatar';
     avatarImg.src = friend.avatar_url || '/uploads/branding/default-avatar.png';
     avatarImg.alt = friend.username;
-
     avatarWrapper.appendChild(avatarImg);
-
     if (isOnline) {
-      const onlineDot = document.createElement('span');
-      onlineDot.className = 'online-dot';
-      onlineDot.title = 'Online';
-      avatarWrapper.appendChild(onlineDot);
+      const dot = document.createElement('span');
+      dot.className = 'online-dot';
+      dot.title = 'Online';
+      avatarWrapper.appendChild(dot);
     }
 
-    // Render friend item container
     const card = document.createElement('div');
     card.className = 'friend-item';
-
-    // Username div
     const usernameDiv = document.createElement('div');
     usernameDiv.className = 'friend-username';
     usernameDiv.textContent = friend.username;
-
-    // Now playing / status div
     const nowPlayingDiv = document.createElement('div');
     nowPlayingDiv.className = 'friend-nowplaying';
     nowPlayingDiv.textContent = statusText;
 
-    // Append all
     card.appendChild(avatarWrapper);
     card.appendChild(usernameDiv);
     card.appendChild(nowPlayingDiv);
-
     list.appendChild(card);
   }
   console.log('🎉 Finished loading mutual friends.');
 }
 
-window.addEventListener('DOMContentLoaded', loadMutualFriends);
+/* ----------------- EVENT LISTENERS ----------------- */
+window.addEventListener('load', loadGamesFromSupabase);
+
+
+// Add this back to handle search properly
+function filterGames() {
+  console.log('🔍 Filtering games...');
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(() => {
+    const search = document.getElementById('search').value;
+    showSkeletonLoader();
+    console.log(`⌛ Searching for: "${search}"`);
+    setTimeout(() => {
+      displayGames(search);
+      console.log('✅ Search complete.');
+    }, 500);
+  }, 300); // debounce
+}
+
+// Fix event listeners so it uses filterGames()
+window.addEventListener('DOMContentLoaded', () => {
+  const searchInput = document.getElementById('search');
+  if (searchInput) searchInput.addEventListener('input', filterGames);
+
+  const sortSelect = document.getElementById('sortOptions');
+  if (sortSelect) sortSelect.addEventListener('change', sortGames);
+
+  loadMutualFriends();
+});
+
+
+      const greetings = [
+        'Hey, {username}!',
+        'Howdy there, {username}!',
+        'Welcome back, {username}!',
+        'Good to see you, {username}!',
+        'Ready to play, {username}?',
+        'Yo, {username}!',
+        "What's up, {username}?",
+        'Fancy seeing you here, {username}',
+      ];
+
+      async function setWelcome() {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        let username = 'Guest';
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', user.id)
+            .maybeSingle();
+          if (profile && profile.username) {
+            username = profile.username;
+            localStorage.setItem('loggedInUser', JSON.stringify(profile));
+          }
+        }
+        const greeting = greetings[
+          Math.floor(Math.random() * greetings.length)
+        ].replace('{username}', username);
+        setTimeout(() => {
+          document.querySelector('.welcome').textContent = greeting;
+        }, 3000); // 5 second delay
+      }
+
+      setWelcome();

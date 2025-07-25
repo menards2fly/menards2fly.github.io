@@ -16,63 +16,7 @@
     <!-- JavaScript for Page Load -->
 
     <script src="/javascript/pageload.js"></script>
-    <style>
-      /* Popup styling */
-      .messagePopup {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0, 0, 0, 0.9);
-        color: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.2);
-        text-align: center;
-        max-width: 400px;
-        z-index: 1000;
-        display: none;
-      }
 
-      .messagePopup button {
-        background: red;
-        color: white;
-        border: none;
-        padding: 10px;
-        border-radius: 5px;
-        cursor: pointer;
-        margin-top: 10px;
-      }
-
-      .messagePopup button:hover {
-        background: darkred;
-      }
-
-      /* Add to your <style> section or a CSS file */
-      #yt-bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: -1;
-        overflow: hidden;
-        pointer-events: none;
-      }
-
-      #yt-bg iframe {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 120vw;
-        height: 68vw;
-        /* 16:9 ratio, oversize for cover */
-        min-width: 100vw;
-        min-height: 100vh;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-      }
-    </style>
   </head>
   <body>
     <div
@@ -117,7 +61,7 @@
       preload="auto"
     ></audio>
     <script>
-      document.getElementById('bg-music').volume = 0.2; // Set volume to 20%
+      document.getElementById('bg-music').volume = 0.1; // Set volume to 20%
     </script>
     <!-- Navigation Bar -->
     <div id="navbar"></div>
@@ -137,7 +81,6 @@
             type="text"
             id="search"
             placeholder="Search all games"
-            oninput="filterGames()"
           />
           <!-- Toggle Click Count Button -->
 
@@ -190,88 +133,11 @@
     <script src="/javascript/scrollbar.js"></script>
     <script src="/javascript/screentimetracking.js"></script>
     <!-- All non-linked scripts -->
-    <!-- Set Welcome Script -->
 
-    <script type="module">
-      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-      const supabase = createClient(
-        'https://jbekjmsruiadbhaydlbt.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY'
-      );
+ 
 
-      const greetings = [
-        'Hey, {username}!',
-        'Howdy there, {username}!',
-        'Welcome back, {username}!',
-        'Good to see you, {username}!',
-        'Ready to play, {username}?',
-        'Yo, {username}!',
-        "What's up, {username}?",
-        'Fancy seeing you here, {username}',
-      ];
-
-      async function setWelcome() {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        let username = 'Guest';
-        if (user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', user.id)
-            .maybeSingle();
-          if (profile && profile.username) {
-            username = profile.username;
-            localStorage.setItem('loggedInUser', JSON.stringify(profile));
-          }
-        }
-        const greeting = greetings[
-          Math.floor(Math.random() * greetings.length)
-        ].replace('{username}', username);
-        setTimeout(() => {
-          document.querySelector('.welcome').textContent = greeting;
-        }, 5000); // 5 second delay
-      }
-
-      setWelcome();
-    </script>
-    <!-- Easter Egg Script -->
-
-    <script>
-      let clicks = 0;
-      let eastereggfoundyet = false;
-      const gameTitle = document.querySelector('#gameTitle');
-      gameTitle.addEventListener('click', () => {
-        clicks += 1;
-        gameTitle.focus();
-        document.querySelector('#cc').innerHTML = clicks;
-        if (!eastereggfoundyet && clicks === 69) {
-          eastereggfoundyet = true;
-          clicks = null;
-          document.querySelector('#cc').innerHTML = null;
-          alert('Easter Egg Game Found!!! Now how to play it?😜');
-        }
-      });
-
-      // Message Popup Functions
-      function showMessagePopup() {
-        document.getElementById('messagePopup').style.display = 'block';
-      }
-
-      function closeMessagePopup() {
-        document.getElementById('messagePopup').style.display = 'none';
-      }
-
-      // Page Loader and Popup Initialization
-      window.onload = function () {
-        if (typeof myFunction === 'function') {
-          myFunction(); // Runs the page loader function from pageload.js
-        }
-        showMessagePopup(); // Show the message popup
-      };
-    </script>
+    
     <!-- Scheduler -->
 
     <script src="/javascript/schedule.js"></script>
