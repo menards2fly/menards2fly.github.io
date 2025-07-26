@@ -1,0 +1,409 @@
+/* ==== Global and Reset ==== */
+* {
+  color: #fff !important;
+  box-sizing: border-box !important;
+}
+body {
+  margin: 0 !important;
+  height: 100vh !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: stretch !important;
+  font-family: 'Inter', sans-serif !important;
+  background: #0b0b1f !important;
+  overflow: hidden !important;
+}
+#navbar {
+  flex-shrink: 0 !important;
+}
+
+/* ==== Chat Container Fullscreen ==== */
+.chat-container {
+  width: 100% !important;
+  max-width: none !important;
+  height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: rgba(20,20,40,0.85) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+  animation: fadeIn 0.8s ease forwards;
+}
+
+/* ==== Chat Header with Logo & Tools ==== */
+.chat-header {
+  padding: 12px 20px !important;
+  background: rgba(30,20,60,0.95) !important;
+  border-bottom: 1px solid rgba(150,0,255,0.4) !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  font-weight: 700 !important;
+  font-size: 22px !important;
+  user-select: none !important;
+}
+.chat-header .logo-container {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+.chat-header .logo-container img {
+  height: 36px !important;
+  width: 36px !important;
+  border-radius: 50% !important;
+  box-shadow: 0 0 14px #7f00ffaa !important;
+}
+.chat-header .logo-text {
+  color: #bb7fff !important;
+  font-weight: 900 !important;
+  font-size: 1.6rem !important;
+  letter-spacing: 1.5px !important;
+}
+
+/* ==== Right side items (usage + tools) ==== */
+.right-header-items {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+/* Usage indicator inside chat header */
+#usageIndicator {
+  background: rgba(130, 40, 220, 0.25) !important; /* translucent purple */
+  border: 1.5px solid rgba(180, 80, 255, 0.7) !important;
+  border-radius: 14px !important;
+  padding: 6px 14px !important;
+  font-weight: 700 !important;
+  font-size: 0.85rem !important;
+  color: #bb7fff !important;
+  text-shadow:
+    0 0 8px rgba(187, 127, 255, 0.7) !important;
+  box-shadow:
+    0 0 12px rgba(187, 127, 255, 0.5) !important;
+  white-space: nowrap !important;
+  user-select: none !important;
+  max-width: 250px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  transition: box-shadow 0.3s ease !important;
+}
+#usageIndicator strong {
+  color: #fff !important;
+  text-shadow: 0 0 15px #fff !important;
+}
+#usageIndicator:hover {
+  box-shadow:
+    0 0 20px #bb7fff,
+    0 0 30px #bb7fff;
+  cursor: default !important;
+}
+
+/* Tools dropdown */
+.tools-dropdown {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+}
+.tools-dropdown button {
+  background: none !important;
+  border: none !important;
+  cursor: pointer !important;
+  color: #fff !important;
+  font-size: 24px !important;
+  padding: 6px !important;
+  transition: color 0.3s ease !important;
+    box-shadow: none !important;
+}
+.tools-dropdown button:hover {
+  color: #bb7fff !important;
+}
+.tools-menu {
+  display: none !important;
+  position: absolute !important;
+  top: 42px !important;
+  right: 0 !important;
+  background: rgba(30,20,60,0.95) !important;
+  border: 1px solid rgba(150,0,255,0.4) !important;
+  border-radius: 8px !important;
+  padding: 8px 0 !important;
+  box-shadow: 0 0 22px rgba(180,0,255,0.6) !important;
+  z-index: 100 !important;
+  min-width: 160px !important;
+  font-size: 15px !important;
+}
+.tools-menu.show {
+  display: block !important;
+  animation: dropdownFadeIn 0.3s ease forwards;
+}
+.tools-menu div {
+  padding: 10px 20px !important;
+  cursor: pointer !important;
+  transition: background 0.2s ease !important;
+  color: #ddd !important;
+}
+.tools-menu div:hover {
+  background: rgba(180,0,255,0.3) !important;
+  color: #fff !important;
+}
+
+/* ==== Chat Messages Area ==== */
+.chat-messages {
+  flex: 1 !important;
+  padding: 20px 30px !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  background: transparent !important;
+}
+
+.message-wrapper {
+  display: flex !important;
+  flex-direction: row !important;       /* row so wrapper shrinks to content */
+  align-items: flex-end !important;
+  gap: 8px !important;
+  max-width: 100% !important;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: messageFadeIn 0.5s ease forwards;
+}
+
+.message-wrapper.user {
+  justify-content: flex-end !important; /* aligns bubbles right */
+}
+
+.message-wrapper.bot {
+  justify-content: flex-start !important; /* aligns bubbles left */
+}
+
+.message {
+  display: inline-block !important;
+  width: auto !important;               /* shrink to fit */
+  max-width: 600px !important;          /* wrap if too long */
+  word-break: break-word !important;
+  white-space: pre-wrap !important;
+  padding: 8px 12px !important;
+  border-radius: 20px !important;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  box-shadow: 0 0 16px rgba(120, 60, 200, 0.4) !important;
+  user-select: text !important;
+  transition: box-shadow 0.3s ease;
+}
+
+/* User & Bot Colors */
+.user-msg {
+  background: rgba(150,0,255,0.35) !important;
+  border: 1px solid rgba(220,120,255,0.6) !important;
+  box-shadow: 0 0 18px rgba(150,0,255,0.6) !important;
+}
+
+.bot-msg {
+  background: rgba(0,120,220,0.35) !important;
+  border: 1px solid rgba(100,200,255,0.6) !important;
+  box-shadow: 0 0 18px rgba(0,180,255,0.6) !important;
+}
+
+/* Optional: make images inside bubbles fit cleanly */
+.message img {
+  max-width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 0 22px rgba(180,0,255,0.8);
+  animation: imageAppear 0.6s ease forwards;
+}
+
+/* ==== Sender Info ==== */
+.sender-info {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #ccc !important;
+  margin-top: 6px !important;
+}
+.sender-pfp {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 0 14px #00d4ff !important;
+  background: #000 !important;
+}
+.sender-pfp.starbot img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+/* ==== Conversation Starter Buttons inside Bot message ==== */
+.starter-buttons {
+  display: flex !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+  margin-top: 12px !important;
+}
+.starter-buttons button {
+  background: rgba(130, 40, 220, 0.3) !important;
+  border: 1px solid rgba(200,100,255,0.4) !important;
+  border-radius: 30px !important;
+  padding: 8px 18px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  color: #ddd !important;
+  user-select: none !important;
+  transition: background 0.3s ease !important;
+}
+.starter-buttons button:hover {
+  background: rgba(180, 80, 255, 0.6) !important;
+  color: #fff !important;
+}
+
+/* ==== Chat Input Bar ==== */
+.chat-input {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 16px 24px !important;
+  background: rgba(15,15,35,0.9) !important;
+  border-top: 1px solid rgba(150,0,255,0.4) !important;
+  user-select: none !important;
+}
+.chat-input input[type="text"] {
+  flex: 1 !important;
+  padding: 14px 16px !important;
+  background: rgba(255,255,255,0.07) !important;
+  border: 1px solid rgba(150,0,255,0.5) !important;
+  border-radius: 24px !important;
+  color: #fff !important;
+  font-size: 16px !important;
+  outline: none !important;
+  user-select: text !important;
+  transition: box-shadow 0.3s ease;
+}
+.chat-input input[type="text"]:focus {
+  box-shadow: 0 0 10px #bb7fff;
+}
+.chat-input input[type="text"]::placeholder {
+  color: #aaa !important;
+}
+#uploadBtn {
+  background: none !important;
+  border: none !important;
+  cursor: pointer !important;
+  color: #bb7fff !important;
+  font-size: 22px !important;
+  padding: 4px !important;
+  user-select: none !important;
+  transition: color 0.3s ease !important;
+  box-shadow: none !important;
+}
+#uploadBtn:hover {
+  color: #e7b8ff !important;
+}
+.send-btn {
+  background: linear-gradient(90deg, #8a2be2 60%, #ff4b2b 100%) !important;
+  border-radius: 50% !important;
+  width: 46px !important;
+  height: 46px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  border: none !important;
+  cursor: pointer !important;
+  box-shadow: 0 0 22px rgba(180,0,255,0.8) !important;
+  transition: transform 0.2s ease !important;
+  user-select: none !important;
+}
+.send-btn:hover {
+  transform: scale(1.15) !important;
+}
+.send-btn i {
+  font-size: 22px !important;
+}
+
+/* ==== Loading Dots ==== */
+.loading-dots {
+  display: flex !important;
+  gap: 6px !important;
+}
+.loading-dots span {
+  width: 8px !important;
+  height: 8px !important;
+  background: #00d4ff !important;
+  border-radius: 50% !important;
+  display: inline-block !important;
+  animation: bounce 1.2s infinite ease-in-out !important;
+}
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.2s !important;
+}
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.4s !important;
+}
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: scale(0.6) !important;
+    opacity: 0.5 !important;
+  }
+  40% {
+    transform: scale(1) !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes dropdownFadeIn {
+  from { opacity: 0; transform: translateY(-10px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+@keyframes messageFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes imageAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes typingPulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Typing message style */
+.typing {
+  font-weight: bold;
+  font-size: 1.2em;
+  animation: typingPulse 1.2s infinite ease-in-out;
+  color: #888;
+}
+.usage-limit-hit {
+  background: linear-gradient(90deg, #ff4b4b, #ff0000);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 900 !important;
+  text-shadow:
+    0 0 8px #ff4b4b,
+    0 0 15px #ff0000;
+}
+
