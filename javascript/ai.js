@@ -2,9 +2,8 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabase = createClient(
   'https://jbekjmsruiadbhaydlbt.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbG0iLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc0ODM5NDY1OCwiZXhwIjoyMDYzOTcwNjU4fQ.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY'
 );
-
 
 console.log('🚀✨ Orbit Script initializing...');
 
@@ -22,6 +21,8 @@ const usageIndicator = document.getElementById('usageIndicator');
 
 let conversationMemory = [];
 let userHasSentMessage = false;
+let adminStatus = null; // cache admin status to avoid repeated checks
+let isProcessing = false; // to prevent spamming API
 
 // ===== Usage limits =====
 const CHAT_LIMIT_GUEST = 10;
@@ -56,41 +57,86 @@ function resetUsage() {
     lastResetDate: today,
   };
   saveUsage(initial);
+  console.log('🔄 Usage reset for new day:', today);
   updateUsageIndicator();
 }
 
-function updateUsageIndicator() {
-  getUser().then(user => {
-    const usage = getUsage();
-    const chatLimit = user ? CHAT_LIMIT_USER : CHAT_LIMIT_GUEST;
-    const imgGenLimit = user ? IMG_GEN_LIMIT_USER : IMG_GEN_LIMIT_GUEST;
+// === Admin check once and cache it ===
+function checkAdminStatus() {
+  if (adminStatus !== null) return adminStatus; // return cached if checked
 
-    const chatLimitHit = usage.chatCount >= chatLimit;
-    const imgGenLimitHit = usage.imgGenCount >= imgGenLimit;
-
-    console.log('Usage:', usage.chatCount, '/', chatLimit, 'Limit hit?', chatLimitHit);
-    console.log('Images:', usage.imgGenCount, '/', imgGenLimit, 'Limit hit?', imgGenLimitHit);
-
-    usageIndicator.innerHTML = `
-      🚀 Chat messages: <strong class="${chatLimitHit ? 'usage-limit-hit' : ''}">${usage.chatCount}</strong> / <strong>${chatLimit}</strong><br/>
-      🖼️ Images generated: <strong class="${imgGenLimitHit ? 'usage-limit-hit' : ''}">${usage.imgGenCount}</strong> / <strong>${imgGenLimit}</strong>
-    `;
-  });
+  try {
+    const val = localStorage.getItem('isAdmin');
+    if (!val) {
+      console.log('🛸 Admin check: NO, no admin data found');
+      adminStatus = { isAdmin: false, isSuperAdmin: false };
+      return adminStatus;
+    }
+    const adminData = JSON.parse(val);
+    const isSuperAdmin = adminData?.isAdmin === true && adminData?.role === 'superadmin';
+    const isAdminUser = adminData?.isAdmin === true && !isSuperAdmin;
+    adminStatus = { isAdmin: isAdminUser, isSuperAdmin };
+    console.log(`🛸 Admin check: ${isSuperAdmin ? 'YES, superadmin detected 🌟' : isAdminUser ? 'YES, admin detected' : 'NO, normal user'}`);
+    return adminStatus;
+  } catch (e) {
+    console.warn('⚠️ Failed to parse isAdmin data:', e);
+    adminStatus = { isAdmin: false, isSuperAdmin: false };
+    return adminStatus;
+  }
 }
 
+async function updateUsageIndicator() {
+  const user = await getUser();
+  const usage = getUsage();
+  const { isAdmin, isSuperAdmin } = checkAdminStatus();
 
+  const chatLimit = isSuperAdmin ? Infinity : (isAdmin ? Infinity : (user ? CHAT_LIMIT_USER : CHAT_LIMIT_GUEST));
+  const imgGenLimit = isSuperAdmin ? Infinity : (isAdmin ? Infinity : (user ? IMG_GEN_LIMIT_USER : IMG_GEN_LIMIT_GUEST));
+
+  const chatLimitHit = !isAdmin && !isSuperAdmin && usage.chatCount >= chatLimit;
+  const imgGenLimitHit = !isAdmin && !isSuperAdmin && usage.imgGenCount >= imgGenLimit;
+
+  console.log('Usage Indicator Update:');
+  console.log(`- Chat: ${usage.chatCount} / ${chatLimit} (limit hit: ${chatLimitHit})`);
+  console.log(`- Images: ${usage.imgGenCount} / ${imgGenLimit} (limit hit: ${imgGenLimitHit})`);
+
+  usageIndicator.innerHTML = isSuperAdmin
+    ? `🚀 Chat messages: <strong>${usage.chatCount}</strong> / <strong>∞</strong><br/>
+       🖼️ Images generated: <strong>${usage.imgGenCount}</strong> / <strong>∞</strong>`
+    : isAdmin
+      ? `🚀 Chat messages: <strong>${usage.chatCount}</strong> / <strong>∞</strong><br/>
+         🖼️ Images generated: <strong>${usage.imgGenCount}</strong> / <strong>∞</strong>`
+      : `
+      🚀 Chat messages: <strong class="${chatLimitHit ? 'usage-limit-hit' : ''}">${usage.chatCount}</strong> / <strong>${chatLimit}</strong><br/>
+      🖼️ Images generated: <strong class="${imgGenLimitHit ? 'usage-limit-hit' : ''}">${usage.imgGenCount}</strong> / <strong>${imgGenLimit}</strong>
+      `;
+}
 
 function incrementChatCount() {
+  const { isSuperAdmin } = checkAdminStatus();
+  if (isSuperAdmin) {
+    console.log('🚀 Super Admin detected — no chat count increment needed.');
+    updateUsageIndicator();
+    return;
+  }
   const usage = getUsage();
   usage.chatCount++;
   saveUsage(usage);
+  console.log(`➕ Incremented chat count: ${usage.chatCount}`);
   updateUsageIndicator();
 }
 
 function incrementImgGenCount() {
+  const { isSuperAdmin } = checkAdminStatus();
+  if (isSuperAdmin) {
+    console.log('🚀 Super Admin detected — no image generation increment needed.');
+    updateUsageIndicator();
+    return;
+  }
   const usage = getUsage();
   usage.imgGenCount++;
   saveUsage(usage);
+  console.log(`➕ Incremented image generation count: ${usage.imgGenCount}`);
   updateUsageIndicator();
 }
 
@@ -102,17 +148,31 @@ async function getUser() {
 }
 
 async function canSendMessage() {
+  const { isAdmin, isSuperAdmin } = checkAdminStatus();
+  if (isSuperAdmin || isAdmin) {
+    console.log('✅ Admin or Super Admin detected, bypassing chat limit');
+    return true;
+  }
   const user = await getUser();
   const usage = getUsage();
   const limit = user ? CHAT_LIMIT_USER : CHAT_LIMIT_GUEST;
-  return usage.chatCount < limit;
+  const allowed = usage.chatCount < limit;
+  console.log(`Chat send permission: ${allowed} (${usage.chatCount}/${limit})`);
+  return allowed;
 }
 
 async function canGenerateImage() {
+  const { isAdmin, isSuperAdmin } = checkAdminStatus();
+  if (isSuperAdmin || isAdmin) {
+    console.log('✅ Admin or Super Admin detected, bypassing image generation limit');
+    return true;
+  }
   const user = await getUser();
   const usage = getUsage();
   const limit = user ? IMG_GEN_LIMIT_USER : IMG_GEN_LIMIT_GUEST;
-  return usage.imgGenCount < limit;
+  const allowed = usage.imgGenCount < limit;
+  console.log(`Image generation permission: ${allowed} (${usage.imgGenCount}/${limit})`);
+  return allowed;
 }
 
 // ==== UI Functions ====
@@ -180,6 +240,11 @@ function removeLoading(elem) {
   if (elem) elem.remove();
 }
 
+function setSendButtonState(enabled) {
+  sendBtn.disabled = !enabled;
+  sendBtn.style.opacity = enabled ? '1' : '0.5';
+}
+
 // ==== AI Chat via Puter ====
 
 const BASE_PROMPT = `You are Orbit, the ✨friendly AI co-pilot✨ of the Starship system. You help with writing, brainstorming, answering questions, or just vibing — all in a chill, cosmic Gen Z way.
@@ -204,57 +269,39 @@ async function sendChat(text) {
     return;
   }
 
+  if (isProcessing) {
+    console.log('⏳ Still processing last message, please wait...');
+    return;
+  }
+
+  isProcessing = true;
+  setSendButtonState(false);
+
   const user = await getUser();
   const usage = getUsage();
+  const { isAdmin, isSuperAdmin } = checkAdminStatus();
 
   const chatLimit = user ? CHAT_LIMIT_USER : CHAT_LIMIT_GUEST;
   const imgGenLimit = user ? IMG_GEN_LIMIT_USER : IMG_GEN_LIMIT_GUEST;
 
-  if (text.toLowerCase().startsWith('generate:')) {
-    if (usage.imgGenCount >= imgGenLimit) {
-      appendMessage('orbit',
-        `🌌✨ Yo, you've hit your daily image creation limit of ${imgGenLimit} ${imgGenLimit === 1 ? 'image' : 'images'}! ` +
-        `Come back tomorrow to create more cosmic art! 🌠🚀`);
-      return;
-    }
-  } else {
-    if (usage.chatCount >= chatLimit) {
-      appendMessage('orbit',
-        `🛑 Whoa, you've blasted through your daily chat limit of ${chatLimit} messages! ` +
-        `Sign in or come back tomorrow for more interstellar convos! 🌟💬`);
-      return;
-    }
-  }
-
-  console.log(`📨 User sent message: "${text}"`);
+  // Append loading UI early
   const loadingElem = appendLoading();
 
-  conversationMemory.push({ role: 'user', content: text });
-
   try {
-    const convoHistoryText = conversationMemory
-      .filter(m => m.role === 'user')
-      .map(m => m.content)
-      .join('\n');
-
-    const fullPrompt =
-      `Here is your base system prompt and rules. You need to follow it.\n` +
-      `${BASE_PROMPT}\n\n` +
-      `Here is the conversation history. This is your memory.\n` +
-      `${convoHistoryText}\n\n` +
-      `Here is your prompt.\n` +
-      `${text}`;
-
     if (text.toLowerCase().startsWith('generate:')) {
-      if (usage.imgGenCount >= imgGenLimit) {
+      // Image generation branch
+      const desc = text.replace(/^generate:/i, '').trim();
+
+      if (!isAdmin && !isSuperAdmin && usage.imgGenCount >= imgGenLimit) {
         removeLoading(loadingElem);
         appendMessage('orbit',
-          `🌌✨ You’ve hit your daily image creation limit of ${imgGenLimit} ${imgGenLimit === 1 ? 'image' : 'images'}! ` +
+          `🌌✨ Yo, you've hit your daily image creation limit of ${imgGenLimit} ${imgGenLimit === 1 ? 'image' : 'images'}! ` +
           `Come back tomorrow to create more cosmic art! 🌠🚀`);
+        isProcessing = false;
+        setSendButtonState(true);
         return;
       }
 
-      const desc = text.replace(/^generate:/i, '').trim();
       console.log(`🎨 Generating image for prompt: "${desc}"`);
 
       const imgRes = await puter.ai.txt2img(desc);
@@ -262,59 +309,77 @@ async function sendChat(text) {
 
       removeLoading(loadingElem);
 
-      // Fix weird image generation error by safely parsing response:
       if (!imgRes) {
         appendMessage('orbit', '⚠️ Hmmm, the stars didn’t align and I got no image back. Try again? 🌌');
+        isProcessing = false;
+        setSendButtonState(true);
         return;
       }
 
-      // Sometimes response might be { url } or { data: { url } } or something else
-      let imgUrl = '';
-      if (typeof imgRes === 'string') {
-        imgUrl = imgRes.trim();
-      } else if (imgRes.url) {
-        imgUrl = imgRes.url.trim();
-      } else if (imgRes.data?.url) {
-        imgUrl = imgRes.data.url.trim();
-      }
+// Show a message with their prompt, plain text (not HTML)
+appendMessage('orbit', `Here’s your generated image of "${desc}".`, { isHtml: false });
 
-      if (!imgUrl) {
-        appendMessage('orbit', '⚠️ Can’t find a valid image URL in the response. Try again later? 🌠');
-        return;
-      }
-
-      if (imgUrl.startsWith('<')) {
-        // Probably HTML snippet
-        appendMessage('orbit', imgUrl, { isHtml: true });
-      } else if (/^(https?:\/\/|data:)/.test(imgUrl)) {
-        appendMessage('orbit', `<img src="${imgUrl}" alt="Generated image" />`, { isHtml: true });
-      } else {
-        appendMessage('orbit', '⚠️ The image URL looks weird. Can’t show it rn. 🌌');
-      }
+// Then show the actual image with HTML enabled
+appendMessage('orbit', imgRes.outerHTML, { isHtml: true });
 
       incrementImgGenCount();
+      isProcessing = false;
+      setSendButtonState(true);
       return;
+    } else {
+      // Normal chat branch
+
+      if (!isAdmin && !isSuperAdmin && usage.chatCount >= chatLimit) {
+        removeLoading(loadingElem);
+        appendMessage('orbit',
+          `🛑 Whoa, you've blasted through your daily chat limit of ${chatLimit} messages! ` +
+          `Sign in or come back tomorrow for more interstellar convos! 🌟💬`);
+        isProcessing = false;
+        setSendButtonState(true);
+        return;
+      }
+
+      console.log(`📨 User sent message: "${text}"`);
+
+      conversationMemory.push({ role: 'user', content: text });
+
+      const convoHistoryText = conversationMemory
+        .filter(m => m.role === 'user')
+        .map(m => m.content)
+        .join('\n');
+
+      const fullPrompt =
+        `Here is your base system prompt and rules. You need to follow it.\n` +
+        `${BASE_PROMPT}\n\n` +
+        `Here is the conversation history. This is your memory.\n` +
+        `${convoHistoryText}\n\n` +
+        `Here is your prompt.\n` +
+        `${text}`;
+
+      const res = await puter.ai.chat(fullPrompt);
+
+      removeLoading(loadingElem);
+
+      const replyText = res?.message?.content || '⚠️ No response from Orbit.';
+      console.log(`💬 Orbit replied: "${replyText}"`);
+
+      appendMessage('orbit', replyText);
+
+      conversationMemory.push({ role: 'orbit', content: replyText });
+      incrementChatCount();
+
+      isProcessing = false;
+      setSendButtonState(true);
     }
-
-    // Normal chat message
-    const res = await puter.ai.chat(fullPrompt);
-
-    removeLoading(loadingElem);
-
-    const replyText = res?.message?.content || '⚠️ No response from Orbit.';
-    console.log(`💬 Orbit replied: "${replyText}"`);
-
-    appendMessage('orbit', replyText);
-
-    conversationMemory.push({ role: 'orbit', content: replyText });
-    incrementChatCount();
-
   } catch (err) {
     removeLoading(loadingElem);
     console.error('🚨 Orbit error:', err);
     appendMessage('orbit', `⚠️ Orbit hit a snag. Try again!\nError: ${err.message || err}`);
+    isProcessing = false;
+    setSendButtonState(true);
   }
 }
+
 
 function appendUserMessage(text) {
   appendMessage('user', text);
@@ -329,12 +394,29 @@ function onSendClick() {
   textInput.value = '';
 }
 
-textInput.addEventListener('keydown', e => {
+textInput.addEventListener('keydown', async (e) => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
-    onSendClick();
+    
+    // Prevent sending if we're already processing a message
+    if (isProcessing) return;
+
+    // Check usage limits before sending
+    const allowed = await canSendMessage();
+    if (!allowed) {
+      appendMessage('orbit', `🛑 You’ve hit your daily chat limit! Sign in or wait till tomorrow for more convos 🚀`);
+      return;
+    }
+
+    const msg = textInput.value.trim();
+    if (!msg) return;
+
+    appendUserMessage(msg);
+    sendChat(msg);
+    textInput.value = '';
   }
 });
+
 
 sendBtn.addEventListener('click', onSendClick);
 
@@ -416,4 +498,5 @@ window.onload = () => {
   } else {
     updateUsageIndicator();
   }
-};
+  setSendButtonState(true);
+}
