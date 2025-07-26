@@ -1,0 +1,20 @@
+name: Active Data Cleanup
+
+on:
+  workflow_dispatch:   # Manual trigger button
+  schedule:
+    - cron: '*/2 * * * *'  # Every 2 minutes
+
+jobs:
+  call-supabase-function:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Supabase Edge Function
+        env:
+          SUPABASE_FUNCTION_URL: ${{ secrets.SUPABASE_FUNCTION_URL_2 }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          curl -v -X POST "$SUPABASE_FUNCTION_URL_2" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}'

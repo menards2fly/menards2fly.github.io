@@ -2,7 +2,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabase = createClient(
   'https://jbekjmsruiadbhaydlbt.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbG0iLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc0ODM5NDY1OCwiZXhwIjoyMDYzOTcwNjU4fQ.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY'
 );
 
 console.log('🚀✨ Orbit Script initializing...');
@@ -195,21 +195,21 @@ function createSenderInfo(sender) {
   return wrapper;
 }
 
-function appendMessage(sender, content, options = {}) {
+async function appendMessage(sender, content, options = {}) {
   const wrapper = document.createElement('div');
   wrapper.classList.add('message-wrapper', sender);
   const messageDiv = document.createElement('div');
   messageDiv.classList.add('message', sender === 'user' ? 'user-msg' : 'bot-msg');
 
-  if (options.isHtml) {
-    messageDiv.innerHTML = content;
-  } else {
-    messageDiv.textContent = content;
-  }
   wrapper.appendChild(messageDiv);
   wrapper.appendChild(createSenderInfo(sender));
   chatBox.appendChild(wrapper);
   chatBox.scrollTop = chatBox.scrollHeight;
+
+  // Create time span but do NOT append yet
+  const timeSpan = document.createElement('span');
+  timeSpan.classList.add('message-time');
+  timeSpan.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   // Fade-in animation
   wrapper.style.opacity = 0;
@@ -220,8 +220,25 @@ function appendMessage(sender, content, options = {}) {
     wrapper.style.transform = 'translateY(0)';
   }, 10);
 
+  if (options.isHtml) {
+    messageDiv.innerHTML = content;
+    messageDiv.appendChild(timeSpan);
+  } else {
+    if (sender === 'orbit') {
+      // Use typewriter effect for Orbit (bot)
+      await typewriterEffect(messageDiv, content);
+      messageDiv.appendChild(timeSpan); // append AFTER typing finishes
+    } else {
+      // User messages appear instantly
+      messageDiv.textContent = content;
+      messageDiv.appendChild(timeSpan);
+    }
+  }
+
   return wrapper;
 }
+
+
 
 function appendLoading() {
   const wrapper = document.createElement('div');
@@ -284,12 +301,11 @@ async function sendChat(text) {
   const chatLimit = user ? CHAT_LIMIT_USER : CHAT_LIMIT_GUEST;
   const imgGenLimit = user ? IMG_GEN_LIMIT_USER : IMG_GEN_LIMIT_GUEST;
 
-  // Append loading UI early
   const loadingElem = appendLoading();
 
   try {
     if (text.toLowerCase().startsWith('generate:')) {
-      // Image generation branch
+      // === IMAGE GENERATION ===
       const desc = text.replace(/^generate:/i, '').trim();
 
       if (!isAdmin && !isSuperAdmin && usage.imgGenCount >= imgGenLimit) {
@@ -303,11 +319,24 @@ async function sendChat(text) {
       }
 
       console.log(`🎨 Generating image for prompt: "${desc}"`);
-
       const imgRes = await puter.ai.txt2img(desc);
       console.log('🛸 Raw image generation response:', imgRes);
 
       removeLoading(loadingElem);
+
+      if (imgRes?.error) {
+        const errMsg = imgRes.error.toLowerCase();
+        if (errMsg.includes('insufficient funds') || errMsg.includes('insufficient balance')) {
+          appendMessage('orbit', `🚀 Whoa, your energy’s too low to finish this mission right now. Try again soon! 🌌`);
+          isProcessing = false;
+          setSendButtonState(true);
+          return;
+        }
+        appendMessage('orbit', `⚠️ Uh oh, something went wrong with the image launch. Try again? 🌠`);
+        isProcessing = false;
+        setSendButtonState(true);
+        return;
+      }
 
       if (!imgRes) {
         appendMessage('orbit', '⚠️ Hmmm, the stars didn’t align and I got no image back. Try again? 🌌');
@@ -316,18 +345,15 @@ async function sendChat(text) {
         return;
       }
 
-// Show a message with their prompt, plain text (not HTML)
-appendMessage('orbit', `Here’s your generated image of "${desc}".`, { isHtml: false });
-
-// Then show the actual image with HTML enabled
-appendMessage('orbit', imgRes.outerHTML, { isHtml: true });
+      appendMessage('orbit', `Here’s your generated image of "${desc}".`);
+      appendMessage('orbit', imgRes.outerHTML, { isHtml: true });
 
       incrementImgGenCount();
       isProcessing = false;
       setSendButtonState(true);
       return;
     } else {
-      // Normal chat branch
+      // === NORMAL CHAT or IMAGE ANALYSIS ===
 
       if (!isAdmin && !isSuperAdmin && usage.chatCount >= chatLimit) {
         removeLoading(loadingElem);
@@ -340,7 +366,6 @@ appendMessage('orbit', imgRes.outerHTML, { isHtml: true });
       }
 
       console.log(`📨 User sent message: "${text}"`);
-
       conversationMemory.push({ role: 'user', content: text });
 
       const convoHistoryText = conversationMemory
@@ -356,17 +381,28 @@ appendMessage('orbit', imgRes.outerHTML, { isHtml: true });
         `Here is your prompt.\n` +
         `${text}`;
 
-      const res = await puter.ai.chat(fullPrompt);
+      // 🔍 Detect image URL (jpg, png, etc)
+      const imageUrlMatch = text.match(/https?:\/\/[^\s]+\.(png|jpe?g|webp|gif)/i);
+      const imageUrl = imageUrlMatch ? imageUrlMatch[0] : null;
+
+      const res = imageUrl
+        ? await puter.ai.chat(fullPrompt, imageUrl)
+        : await puter.ai.chat(fullPrompt);
 
       removeLoading(loadingElem);
 
-      const replyText = res?.message?.content || '⚠️ No response from Orbit.';
-      console.log(`💬 Orbit replied: "${replyText}"`);
+      const replyTextRaw = res?.message?.content || '';
+      const replyTextLower = replyTextRaw.toLowerCase();
 
-      appendMessage('orbit', replyText);
-
-      conversationMemory.push({ role: 'orbit', content: replyText });
-      incrementChatCount();
+      if (replyTextLower.includes('insufficient funds') || replyTextLower.includes('insufficient balance')) {
+        appendMessage('orbit', `🚀 Whoa, your energy’s too low to finish this mission right now. Try again soon! 🌌`);
+      } else {
+        const replyText = replyTextRaw || '⚠️ No response from Orbit.';
+        console.log(`💬 Orbit replied: "${replyText}"`);
+        appendMessage('orbit', replyText);
+        conversationMemory.push({ role: 'orbit', content: replyText });
+        incrementChatCount();
+      }
 
       isProcessing = false;
       setSendButtonState(true);
@@ -374,11 +410,20 @@ appendMessage('orbit', imgRes.outerHTML, { isHtml: true });
   } catch (err) {
     removeLoading(loadingElem);
     console.error('🚨 Orbit error:', err);
-    appendMessage('orbit', `⚠️ Orbit hit a snag. Try again!\nError: ${err.message || err}`);
+
+    const errMsg = (err?.message || '').toLowerCase();
+
+    if (errMsg.includes('insufficient_funds') || errMsg.includes('insufficient_balance')) {
+      appendMessage('orbit', `🚀 Whoa, your energy’s too low to finish this mission right now. Try again soon! 🌌`);
+    } else {
+      appendMessage('orbit', `⚠️ Orbit hit a snag. Try again!`);
+    }
+
     isProcessing = false;
     setSendButtonState(true);
   }
 }
+
 
 
 function appendUserMessage(text) {
@@ -420,7 +465,29 @@ textInput.addEventListener('keydown', async (e) => {
 
 sendBtn.addEventListener('click', onSendClick);
 
-// ==== Upload Image to ImgBB ====
+// ==== Upload Image to Supabase (auto-deletes after 30 minutes) ====
+
+async function uploadToSupabase(file) {
+  const fileName = `${Date.now()}-${file.name}`;
+  const { data, error } = await supabase.storage
+    .from('orbit-uploads')
+    .upload(fileName, file, {
+      cacheControl: '0', // no caching
+      upsert: false,
+    });
+
+  if (error) throw error;
+
+  const publicUrl = `https://jbekjmsruiadbhaydlbt.supabase.co/storage/v1/object/public/orbit-uploads/${fileName}`;
+  return { fileName, publicUrl };
+}
+
+async function scheduleDeletion(fileName) {
+  setTimeout(async () => {
+    console.log(`🗑️ Auto-deleting ${fileName} after 30 minutes...`);
+    await supabase.storage.from('orbit-uploads').remove([fileName]);
+  }, 30 * 60 * 1000); // 30 min
+}
 
 uploadBtn.addEventListener('click', async () => {
   const user = await getUser();
@@ -435,37 +502,34 @@ imageInput.addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
-  appendUserMessage(`Uploading: ${file.name}`);
+  appendUserMessage(`You uploaded an image`);
   const loadingElem = appendLoading();
 
   try {
-    const formData = new FormData();
-    formData.append('image', file);
-    formData.append('key', IMGBB_API_KEY);
-
-    console.log(`📤 Uploading image: ${file.name}`);
-
-    const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
-    const data = await res.json();
+    console.log(`📤 Uploading image to Supabase: ${file.name}`);
+    const { fileName, publicUrl } = await uploadToSupabase(file);
 
     removeLoading(loadingElem);
 
-    if (data.success) {
-      console.log(`✅ Image uploaded: ${data.data.display_url}`);
-      appendMessage('orbit', `<img src="${data.data.display_url}" alt="Uploaded" />`, { isHtml: true });
-      sendChat(`Here’s an image: ${data.data.display_url}`);
-    } else {
-      console.error('❌ Image upload failed:', data);
-      appendMessage('orbit', '⚠️ Upload failed.');
-    }
+    // Show preview
+    appendMessage('orbit', `<img src="${publicUrl}" alt="Uploaded" />`, { isHtml: true });
+
+    // Send to AI for analysis
+    sendChat(`Here’s an image (auto-deletes in 30 min): ${publicUrl}`);
+
+    // Auto-delete after 30 minutes (client-side only)
+    scheduleDeletion(fileName);
+
   } catch (err) {
     removeLoading(loadingElem);
     console.error('🚨 Upload error:', err);
-    appendMessage('orbit', '⚠️ Upload error.');
+    appendMessage('orbit', '⚠️ Upload failed.');
   }
 
   imageInput.value = '';
 });
+
+
 
 // ==== Tools Dropdown ====
 
@@ -490,7 +554,7 @@ generateTool.addEventListener('click', () => {
 
 // ==== Welcome message and init usage on load ====
 
-window.onload = () => {
+window.onload = async () => {
   const usage = getUsage();
   const today = new Date().toISOString().slice(0, 10);
   if (usage.lastResetDate !== today) {
@@ -499,4 +563,16 @@ window.onload = () => {
     updateUsageIndicator();
   }
   setSendButtonState(true);
+
+  // Welcome message with typewriter effect
+  const welcomeMsg = "👋 Hey there, traveler! I'm Orbit — your cosmic AI co-pilot. Ready to explore some interstellar vibes? 🌌✨";
+  await appendMessage('orbit', welcomeMsg);
+}
+
+async function typewriterEffect(element, text, delay = 30) {
+  element.textContent = ''; // clear first
+  for (let i = 0; i < text.length; i++) {
+    element.textContent += text.charAt(i);
+    await new Promise(r => setTimeout(r, delay));
+  }
 }
