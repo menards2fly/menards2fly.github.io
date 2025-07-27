@@ -569,7 +569,7 @@ window.onload = async () => {
   await appendMessage('orbit', welcomeMsg);
 }
 
-async function typewriterEffect(element, text, delay = 30) {
+async function typewriterEffect(element, text, delay = 15) {
   element.textContent = ''; // clear first
   for (let i = 0; i < text.length; i++) {
     element.textContent += text.charAt(i);
