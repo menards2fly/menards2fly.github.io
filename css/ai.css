@@ -434,3 +434,18 @@ body {
   user-select: none;       /* prevents accidental text selection */
   opacity: 0.7;            /* slightly faded */
 }
+.beta-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(90deg, #8a2be2, #622be2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0.8;
+  vertical-align: middle;
+  margin-bottom:3px;
+}
