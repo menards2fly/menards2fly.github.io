@@ -416,7 +416,7 @@ async function sendChat(text) {
     if (errMsg.includes('insufficient_funds') || errMsg.includes('insufficient_balance')) {
       appendMessage('orbit', `🚀 Whoa, your energy’s too low to finish this mission right now. Try again soon! 🌌`);
     } else {
-      appendMessage('orbit', `⚠️ Orbit hit a snag. Try again!`);
+      appendMessage('orbit', `🚀 Whoa, your energy’s too low to finish this mission right now. Try again soon! 🌌`);
     }
 
     isProcessing = false;
