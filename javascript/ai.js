@@ -1,4 +1,5 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { bannedWords } from '/javascript/filter.js';
 
 const supabase = createClient(
   'https://jbekjmsruiadbhaydlbt.supabase.co',
@@ -291,6 +292,14 @@ async function sendChat(text) {
     return;
   }
 
+  // ADD THIS BLOCK RIGHT HERE:
+  if (containsBadWord(text)) {
+    appendMessage('orbit', 'Ayooo 🚨 that’s crossing the line. Kinda rough vibes 😅 but I’m here to help — wanna try that again?');
+    setSendButtonState(true);
+    isProcessing = false;
+    return; // STOP here — don't send to AI
+  }
+
   isProcessing = true;
   setSendButtonState(false);
 
@@ -575,4 +584,11 @@ async function typewriterEffect(element, text, delay = 15) {
     element.textContent += text.charAt(i);
     await new Promise(r => setTimeout(r, delay));
   }
+}
+function containsBadWord(text) {
+  const lowered = text.toLowerCase();
+  return bannedWords.some(word => {
+    const pattern = new RegExp(`\\b${word}\\b`, 'i');
+    return pattern.test(lowered);
+  });
 }
