@@ -13,7 +13,9 @@ let profileIsPrivate = false;
 let currentUserId = null;
 let profileUserId = null;
 let isFollowing = false;
-
+let viewerFollowsProfile = false;
+let profileFollowsViewer = false;
+let canShowStatus = false;
 const followBtn = document.getElementById('follow-btn');
 
 async function getCurrentUserId() {
@@ -71,24 +73,38 @@ async function updateFollowButton() {
 }
 
 async function updateFollowerCount() {
-  if (!profileUserId) {
-    console.warn('⚠️ No profile user ID to update follower count.');
+  const followerCountEl = document.getElementById('follower-count');
+
+  // If no user is logged in, don't even fetch
+  if (!currentUserId) {
+    followerCountEl.textContent = 'Sign in to see followers';
+    console.log('👥 Followers hidden — user is not signed in.');
     return;
   }
-  const { count, error } = await supabase
+
+  if (!profileUserId) {
+    console.warn('⚠️ No profile user ID to update follower count.');
+    followerCountEl.textContent = '';
+    return;
+  }
+
+  const { data, count, error } = await supabase
     .from('follows')
-    .select('*', { count: 'exact', head: true })
+    .select('*', { count: 'exact' })
     .eq('following_id', profileUserId);
 
   if (error) {
     console.error('❌ Error fetching follower count:', error);
+    followerCountEl.textContent = 'Followers unavailable';
     return;
   }
 
-  const followerText = `${count ?? 0} follower${count === 1 ? '' : 's'}`;
-  document.getElementById('follower-count').textContent = followerText;
-  console.log('👥 Follower count set to:', followerText);
+  const totalFollowers = typeof count === 'number' ? count : (data?.length || 0);
+  followerCountEl.textContent = `${totalFollowers} follower${totalFollowers === 1 ? '' : 's'}`;
+  console.log('👥 Follower count set to:', followerCountEl.textContent);
 }
+
+
 
 async function toggleFollow() {
   if (!currentUserId || !profileUserId) {
@@ -99,6 +115,9 @@ async function toggleFollow() {
     console.log('ℹ️ User cannot follow themselves.');
     return;
   }
+
+  // Check current follow status before toggling
+  isFollowing = await checkIfFollowing(currentUserId, profileUserId);
 
   if (isFollowing) {
     console.log('🚫 Unfollowing user:', profileUserId);
@@ -132,6 +151,7 @@ async function toggleFollow() {
   updateFollowerCount();
 }
 
+
 async function loadProfile() {
   if (!username) {
     console.warn('⚠️ No username found in query params');
@@ -155,6 +175,42 @@ async function loadProfile() {
 
   console.log('✅ Profile data loaded:', data);
   profileUserId = data.id;
+profileUserId = data.id;
+
+[viewerFollowsProfile, profileFollowsViewer] = await Promise.all([
+  checkIfFollowing(currentUserId, profileUserId),
+  checkIfFollowing(profileUserId, currentUserId),
+]);
+
+const visibility = data.online_status_visibility || 'everyone';
+
+canShowStatus = (() => {
+  if (profileIsPrivate) {
+    console.log('🚫 Profile is private — no status shown');
+    return false;
+  }
+  if (visibility === 'everyone') {
+    console.log('✅ Visibility set to everyone — showing status');
+    return true;
+  }
+  if (visibility === 'friends') {
+    const mutualFriends = viewerFollowsProfile && profileFollowsViewer;
+    console.log(`🔄 Visibility is friends. Mutual friends? ${mutualFriends}`);
+    return mutualFriends;
+  }
+  if (visibility === 'mutual') {
+    // Assuming "mutual" means mutual follows — same as friends in your context
+    const mutual = viewerFollowsProfile && profileFollowsViewer;
+    console.log(`🔄 Visibility is mutual. Mutual friends? ${mutual}`);
+    return mutual;
+  }
+  console.log('❓ Visibility setting not recognized — hiding status');
+  return false;
+})();
+
+
+
+
 
   // 🖼️ Set profile pic
   const profilePic = document.getElementById('profile-pic');
@@ -204,43 +260,37 @@ async function loadProfile() {
   // ✅ Update follower count
   await updateFollowerCount();
 
-  // 🟢 Online status logic
-  const onlineDot = document.getElementById('online-indicator');
-  const visibility = data.online_status_visibility || 'everyone';
+ // 🟢 Online + Activity visibility logic
+const onlineDot = document.getElementById('online-indicator');
+const profileStatusEl = document.getElementById('profile-status-text');
+const gameCard = document.getElementById('current-game-card');
 
-  const viewerFollowsProfile = await checkIfFollowing(currentUserId, data.id);
-  const profileFollowsViewer = await checkIfFollowing(data.id, currentUserId);
 
-  const canShowStatus = (() => {
-    if (visibility === 'no_one') return false;
-    if (visibility === 'everyone') return true;
-    if (visibility === 'mutual_follow')
-      return viewerFollowsProfile && profileFollowsViewer;
-    return false;
-  })();
 
-  if (!canShowStatus) {
-    onlineDot.style.display = 'none';
-    document.getElementById('current-game-card').style.display = 'none';
-    return;
-  }
 
+// Hide everything if not allowed
+if (!canShowStatus) {
+  onlineDot.style.display = 'none';
+  gameCard.style.display = 'none';
+  profileStatusEl.style.display = 'none';
+} else {
+  // Format "last seen" tooltip nicely
   if (data.last_active) {
-    // Convert "YYYY-MM-DD HH:mm:ss.SSS" to "YYYY-MM-DDTHH:mm:ss.SSSZ" (Z = UTC)
     const isoString = data.last_active.replace(' ', 'T') + 'Z';
     const lastActiveDate = new Date(isoString);
     const now = Date.now();
     const minutesAgo = (now - lastActiveDate.getTime()) / 60000;
 
-    console.log(
-      `🕒 User last active ${minutesAgo.toFixed(2)} minutes ago. Should be online?`,
-      !isNaN(minutesAgo) && minutesAgo < 5 && minutesAgo >= 0 ? 'Yes' : 'No'
-    );
+    const formatLastSeen = (minutes) => {
+      if (minutes < 1) return 'just now';
+      if (minutes < 60) return `${Math.floor(minutes)}m ago`;
+      const hours = minutes / 60;
+      if (hours < 24) return `${Math.floor(hours)}h ago`;
+      const days = hours / 24;
+      return `${Math.floor(days)}d ago`;
+    };
 
     if (minutesAgo < 0) {
-      console.warn(
-        `⚠️ last_active is in the future (${minutesAgo.toFixed(2)} min). Treating as offline.`
-      );
       onlineDot.title = `⚪ Offline (invalid activity time)`;
       onlineDot.classList.add('offline');
       onlineDot.style.display = 'inline-block';
@@ -249,16 +299,52 @@ async function loadProfile() {
       onlineDot.classList.remove('offline');
       onlineDot.style.display = 'inline-block';
     } else {
-      onlineDot.title = `⚪ Last seen ${Math.floor(minutesAgo)} min ago`;
+      onlineDot.title = `⚪ Last seen ${formatLastSeen(minutesAgo)}`;
       onlineDot.classList.add('offline');
       onlineDot.style.display = 'inline-block';
     }
   } else {
-    console.warn('⚠️ No last_active timestamp found for profile');
     onlineDot.title = `⚪ Offline (no activity recorded)`;
     onlineDot.classList.add('offline');
     onlineDot.style.display = 'inline-block';
   }
+
+  // Status (Surfing the web, Chatting with AI, etc.)
+  const statusDisplayText = {
+    proxy: 'Surfing the web',
+    aichat: 'Chatting with AI',
+    tv: 'Watching TV',
+    sitechat: 'Hanging out in Chat',
+  };
+
+  if (data.status && !data.current_game_id) {
+    const statusText = statusDisplayText[data.status] || 'Active';
+    profileStatusEl.textContent = statusText;
+    profileStatusEl.style.display = 'block';
+
+    const statusRoutes = {
+      proxy: '/route',
+      aichat: '/ai',
+      tv: '/tv',
+      sitechat: '/chat',
+    };
+
+    if (statusRoutes[data.status]) {
+      profileStatusEl.style.cursor = 'pointer';
+      profileStatusEl.title = `Go to ${statusText}`;
+      profileStatusEl.onclick = () => {
+        window.location.href = statusRoutes[data.status];
+      };
+    } else {
+      profileStatusEl.style.cursor = 'default';
+      profileStatusEl.onclick = null;
+    }
+  } else {
+    profileStatusEl.style.display = 'none';
+  }
+}
+
+
   
   // Map statuses to friendly display text and optionally route URLs
 const statusDisplayText = {
@@ -269,7 +355,7 @@ const statusDisplayText = {
 };
 
 // Show the user's status text below the bio, if available and allowed
-const profileStatusEl = document.getElementById('profile-status-text');
+
 
 if (canShowStatus && data.status && !data.current_game_id) {
   const statusText = statusDisplayText[data.status] || 'Active';
@@ -300,6 +386,14 @@ if (canShowStatus && data.status && !data.current_game_id) {
 } else {
   profileStatusEl.style.display = 'none';
 }
+
+console.log('🔒 Profile private:', profileIsPrivate);
+console.log('🛠️ online_status_visibility:', visibility);
+console.log('👤 currentUserId:', currentUserId);
+console.log('👥 viewerFollowsProfile:', viewerFollowsProfile);
+console.log('👥 profileFollowsViewer:', profileFollowsViewer);
+
+
 }
 
 
@@ -308,17 +402,26 @@ if (canShowStatus && data.status && !data.current_game_id) {
 (async () => {
   currentUserId = await getCurrentUserId();
 
+  // Load profile first so profileUserId is ready
   await loadProfile();
-  await loadProfileGame();
 
-  if (!currentUserId || currentUserId === profileUserId) {
+  // Only do follow stuff if viewing someone else's profile and logged in
+  if (currentUserId && profileUserId && currentUserId !== profileUserId) {
+    // Check if current user is following the profile user
+    isFollowing = await checkIfFollowing(currentUserId, profileUserId);
+
+    // Update the follow button based on isFollowing
+    updateFollowButton();
+
+    // Add event listener to toggle follow/unfollow
+    followBtn.addEventListener('click', toggleFollow);
+  } else {
+    // Hide the follow button if no user logged in or viewing own profile
     followBtn.style.display = 'none';
-    return;
   }
 
-  isFollowing = await checkIfFollowing(currentUserId, profileUserId);
-  updateFollowButton();
-  followBtn.addEventListener('click', toggleFollow);
+  // Load the profile's current game AFTER follow button logic
+  await loadProfileGame();
 })();
 
 // 🔗 Share button logic
@@ -379,6 +482,34 @@ async function loadProfileGame() {
     return;
   }
 
+  // Also respect the same visibility rules as the online dot + status text
+  const { data: profileSettings, error: settingsError } = await supabase
+    .from('profiles')
+    .select('online_status_visibility')
+    .eq('id', profileUserId)
+    .single();
+
+  if (settingsError || !profileSettings) {
+    console.warn('⚠️ Could not fetch profile visibility:', settingsError);
+    document.getElementById('current-game-card').style.display = 'none';
+    return;
+  }
+
+
+
+const canShowGame = (() => {
+  if (profileIsPrivate) return false;
+  if (!canShowStatus) return false; // Reuse same status visibility logic
+  return true;
+})();
+
+
+  if (!canShowGame) {
+    console.log('🚫 Not allowed to show now playing (privacy settings).');
+    document.getElementById('current-game-card').style.display = 'none';
+    return;
+  }
+
   if (!profileUserId) {
     console.log('🎮 No profile user ID, hiding game card.');
     document.getElementById('current-game-card').style.display = 'none';
@@ -392,7 +523,7 @@ async function loadProfileGame() {
     .eq('id', profileUserId)
     .single();
 
-  if (error || !profile) {
+  if (error || !profile || !profile.current_game_id) {
     console.warn('⚠️ Could not fetch profile game:', error);
     document.getElementById('current-game-card').style.display = 'none';
     return;
@@ -401,6 +532,7 @@ async function loadProfileGame() {
   console.log('👾 Current game ID for profile:', profile.current_game_id);
   await loadCurrentGame(profile.current_game_id);
 }
+
 const searchInput = document.getElementById('profile-search-input');
 const searchResults = document.getElementById('profile-search-results');
 
@@ -475,3 +607,5 @@ async function searchProfiles(query) {
     });
   });
 }
+
+
