@@ -3,6 +3,8 @@ const supabaseKey =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+import { bannedWords } from '/javascript/filter.js';
+
 // Elements
 const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
@@ -207,6 +209,14 @@ async function updateAvatarUrl(userId, url) {
 async function updateUsername() {
   const newUsername = newUsernameInput.value.trim();
   console.log(`✏️ Attempting username update to: ${newUsername}`);
+  if (containsBadWord(newUsername)) {
+              showNotification('Username Blocked', {
+            body: `Hey explorer, that username is a bit rough. Let's keep it friendly!`,
+            duration: 5000,
+            sound: true,
+          });
+    return; // STOP here — don't update username
+  }
   if (!newUsername) {
     console.warn('⚠️ Username update failed: no input');
     return setStatus('Please enter a new username.');
@@ -236,6 +246,13 @@ async function updateUsername() {
 
   const navbarUsername = document.querySelector('.username');
   if (navbarUsername) navbarUsername.textContent = newUsername;
+}
+function containsBadWord(text) {
+  const lowered = text.toLowerCase();
+  return bannedWords.some(word => {
+    const pattern = new RegExp(`\\b${word}\\b`, 'i');
+    return pattern.test(lowered);
+  });
 }
 
 async function loadProfile() {
@@ -523,6 +540,17 @@ async function saveBio() {
   bioStatus.textContent = 'Saving...';
 
   const newBio = bioTextarea.value.trim();
+    if (containsBadWord(newBio)) {
+              showNotification('Bio Blocked', {
+            body: `Hey explorer, that bio is a bit rough. Let's keep it friendly!`,
+            duration: 5000,
+            sound: true,
+          });
+            bioStatus.style.color = 'red';
+  bioStatus.textContent = 'Bio contains inappropriate content.';
+    return; // STOP here — don't update username
+  }
+
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();
