@@ -185,6 +185,57 @@
         color: #8a2be2cc;
         font-style: italic;
       }
+      #changeSrcBtn {
+  position: absolute;
+  top: 50px; /* place it below the other button */
+  right: 0;
+  z-index: 1000;
+  background-color: #8a2be2;
+  border: none;
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+#changeSrcBtn:hover {
+  background-color: #8e1099;
+}#backBtn, #reloadBtn, #changeSrcBtn {
+  position: absolute;
+  right: 0;
+  z-index: 1000;
+  background-color: #8a2be2;
+  border: none;
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+/* Stack vertically with spacing */
+#backBtn { top: 50px; }
+#reloadBtn { top: 50px; }
+#changeSrcBtn { top: 100px; }
+
+#backBtn:hover,
+#reloadBtn:hover,
+#changeSrcBtn:hover {
+  background-color: #6e22c9;
+}
+
+
     </style>
   </head>
   <body>
@@ -272,9 +323,20 @@
         data-domain="sportpersist10.global.ssl.fastly.net"
       ></iframe>
 
-      <button id="switchDomainBtn" title="Switch Domain" aria-label="Switch Domain">
-        <i class="fa-solid fa-arrows-rotate"></i>
+      <button id="switchDomainBtn" title="Switch Server" aria-label="Switch Domain">
+        <i class="fa-solid fa-globe"></i>
       </button>
+
+
+<button id="reloadBtn" title="Reload Page" aria-label="Reload Page">
+  <i class="fa-solid fa-arrows-rotate"></i>
+</button>
+
+<button id="changeSrcBtn" title="Change Iframe Source" aria-label="Change Iframe Source">
+  <i class="fa-solid fa-home"></i>
+</button>
+
+
     </div>
 
     <!-- Modal for Rules -->
@@ -336,6 +398,52 @@
         currentIndex = (currentIndex + 1) % iframes.length;
         iframes[currentIndex].classList.add("active");
       });
+
+
+const backBtn = document.getElementById("backBtn");
+const reloadBtn = document.getElementById("reloadBtn");
+const changeSrcBtn = document.getElementById("changeSrcBtn");
+
+const activeIframe = () => document.querySelector(".proxyFrame.active");
+
+// Keep a stack of URLs for history
+const iframeHistory = [];
+
+// Initialize history with the starting URL
+iframeHistory.push(activeIframe().src);
+
+// Helper to update iframe source and track it
+function loadIframe(url) {
+  const iframe = activeIframe();
+  if (!iframe) return;
+
+  iframe.src = url;
+  iframeHistory.push(url);
+}
+
+// Back button functionality
+backBtn.addEventListener("click", () => {
+  if (iframeHistory.length > 1) {
+    iframeHistory.pop(); // Remove current URL
+    const prevUrl = iframeHistory[iframeHistory.length - 1];
+    activeIframe().src = prevUrl;
+  }
+});
+
+// Reload current iframe
+reloadBtn.addEventListener("click", () => {
+  const iframe = activeIframe();
+  if (iframe) iframe.src = iframe.src;
+});
+
+// Home/changeSrc button (can point to any URL)
+changeSrcBtn.addEventListener("click", () => {
+  const domain = activeIframe().dataset.domain;
+  const newUrl = `https://${domain}/embed.html#https://starship-app.com/start.html`;
+  loadIframe(newUrl);
+});
+
+
     </script>
   </body>
 </html>
