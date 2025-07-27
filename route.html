@@ -421,14 +421,6 @@ function loadIframe(url) {
   iframeHistory.push(url);
 }
 
-// Back button functionality
-backBtn.addEventListener("click", () => {
-  if (iframeHistory.length > 1) {
-    iframeHistory.pop(); // Remove current URL
-    const prevUrl = iframeHistory[iframeHistory.length - 1];
-    activeIframe().src = prevUrl;
-  }
-});
 
 // Reload current iframe
 reloadBtn.addEventListener("click", () => {
