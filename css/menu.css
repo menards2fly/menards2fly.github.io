@@ -498,10 +498,6 @@ body {
   color: #c48fff !important;
 }
 
-/* Adjust friends-section margin if needed */
-.friends-section {
-  margin-left: 84px !important;
-}
 .online-dot {
   position: absolute !important;
   bottom: 4px !important;
