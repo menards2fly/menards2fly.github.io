@@ -474,9 +474,7 @@ function togglePerformanceMode() {
 
   localStorage.setItem('performanceMode', newValue ? 'true' : 'false');
 
-  alert(
-    `Performance mode ${newValue ? 'enabled' : 'disabled'}.\nReload the page to apply changes.`
-  );
+  window.location.reload();
 }
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('performanceModeToggle').checked =
