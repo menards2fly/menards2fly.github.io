@@ -594,3 +594,29 @@ document.getElementById('mobileOverlay').addEventListener('click', (e) => {
     e.target.classList.remove('active');
   }
 });
+function applyPerformanceModeIfEnabled() {
+  const perfStyleId = 'perf-style-tag';
+  const isPerfMode = localStorage.getItem('performanceMode') === 'true';
+
+  if (isPerfMode && !document.getElementById(perfStyleId)) {
+    const styleTag = document.createElement('style');
+    styleTag.id = perfStyleId;
+    styleTag.textContent = `
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+      @keyframes fade, fadeIn, fadeOut, slide, slideIn, slideOut, bounce, spin, move, wiggle {
+        from { opacity: 1; transform: none; }
+        to { opacity: 1; transform: none; }
+      }
+    `;
+    document.head.appendChild(styleTag);
+  }
+}
+applyPerformanceModeIfEnabled();
