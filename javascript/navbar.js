@@ -150,6 +150,7 @@ const navbarHTML = isPlayPage
     <a href="/ai" title="AI"><i class="fa fa-robot"></i><span class="link-text">AI</span></a>
     <a href="/tv" title="TV"><i class="fa fa-television"></i><span class="link-text">TV</span></a>
     <a href="/chat" title="Chat"><i class="fa-solid fa-comments"></i><span class="link-text">Chat</span></a>
+    <a href="/contact" title="Contact"><i class="fa fa-phone"></i><span class="link-text">Contact</span></a>
     <a href="/blog" title="Blog"><i class="fa fa-newspaper"></i><span class="link-text">Blog</span></a>
     <a href="/reviews" title="Reviews"><i class="fa fa-star"></i><span class="link-text">Reviews</span></a>
     <a href="/settings" title="Settings"><i class="fa fa-gear"></i><span class="link-text">Settings</span></a>
@@ -195,6 +196,7 @@ const mobileNavToggle = `
       <a href="/ai" title="AI"><i class="fa fa-robot"></i> AI</a>
       <a href="/tv" title="TV"><i class="fa fa-television"></i> TV</a>
       <a href="/chat" title="Chat"><i class="fa-solid fa-comments"></i> Chat</a>
+      <a href="/contact" title="Contact"><i class="fa fa-phone"></i><span class="link-text">Contact</span></a>
       <a href="/blog" title="Blog"><i class="fa fa-newspaper"></i> Blog</a>
       <a href="/reviews" title="Reviews"><i class="fa fa-star"></i> Reviews</a>
       <a href="/settings" title="Settings"><i class="fa fa-gear"></i> Settings</a>
