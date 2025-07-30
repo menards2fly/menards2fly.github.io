@@ -151,6 +151,66 @@
           padding: 20px;
         }
       }
+
+  .setting-toggle {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-top: 20px !important;
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    color: white !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    padding: 16px !important;
+    border-radius: 14px !important;
+  }
+
+  .switch {
+    position: relative !important;
+    display: inline-block !important;
+    width: 52px !important;
+    height: 28px !important;
+  }
+
+  .switch input {
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  .slider {
+    position: absolute !important;
+    cursor: pointer !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background-color: #999 !important;
+    transition: 0.4s !important;
+    border-radius: 28px !important;
+  }
+
+  .slider:before {
+    position: absolute !important;
+    content: "" !important;
+    height: 20px !important;
+    width: 20px !important;
+    left: 4px !important;
+    bottom: 4px !important;
+    background-color: white !important;
+    transition: 0.4s !important;
+    border-radius: 50% !important;
+  }
+
+  .switch input:checked + .slider {
+    background-color: #ae54ff !important;
+  }
+
+  .switch input:checked + .slider:before {
+    transform: translateX(24px) !important;
+  }
+
+
     </style>
   </head>
   <body>
@@ -215,41 +275,45 @@
     <div class="section">
       <h2 class="gradient-red">Panic Key</h2>
       <p>
-        Set a custom key that redirects to a page, based on your cloak. [For
-        those who used The Arcade, it's like the Emergency Canvas button.]
+        Set a panic key to quickly cloak the site, and hide it from view.
       </p>
-      <button onclick="listenForKey()">Start Listening</button>
+      <button onclick="listenForKey()">Set Key</button>
     </div>
     <div class="section">
       <h2 class="gradient-red">Anti-Tab Close</h2>
       <p>
-        Stops teachers, or anyone from closing your tab. Say goodbye to lost
+        Stops blocksi, teachers, or anyone else from closing your tab. Say goodbye to lost
         progress.
       </p>
-      <label for="toggleAntiTabClose">Enable Anti-Tab Close:</label>
-      <input
-        type="checkbox"
-        id="toggleAntiTabClose"
-        name="toggleAntiTabClose"
-        onchange="toggleAntiTabClose(this.checked)"
-      />
+<div class="setting-toggle">
+  <span>Anti-Tab Close</span>
+  <label class="switch">
+    <input type="checkbox" id="toggleAntiTabClose" onchange="toggleAntiTabClose(this.checked)">
+    <span class="slider"></span>
+  </label>
+</div>
+
     </div>
     <div class="section">
       <h2 class="gradient-red">Reduce Motion</h2>
-      <p><label>Disables animations.</label></p>
-      <label
-        ><button type="checkbox" id="performanceModeToggle" onClick="togglePerformanceMode()"/> Toggle</button
-      >
+      <p><label>Disables animations for performance.</label></p>
+      <div class="setting-toggle">
+  <span>Reduce Motion</span>
+  <label class="switch">
+    <input type="checkbox" id="performanceModeToggle" onclick="togglePerformanceMode()">
+    <span class="slider"></span>
+  </label>
+</div>
+
     </div>
     <div class="section">
       <h2 class="gradient-red">about:blank</h2>
       <p>
-        Open GameVerse in about:blank. Virtually undetectable (even from
-        Blocksi), and makes the site less prone to get blocked.
+        Open the site in about:blank to avoid detection.
       </p>
       <button onclick="cloak.aboutBlank();">Open in about:blank</button>
     </div>
-    <div class="section">
+    <!--<div class="section">
       <h2 class="gradient-red">Particle Customization</h2>
       <p>Customize the particles animation to your liking!</p>
       <div class="profile-container">
@@ -312,7 +376,7 @@
           Reset to Default
         </button>
       </div>
-    </div>
+    </div>-->
     <div class="section">
       <h2 class="gradient-red">Screen Time Settings</h2>
       <p>Look at your usage data, and set a time limit if necessary.</p>
@@ -414,6 +478,13 @@ function togglePerformanceMode() {
     `Performance mode ${newValue ? 'enabled' : 'disabled'}.\nReload the page to apply changes.`
   );
 }
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('performanceModeToggle').checked =
+    localStorage.getItem('performanceMode') === 'true';
+
+  document.getElementById('toggleAntiTabClose').checked =
+    localStorage.getItem('antiTabCloseEnabled') === 'true';
+});
 
 
     </script>
