@@ -51,24 +51,27 @@ a {
 .hero-content {
   position: relative;
   z-index: 2;
-  height: 200px;
+  height: min-content;
   padding: 48px 36px;
   color: #eaeaea;
-
   max-width: 100%;
-  width: 100%;
 }
 
 .hero-title {
   font-size: 160px;
   text-align: center;
-
   font-weight: 800;
   margin: 0 0 18px 0;
   background: linear-gradient(90deg, #ff4b2b, #8a2be2 80%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: 1px;
+}
+
+@media (max-width: 900px) {
+  .hero-title {
+    font-size: 75px;
+  }
 }
 
 .hero-desc {

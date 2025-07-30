@@ -182,6 +182,29 @@ const navbarHTML = isPlayPage
 
 document.body.insertAdjacentHTML('afterbegin', navbarHTML);
 
+const mobileNavToggle = `
+  <div id="mobileNavBtn" class="mobile-nav-toggle">
+    <i class="fa fa-bars"></i>
+  </div>
+
+  <div id="mobileOverlay" class="mobile-overlay">
+    <div class="mobile-overlay-content">
+      <a href="/" title="Home"><i class="fa fa-home"></i> Home</a>
+      <a href="/games" title="Games"><i class="fa fa-gamepad"></i> Games</a>
+      <a href="/route" title="Proxy"><i class="fa fa-globe"></i> Proxy</a>
+      <a href="/ai" title="AI"><i class="fa fa-robot"></i> AI</a>
+      <a href="/tv" title="TV"><i class="fa fa-television"></i> TV</a>
+      <a href="/chat" title="Chat"><i class="fa-solid fa-comments"></i> Chat</a>
+      <a href="/blog" title="Blog"><i class="fa fa-newspaper"></i> Blog</a>
+      <a href="/reviews" title="Reviews"><i class="fa fa-star"></i> Reviews</a>
+      <a href="/settings" title="Settings"><i class="fa fa-gear"></i> Settings</a>
+    </div>
+  </div>
+`;
+
+document.body.insertAdjacentHTML('beforeend', mobileNavToggle);
+
+
 const sidebar = document.getElementById('starshipSidebar');
 if (sidebar) {
   sidebar.classList.add('collapsed'); // start collapsed
@@ -558,3 +581,14 @@ function injectTosPopup() {
 
 // Call it after navbar injection
 injectTosPopup();
+
+document.getElementById('mobileNavBtn').addEventListener('click', () => {
+  const overlay = document.getElementById('mobileOverlay');
+  overlay.classList.toggle('active');
+});
+
+document.getElementById('mobileOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'mobileOverlay') {
+    e.target.classList.remove('active');
+  }
+});

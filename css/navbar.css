@@ -208,8 +208,94 @@ body {
   padding-left: 0;
 }
 
-/* Push the page by collapsed width only when sidebar is collapsed */
-.starship-sidebar.collapsed ~ body,
-body:has(.starship-sidebar.collapsed) {
-  padding-left: var(--sidebar-collapsed);
+@media (min-width: 769px) {
+  /* Push the page by collapsed width only when sidebar is collapsed */
+  .starship-sidebar.collapsed ~ body,
+  body:has(.starship-sidebar.collapsed) {
+    padding-left: var(--sidebar-collapsed);
+  }
+}
+
+
+/* === Mobile Navbar Overlay === */
+.mobile-nav-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 10001;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid #a855f7;
+  border-radius: 12px;
+  padding: 10px 14px;
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 4px 20px rgba(138, 43, 226, 0.2);
+  transition: background 0.3s ease, transform 0.2s ease;
+  display: none;
+}
+
+.mobile-nav-toggle:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+}
+
+.mobile-nav-toggle i {
+  font-size: 22px;
+  pointer-events: none;
+}
+
+/* === Fullscreen Overlay === */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #0a0a12 0%, #1c1c2b 100%);
+  z-index: 10000;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mobile-overlay.active {
+  display: flex;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* === Overlay Menu Content === */
+.mobile-overlay-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: center;
+}
+
+.mobile-overlay-content a {
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.mobile-overlay-content a:hover {
+  color: #a855f7;
+  transform: translateY(-2px);
+}
+
+/* === Responsive Rules === */
+@media (max-width: 768px) {
+  .starship-sidebar {
+    display: none !important;
+  }
+
+  .mobile-nav-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }

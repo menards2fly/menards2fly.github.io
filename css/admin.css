@@ -357,9 +357,7 @@ center {
   color: white;
   text-decoration: none;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
   padding: 0;
   height: max-content;
@@ -412,7 +410,6 @@ center {
 #overlay form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
 }
 
 #overlay form label {
@@ -420,10 +417,10 @@ center {
   font-weight: 500;
 }
 
-#overlay form input[type='text'],
-#overlay form input[type='url'],
-#overlay form input[type='file'],
-#overlay form input[type='email'],
+#overlay form input[type="text"],
+#overlay form input[type="url"],
+#overlay form input[type="file"],
+#overlay form input[type="email"],
 #overlay form select,
 #overlay form textarea {
   background-color: #1f2937; /* Tailwind gray-800 */
@@ -432,9 +429,7 @@ center {
   border-radius: 8px;
   padding: 10px;
   font-size: 1rem;
-  transition:
-    border-color 0.3s ease,
-    box-shadow 0.3s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 #overlay form input:focus,
@@ -446,7 +441,7 @@ center {
 }
 
 /* Style the submit button */
-#overlay form button[type='submit'] {
+#overlay form button[type="submit"] {
   background-color: #a78bfa;
   color: #111827;
   border: none;
@@ -458,7 +453,7 @@ center {
   transition: background-color 0.3s ease;
 }
 
-#overlay form button[type='submit']:hover {
+#overlay form button[type="submit"]:hover {
   background-color: #c4b5fd;
 }
 
@@ -472,10 +467,10 @@ center {
   font-size: 1rem;
 }
 
-.overlay-content input[type='text'],
-.overlay-content input[type='url'],
-.overlay-content input[type='file'],
-.overlay-content input[type='email'] .overlay-content select {
+.overlay-content input[type="text"],
+.overlay-content input[type="url"],
+.overlay-content input[type="file"],
+.overlay-content input[type="email"] .overlay-content select {
   width: auto; /* allow width to adjust */
   min-width: 100px; /* don't shrink too much */
   max-width: 100%; /* max width 100% of container */
@@ -512,9 +507,7 @@ center {
   width: max; /* or whatever fits your layout */
   color: white;
   text-decoration: none;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .game-card:hover {
@@ -656,11 +649,9 @@ center {
   padding: 16px;
   width: min-content;
   color: #e0f7fa;
-  font-family: 'Orbitron', sans-serif;
+  font-family: "Orbitron", sans-serif;
   box-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   text-align: left;
 }
 
@@ -724,11 +715,9 @@ center {
   border-radius: 12px;
   padding: 16px;
   color: #e0f7fa;
-  font-family: 'Orbitron', sans-serif;
+  font-family: "Orbitron", sans-serif;
   box-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .review:hover {
@@ -793,7 +782,7 @@ hr {
   font-size: 1.5rem;
 }
 
-.imgtdata input[type='file'] {
+.imgtdata input[type="file"] {
   background: #2a2d33;
   color: #ccc;
   border: 1px solid #444;
@@ -871,11 +860,7 @@ hr {
 }
 
 .tab-button:hover {
-  background: linear-gradient(
-    to right,
-    rgb(110, 0, 110),
-    rgba(255, 0, 255, 0.2)
-  );
+  background: linear-gradient(to right, rgb(110, 0, 110), rgba(255, 0, 255, 0.2));
   border: none;
   border-left: 2px solid magenta;
   box-shadow: none;
@@ -907,12 +892,67 @@ hr {
 
 /* FadeIn animation */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .admin-tab-wrapper {
+    flex-direction: column;
+    gap: 1rem;
+    margin: 1rem;
+    align-items: stretch;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .tab-button {
+    flex: 1 1 auto;
+    font-size: 0.9rem;
+    padding: 10px;
+    text-align: center;
+    border-left: none;
+    border-top: 2px solid magenta;
+  }
+
+  .tab-button.active {
+    background-color: #a78bfa;
+  }
+
+  .admin-container {
+    padding: 0;
+    max-width: 100%;
+  }
+
+  .blogposts,
+  .gamedisplay {
+    grid-template-columns: repeat(1, 1fr);
+    max-height: 50rem;
+    overflow-y: scroll;
+    padding: 10px;
+  }
+
+  .post-card,
+  .game-card {
+    width: 100%;
+  }
+
+  .admin-table {
+    overflow-x: auto;
+  }
+
+  .tab-content {
+    padding: 1rem;
+  }
+
+  .overlay-content {
+    width: 95%;
+    max-height: 90vh;
   }
 }
