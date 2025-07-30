@@ -177,6 +177,15 @@ const navbarHTML = isPlayPage
   </div>
 </div>
 
+<!-- Inside .starship-sidebar -->
+<div id="dynamicIsland" class="dynamic-island hidden">
+  <img id="dynamicIslandIcon" src="/uploads/branding/favicon.png" alt="User Avatar" />
+  <div class="dynamic-island-text">
+    <div id="dynamicIslandTitle"></div>
+    <div id="dynamicIslandContent"></div>
+  </div>
+</div>
+
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
   `;
@@ -379,6 +388,151 @@ if (hasSeenIntro) {
   // Auto-hide after animation duration (5.5 seconds)
   setTimeout(hideIntroOverlay, duration);
 }
+
+
+
+
+// == Dynamic Island HTML Injection ==
+const dynamicIslandHTML = `
+  <div id="dynamicIsland" style="
+    position: fixed;
+    top: 16px;
+    left: 260px; /* will be updated dynamically */
+    background: rgba(138, 43, 226, 0.85);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 0 20px #8a2be2aa;
+    z-index: 11000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease, left 0.3s ease;
+    transform: translateX(-20px);
+  ">
+    <img id="dynamicIslandIcon" src="" alt="User Avatar" style="
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid white;
+      object-fit: cover;
+      flex-shrink: 0;
+      display: none;
+    "/>
+    <div>
+      <div id="dynamicIslandTitle" style="margin-bottom: 2px;"></div>
+      <div id="dynamicIslandContent">Loading...</div>
+    </div>
+  </div>
+`;
+
+document.body.insertAdjacentHTML('beforeend', dynamicIslandHTML);
+
+
+const dynamicIsland = document.getElementById('dynamicIsland');
+const dynamicIslandTitle = document.getElementById('dynamicIslandTitle');
+const dynamicIslandContent = document.getElementById('dynamicIslandContent');
+const dynamicIslandIcon = document.getElementById('dynamicIslandIcon');
+
+const SIDEBAR_WIDTH = 250;       // expanded width in px
+const SIDEBAR_COLLAPSED = 64;    // collapsed width in px
+const GAP = 10;                  // gap between sidebar and island in px
+
+const sessionStart = new Date();
+
+// Info blocks for cycling content
+const infoBlocks = [
+  {
+    title: '',
+    content: () => {
+      const now = new Date();
+      return `Time: ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    },
+    showAvatar: false,
+  },
+  {
+    title: '',
+    content: () => {
+      const elapsedMs = new Date() - sessionStart;
+      const mins = Math.floor(elapsedMs / 60000);
+      const secs = Math.floor((elapsedMs % 60000) / 1000);
+      return `Screen Time: ${mins}m ${secs}s`;
+    },
+    showAvatar: false,
+  },
+  {
+    title: `Hey, ${username || 'User'}`,
+    content: () => '',
+    showAvatar: true,
+  },
+  // Add more blocks if you want!
+];
+
+// Show the island with fade-in
+function showDynamicIsland() {
+  dynamicIsland.style.opacity = '1';
+  dynamicIsland.style.pointerEvents = 'auto';
+  dynamicIsland.style.transform = 'translateX(0)';
+}
+
+// Hide the island with fade-out
+function hideDynamicIsland() {
+  dynamicIsland.style.opacity = '0';
+  dynamicIsland.style.pointerEvents = 'none';
+  dynamicIsland.style.transform = 'translateX(-20px)';
+}
+
+// Update island left position based on sidebar state
+function updateDynamicIslandPosition() {
+  if (!sidebar || !dynamicIsland) return;
+  const isCollapsed = sidebar.classList.contains('collapsed');
+  const leftPos = isCollapsed ? SIDEBAR_COLLAPSED : SIDEBAR_WIDTH;
+  dynamicIsland.style.left = `${leftPos + GAP}px`;
+}
+
+// Cycle through info blocks every 3 seconds
+let infoIndex = 0;
+function updateDynamicIslandContent() {
+  if (!dynamicIsland) return;
+
+  const block = infoBlocks[infoIndex];
+
+  // Update title and content
+  dynamicIslandTitle.textContent = block.title;
+  dynamicIslandContent.textContent = block.content();
+
+  // Show or hide avatar based on block config
+  if (block.showAvatar) {
+    dynamicIslandIcon.style.display = 'block';
+    dynamicIslandIcon.src = avatarUrl || '/uploads/branding/favicon.png';
+  } else {
+    dynamicIslandIcon.style.display = 'none';
+  }
+
+  showDynamicIsland();
+
+  infoIndex = (infoIndex + 1) % infoBlocks.length;
+}
+
+// Initial positioning & content
+updateDynamicIslandPosition();
+updateDynamicIslandContent();
+
+// Watch sidebar for class changes (collapsed toggle)
+const observer = new MutationObserver(updateDynamicIslandPosition);
+observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+
+// Cycle content every 3 seconds
+setInterval(updateDynamicIslandContent, 3000);
+
+
+
+
 
 // == Update Last Seen ==
 const updateLastSeen = async () => {
