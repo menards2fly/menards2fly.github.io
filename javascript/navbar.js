@@ -447,20 +447,31 @@ const infoBlocks = [
     title: '',
     content: () => {
       const now = new Date();
-      return `Time: ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      return `🕘 ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     },
     showAvatar: false,
   },
-  {
-    title: '',
-    content: () => {
-      const elapsedMs = new Date() - sessionStart;
-      const mins = Math.floor(elapsedMs / 60000);
-      const secs = Math.floor((elapsedMs % 60000) / 1000);
-      return `Screen Time: ${mins}m ${secs}s`;
-    },
-    showAvatar: false,
+{
+  title: '',
+  content: () => {
+    const dataJSON = localStorage.getItem('screenTimeData');
+    let secondsSpent = 0;
+    if (dataJSON) {
+      try {
+        const data = JSON.parse(dataJSON);
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (data.date === todayStr) {
+          secondsSpent = data.secondsSpent;
+        }
+      } catch (e) {
+        secondsSpent = 0;
+      }
+    }
+    const mins = Math.floor(secondsSpent / 60);
+    const secs = secondsSpent % 60;
+    return `⌛ ${mins}m ${secs}s`;
   },
+},
   {
     title: `Hey, ${username || 'User'}`,
     content: () => '',
