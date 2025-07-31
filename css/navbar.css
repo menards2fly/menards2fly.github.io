@@ -301,15 +301,15 @@ body {
 }
 
 
-/* Dynamic Island styles */
 #dynamicIsland.dynamic-island {
-  margin-top: auto; /* push it to bottom or change as you want */
-  margin-bottom: 16px;
+  position: fixed; /* this is the key to pinning it to the screen */
+  top: 1rem;    /* distance from bottom of viewport */
+  left: 1rem;      /* distance from left of viewport */
   display: flex;
   align-items: center;
   gap: 12px;
   background: rgba(138, 43, 226, 0.85);
-  padding: 10px 16px;
+  padding: 1rem;
   border-radius: 20px;
   font-family: 'Inter', sans-serif;
   font-weight: 600;
@@ -318,15 +318,19 @@ body {
   box-shadow: 0 0 20px #8a2be2aa;
   user-select: none;
   cursor: default;
-  transition: opacity 0.3s ease;
+  width: max-content;
+  transition: opacity 0.3s ease, left 0.3s ease;
+  z-index: 9999; /* make sure it sits on top */
 }
 
-/* Hide initially */
+
+.starship-sidebar:hover ~ #dynamicIsland.dynamic-island {
+  margin-left: calc(var(--sidebar-width) - (48px));
+}
+
+
 #dynamicIsland.hidden {
-  opacity: 0;
-  pointer-events: none;
-  height: 0;
-  overflow: hidden;
+  display: none;
 }
 
 /* Avatar */
@@ -353,7 +357,7 @@ body {
 }
 
 /* Hide on mobile (max-width 600px, adjust as needed) */
-@media (max-width: 600px) {
+@media (max-width: 769px) {
   #dynamicIsland.dynamic-island {
     display: none !important;
   }
