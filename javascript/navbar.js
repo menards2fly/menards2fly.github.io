@@ -178,7 +178,7 @@ const navbarHTML = isPlayPage
 </div>
 
 <!-- Inside .starship-sidebar -->
-<div id="dynamicIsland" class="dynamic-island hidden">
+<div id="dynamicIsland" class="dynamic-island">
   <img id="dynamicIslandIcon" src="/uploads/branding/favicon.png" alt="User Avatar" />
   <div class="dynamic-island-text">
     <div id="dynamicIslandTitle"></div>
@@ -389,9 +389,6 @@ if (hasSeenIntro) {
   setTimeout(hideIntroOverlay, duration);
 }
 
-
-
-
 // == Dynamic Island HTML Injection ==
 const dynamicIslandHTML = `
   <div id="dynamicIsland" style="
@@ -432,7 +429,6 @@ const dynamicIslandHTML = `
 `;
 
 document.body.insertAdjacentHTML('beforeend', dynamicIslandHTML);
-
 
 const dynamicIsland = document.getElementById('dynamicIsland');
 const dynamicIslandTitle = document.getElementById('dynamicIslandTitle');

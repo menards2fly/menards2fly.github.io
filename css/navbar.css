@@ -301,32 +301,67 @@ body {
 }
 
 
-/* Dynamic Island styles */
 #dynamicIsland.dynamic-island {
-  margin-top: auto; /* push it to bottom or change as you want */
-  margin-bottom: 16px;
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(138, 43, 226, 0.85);
-  padding: 10px 16px;
-  border-radius: 20px;
+  padding: 1rem 1.5rem;
+  border-radius: 100px;
+  background: linear-gradient(135deg, rgba(138, 43, 226, 0.85), rgba(75, 0, 130, 0.85));
+  box-shadow:
+    0 0 25px rgba(138, 43, 226, 0.5),
+    0 0 10px rgba(255, 255, 255, 0.1) inset,
+    0 0 2px rgba(255, 255, 255, 0.25) inset;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   font-family: 'Inter', sans-serif;
   font-weight: 600;
   font-size: 14px;
-  color: white;
-  box-shadow: 0 0 20px #8a2be2aa;
+  color: #ffffff;
   user-select: none;
   cursor: default;
-  transition: opacity 0.3s ease;
+  width: max-content;
+  max-width: 90vw;
+  transition: all 0.3s ease;
+  z-index: 9999;
 }
 
-/* Hide initially */
+/* Add some glowing pulse on hover */
+#dynamicIsland.dynamic-island:hover {
+  box-shadow:
+    0 0 40px rgba(138, 43, 226, 0.8),
+    0 0 12px rgba(255, 255, 255, 0.15) inset,
+    0 0 4px rgba(255, 255, 255, 0.35) inset;
+  transform: translateX(-50%) scale(1.03);
+}
+
+/* Optional: neon flicker animation */
+@keyframes flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    opacity: 0.85;
+  }
+}
+#dynamicIsland.dynamic-island.flicker {
+  animation: flicker 3s infinite;
+}
+
+
+
+.starship-sidebar:hover ~ #dynamicIsland.dynamic-island {
+  margin-left: calc(var(--sidebar-width) - (48px));
+}
+
+
 #dynamicIsland.hidden {
-  opacity: 0;
-  pointer-events: none;
-  height: 0;
-  overflow: hidden;
+  display: none;
 }
 
 /* Avatar */
@@ -353,7 +388,7 @@ body {
 }
 
 /* Hide on mobile (max-width 600px, adjust as needed) */
-@media (max-width: 600px) {
+@media (max-width: 769px) {
   #dynamicIsland.dynamic-island {
     display: none !important;
   }
