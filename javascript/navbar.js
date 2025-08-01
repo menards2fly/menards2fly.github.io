@@ -242,7 +242,7 @@ const introOverlayHTML = `
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    cursor: default; /* no pointer since no skip */
+    cursor: default;
     z-index: 1000000000000000 !important;
     opacity: 1;
     transition: opacity 1s ease;
@@ -269,7 +269,7 @@ const introOverlayHTML = `
     <!-- Text element -->
     <div class="init-text" style="
       position: absolute;
-      bottom: 38px; /* just above progress bar */
+      bottom: 38px;
       left: 10%;
       width: 80%;
       text-align: center;
@@ -316,7 +316,7 @@ const introOverlayHTML = `
       0%, 60% {
         transform: scale(1);
         opacity: 1;
-        filter: none; /* no glow */
+        filter: none;
       }
       80% {
         transform: scale(1.1) translateY(-10px);
@@ -331,181 +331,209 @@ const introOverlayHTML = `
   </style>
 `;
 
-document.body.insertAdjacentHTML('afterbegin', introOverlayHTML);
+const hasSeenIntro = sessionStorage.getItem('seenIntro');
 
-const overlay = document.getElementById('introOverlay');
-const progressBar = overlay.querySelector('.progress-bar');
+if (hasSeenIntro) {
+  // Already seen this session — don't show intro
+  // Just skip and no overlay
+} else {
+  // First time — show animation & store flag
+  sessionStorage.setItem('seenIntro', 'true');
+  document.body.insertAdjacentHTML('afterbegin', introOverlayHTML);
 
-let start = null;
-const duration = 5500; // 5.5 seconds
+  const overlay = document.getElementById('introOverlay');
+  const progressBar = overlay.querySelector('.progress-bar');
 
-function animateProgressBar(timestamp) {
-  if (!start) start = timestamp;
-  const elapsed = timestamp - start;
-  const progress = Math.min(elapsed / duration, 1);
-  progressBar.style.width = `${progress * 100}%`;
+  let start = null;
+  const duration = 5500; // ms
 
-  if (progress < 1) {
-    requestAnimationFrame(animateProgressBar);
-  } else {
-    // Progress done — fade out overlay synced with spaceship animation end
-    overlay.style.opacity = '0';
-    setTimeout(() => {
-      overlay.remove();
-    }, 1000); // fade out duration matches CSS transition
+  function animateProgressBar(timestamp) {
+    if (!start) start = timestamp;
+    const elapsed = timestamp - start;
+    const progress = Math.min(elapsed / duration, 1);
+    progressBar.style.width = `${progress * 100}%`;
+
+    if (progress < 1) {
+      requestAnimationFrame(animateProgressBar);
+    } else {
+      // Fade out overlay synced with spaceship animation end
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.remove();
+      }, 1000); // matches CSS fade duration
+    }
   }
+  requestAnimationFrame(animateProgressBar);
 }
 
-requestAnimationFrame(animateProgressBar);
 
 
 // == Dynamic Island HTML Injection ==
-const dynamicIslandHTML = `
-  <div id="dynamicIsland" style="
-    position: fixed;
-    top: 16px;
-    left: 260px; /* will be updated dynamically */
-    background: rgba(138, 43, 226, 0.85);
-    color: white;
-    padding: 10px 16px;
-    border-radius: 20px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    box-shadow: 0 0 20px #8a2be2aa;
-    z-index: 11000;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease, transform 0.3s ease, left 0.3s ease;
-    transform: translateX(-20px);
-  ">
-    <img id="dynamicIslandIcon" src="" alt="User Avatar" style="
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      border: 2px solid white;
-      object-fit: cover;
-      flex-shrink: 0;
-      display: none;
-    "/>
-    <div>
-      <div id="dynamicIslandTitle" style="margin-bottom: 2px;"></div>
-      <div id="dynamicIslandContent">Loading...</div>
+
+// Check localStorage settings first
+const reduceTransparency = localStorage.getItem('reduceTransparency') === 'true';
+const dynamicIslandShow = localStorage.getItem('dynamicIslandShow') !== 'false';
+
+
+// If reduceTransparency is on or dynamicIslandShow is off, don't show dynamic island at all
+if (!reduceTransparency && dynamicIslandShow) {
+
+  const dynamicIslandHTML = `
+    <div id="dynamicIsland" style="
+      position: fixed;
+      top: 16px;
+      left: 260px; /* will be updated dynamically */
+      background: rgba(138, 43, 226, 0.85);
+      color: white;
+      padding: 10px 16px;
+      border-radius: 20px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 0 20px #8a2be2aa;
+      z-index: 11000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease, left 0.3s ease;
+      transform: translateX(-20px);
+    ">
+      <img id="dynamicIslandIcon" src="" alt="User Avatar" style="
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 2px solid white;
+        object-fit: cover;
+        flex-shrink: 0;
+        display: none;
+      "/>
+      <div>
+        <div id="dynamicIslandTitle" style="margin-bottom: 2px;"></div>
+        <div id="dynamicIslandContent">Loading...</div>
+      </div>
     </div>
-  </div>
-`;
+  `;
 
-document.body.insertAdjacentHTML('beforeend', dynamicIslandHTML);
+  document.body.insertAdjacentHTML('beforeend', dynamicIslandHTML);
 
-const dynamicIsland = document.getElementById('dynamicIsland');
-const dynamicIslandTitle = document.getElementById('dynamicIslandTitle');
-const dynamicIslandContent = document.getElementById('dynamicIslandContent');
-const dynamicIslandIcon = document.getElementById('dynamicIslandIcon');
+  const dynamicIsland = document.getElementById('dynamicIsland');
+  const dynamicIslandTitle = document.getElementById('dynamicIslandTitle');
+  const dynamicIslandContent = document.getElementById('dynamicIslandContent');
+  const dynamicIslandIcon = document.getElementById('dynamicIslandIcon');
 
-const SIDEBAR_WIDTH = 250;       // expanded width in px
-const SIDEBAR_COLLAPSED = 64;    // collapsed width in px
-const GAP = 10;                  // gap between sidebar and island in px
+  const SIDEBAR_WIDTH = 250;       // expanded width in px
+  const SIDEBAR_COLLAPSED = 64;    // collapsed width in px
+  const GAP = 10;                  // gap between sidebar and island in px
 
-const sessionStart = new Date();
+  // Make sure sidebar is defined
+  const sidebar = document.querySelector('.starship-sidebar'); // or your sidebar selector
 
-// Info blocks for cycling content
-const infoBlocks = [
-  {
-    title: '',
-    content: () => {
-      const now = new Date();
-      return `🕘 ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  // Info blocks for cycling content
+  const infoBlocks = [
+    {
+      title: '',
+      content: () => {
+        const now = new Date();
+        return `🕘 ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      },
+      showAvatar: false,
     },
-    showAvatar: false,
-  },
-{
-  title: '',
-  content: () => {
-    const dataJSON = localStorage.getItem('screenTimeData');
-    let secondsSpent = 0;
-    if (dataJSON) {
-      try {
-        const data = JSON.parse(dataJSON);
-        const todayStr = new Date().toISOString().split('T')[0];
-        if (data.date === todayStr) {
-          secondsSpent = data.secondsSpent;
+    {
+      title: '',
+      content: () => {
+        const dataJSON = localStorage.getItem('screenTimeData');
+        let secondsSpent = 0;
+        if (dataJSON) {
+          try {
+            const data = JSON.parse(dataJSON);
+            const todayStr = new Date().toISOString().split('T')[0];
+            if (data.date === todayStr) {
+              secondsSpent = data.secondsSpent;
+            }
+          } catch (e) {
+            secondsSpent = 0;
+          }
         }
-      } catch (e) {
-        secondsSpent = 0;
-      }
-    }
-    const mins = Math.floor(secondsSpent / 60);
-    const secs = secondsSpent % 60;
-    return `⌛ ${mins}m ${secs}s`;
-  },
-},
-  {
-    title: `Hey, ${username || 'User'}`,
-    content: () => '',
-    showAvatar: true,
-  },
-  // Add more blocks if you want!
-];
+        const mins = Math.floor(secondsSpent / 60);
+        const secs = secondsSpent % 60;
+        return `⌛ ${mins}m ${secs}s`;
+      },
+    },
+    {
+      title: `Hey, ${username || 'User'}`,
+      content: () => '',
+      showAvatar: true,
+    },
+    // Add more blocks if you want!
+  ];
 
-// Show the island with fade-in
-function showDynamicIsland() {
-  dynamicIsland.style.opacity = '1';
-  dynamicIsland.style.pointerEvents = 'auto';
-  dynamicIsland.style.transform = 'translateX(0)';
-}
-
-// Hide the island with fade-out
-function hideDynamicIsland() {
-  dynamicIsland.style.opacity = '0';
-  dynamicIsland.style.pointerEvents = 'none';
-  dynamicIsland.style.transform = 'translateX(-20px)';
-}
-
-// Update island left position based on sidebar state
-function updateDynamicIslandPosition() {
-  if (!sidebar || !dynamicIsland) return;
-  const isCollapsed = sidebar.classList.contains('collapsed');
-  const leftPos = isCollapsed ? SIDEBAR_COLLAPSED : SIDEBAR_WIDTH;
-  dynamicIsland.style.left = `${leftPos + GAP}px`;
-}
-
-// Cycle through info blocks every 3 seconds
-let infoIndex = 0;
-function updateDynamicIslandContent() {
-  if (!dynamicIsland) return;
-
-  const block = infoBlocks[infoIndex];
-
-  // Update title and content
-  dynamicIslandTitle.textContent = block.title;
-  dynamicIslandContent.textContent = block.content();
-
-  // Show or hide avatar based on block config
-  if (block.showAvatar) {
-    dynamicIslandIcon.style.display = 'block';
-    dynamicIslandIcon.src = avatarUrl || '/uploads/branding/favicon.png';
-  } else {
-    dynamicIslandIcon.style.display = 'none';
+  // Show the island with fade-in
+  function showDynamicIsland() {
+    dynamicIsland.style.opacity = '1';
+    dynamicIsland.style.pointerEvents = 'auto';
+    dynamicIsland.style.transform = 'translateX(0)';
   }
 
-  showDynamicIsland();
+  // Hide the island with fade-out
+  function hideDynamicIsland() {
+    dynamicIsland.style.opacity = '0';
+    dynamicIsland.style.pointerEvents = 'none';
+    dynamicIsland.style.transform = 'translateX(-20px)';
+  }
 
-  infoIndex = (infoIndex + 1) % infoBlocks.length;
+  // Update island left position based on sidebar state
+  function updateDynamicIslandPosition() {
+    if (!sidebar || !dynamicIsland) return;
+    const isCollapsed = sidebar.classList.contains('collapsed');
+    const leftPos = isCollapsed ? SIDEBAR_COLLAPSED : SIDEBAR_WIDTH;
+    dynamicIsland.style.left = `${leftPos + GAP}px`;
+  }
+
+  // Cycle through info blocks every 3 seconds
+  let infoIndex = 0;
+  function updateDynamicIslandContent() {
+    if (!dynamicIsland) return;
+
+    const block = infoBlocks[infoIndex];
+
+    // Update title and content
+    dynamicIslandTitle.textContent = block.title;
+    dynamicIslandContent.textContent = block.content();
+
+    // Show or hide avatar based on block config
+    if (block.showAvatar) {
+      dynamicIslandIcon.style.display = 'block';
+      dynamicIslandIcon.src = avatarUrl || '/uploads/branding/favicon.png';
+    } else {
+      dynamicIslandIcon.style.display = 'none';
+    }
+
+    showDynamicIsland();
+
+    infoIndex = (infoIndex + 1) % infoBlocks.length;
+  }
+
+  // Initial positioning & content
+  updateDynamicIslandPosition();
+  updateDynamicIslandContent();
+
+  // Watch sidebar for class changes (collapsed toggle)
+  const observer = new MutationObserver(updateDynamicIslandPosition);
+  if (sidebar) {
+    observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  // Cycle content every 3 seconds
+  setInterval(updateDynamicIslandContent, 3000);
+
+} else {
+  // Hide or remove if conditions don't allow showing
+  const existingIsland = document.getElementById('dynamicIsland');
+  if (existingIsland) existingIsland.remove();
 }
 
-// Initial positioning & content
-updateDynamicIslandPosition();
-updateDynamicIslandContent();
-
-// Watch sidebar for class changes (collapsed toggle)
-const observer = new MutationObserver(updateDynamicIslandPosition);
-observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
-
-// Cycle content every 3 seconds
-setInterval(updateDynamicIslandContent, 3000);
 
 
 
@@ -751,3 +779,70 @@ function applyPerformanceModeIfEnabled() {
   }
 }
 applyPerformanceModeIfEnabled();
+function forceOpaqueBackgrounds() {
+  const allElems = document.querySelectorAll('*');
+
+  allElems.forEach(el => {
+    const style = getComputedStyle(el);
+    let bg = style.backgroundColor;
+
+    if (bg && bg !== 'transparent' && bg !== 'rgba(0, 0, 0, 0)') {
+      let opaqueBg = bg;
+
+      // Check if background is rgba or rgb
+      if (bg.startsWith('rgba')) {
+        const match = bg.match(/rgba\((\d+), (\d+), (\d+), ([0-9.]+)\)/);
+        if (match) {
+          let r = parseInt(match[1]);
+          let g = parseInt(match[2]);
+          let b = parseInt(match[3]);
+          let a = parseFloat(match[4]);
+
+          // If white or greyish (r,g,b all close to 200+)
+          if (r >= 200 && g >= 200 && b >= 200) {
+            // Force black fully opaque
+            opaqueBg = 'rgba(0, 0, 0, 1)';
+          } else {
+            // Just remove transparency
+            opaqueBg = `rgba(${r}, ${g}, ${b}, 1)`;
+          }
+        }
+      } else if (bg.startsWith('rgb')) {
+        // rgb(r,g,b)
+        const match = bg.match(/rgb\((\d+), (\d+), (\d+)\)/);
+        if (match) {
+          let r = parseInt(match[1]);
+          let g = parseInt(match[2]);
+          let b = parseInt(match[3]);
+
+          if (r >= 200 && g >= 200 && b >= 200) {
+            opaqueBg = 'rgb(0, 0, 0)';
+          } else {
+            opaqueBg = bg; // already opaque
+          }
+        }
+      } else {
+        // For named colors or hex, fallback: skip or convert white/grey to black manually
+        // You can add more advanced parsing if you want
+      }
+
+      el.style.backgroundColor = opaqueBg;
+    }
+
+    // Remove transparency-related styles
+    el.style.opacity = '1';
+    el.style.backdropFilter = 'none';
+    el.style.filter = 'none';
+  });
+}
+
+
+
+
+
+if (localStorage.getItem('forceOpaqueBackgrounds') === 'true') {
+  forceOpaqueBackgrounds();
+}
+
+
+
