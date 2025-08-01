@@ -607,6 +607,52 @@ if (pageStatus) {
   });
 }
 
+const clearProfileFieldsBasedOnPage = async () => {
+  const path = window.location.pathname.toLowerCase();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    console.warn('⚠️ Could not get current user to clear profile fields', authError);
+    return;
+  }
+
+  const updates = {};
+
+  if (!path.includes('/play')) {
+    updates.current_game_id = null;
+  }
+
+  if (!path.includes('/tv')) {
+    updates.last_video_url = null;
+  }
+
+  if (!path.includes('/ai') && !path.includes('/route')) {
+    updates.status = null;
+  }
+
+  // Only update if there's something to clear
+  if (Object.keys(updates).length > 0) {
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', user.id);
+
+    if (updateError) {
+      console.error('❌ Failed to clear profile fields:', updateError.message);
+    } else {
+      console.log('✅ Cleared profile fields based on current page:', updates);
+    }
+  } else {
+    console.log('ℹ️ No profile fields needed clearing for this page.');
+  }
+};
+
+// Run it immediately
+clearProfileFieldsBasedOnPage();
+
 
 
 if (user) {

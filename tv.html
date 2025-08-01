@@ -389,6 +389,58 @@
         }, 400);
       });
     </script>
+    <script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const supabase = createClient(
+  'https://jbekjmsruiadbhaydlbt.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY'
+);
+
+  let currentUserId = null;
+
+  // Get current user ID once
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (user && !error) currentUserId = user.id;
+
+  async function updateLastVideo(url) {
+    if (!currentUserId) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ last_video_url: url })
+      .eq('id', currentUserId);
+
+    if (error) console.error('⚠️ Failed to update video URL:', error.message);
+  }
+
+  async function clearLastVideo() {
+    if (!currentUserId) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ last_video_url: null })
+      .eq('id', currentUserId);
+
+    if (error) console.error('⚠️ Failed to clear video URL:', error.message);
+  }
+
+  // 🔁 Hook into existing playVideo function
+  const originalPlayVideo = window.playVideo;
+  window.playVideo = (video) => {
+    originalPlayVideo(video);
+    updateLastVideo(`https://www.youtube.com/watch?v=${video.id}`);
+  };
+
+  // 🧹 Hook into input clear/reset logic
+  const searchInput = document.getElementById('searchInput');
+  searchInput.addEventListener('input', (e) => {
+    if (!e.target.value.trim()) {
+      clearLastVideo();
+    }
+  });
+</script>
+
     <!-- Particles.JS Background -->
     <div id="particles-js"></div>
     <script src="/javascript/panic.js" type="module"></script>

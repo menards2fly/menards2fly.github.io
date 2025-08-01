@@ -17,6 +17,18 @@ let viewerFollowsProfile = false;
 let profileFollowsViewer = false;
 let canShowStatus = false;
 const followBtn = document.getElementById('follow-btn');
+const CUSTOM_STATUS_CARDS = {
+  aichat: {
+    name: "Chatting with Orbit",
+    desc: "Chatting via starai",
+    img: "/uploads/images/starbot.png" // replace with your real path
+  },
+  proxy: {
+    name: "Surfing the web",
+    desc: "Unblocking via stargate",
+    img: "/uploads/images/routeicon.png" // replace with your real path
+  }
+};
 
 async function getCurrentUserId() {
   const {
@@ -421,7 +433,12 @@ console.log('👥 profileFollowsViewer:', profileFollowsViewer);
   }
 
   // Load the profile's current game AFTER follow button logic
-  await loadProfileGame();
+  if (profile.current_game_id) {
+  await loadCurrentGame(profile.current_game_id);
+} else if (profile.last_video_url) {
+  await showNowWatchingYouTube(profile.last_video_url);
+}
+await loadProfileGame();
 })();
 
 // 🔗 Share button logic
@@ -470,22 +487,21 @@ async function loadCurrentGame(gameId) {
   console.log('✅ Loaded game:', game);
 
   document.getElementById('current-game-name').textContent = game.name;
-  document.getElementById('current-game-desc').textContent = game.description;
+  document.getElementById('current-game-desc').textContent = "Playing via starplay";
   document.getElementById('current-game-img').src = game.img_url;
   document.getElementById('current-game-card').style.display = 'block';
 }
 
 async function loadProfileGame() {
   if (profileIsPrivate) {
-    console.log('🔒 Profile is private — skipping game card load.');
+    console.log('🔒 Profile is private — skipping game/video card load.');
     document.getElementById('current-game-card').style.display = 'none';
     return;
   }
 
-  // Also respect the same visibility rules as the online dot + status text
   const { data: profileSettings, error: settingsError } = await supabase
     .from('profiles')
-    .select('online_status_visibility')
+    .select('online_status_visibility, status')
     .eq('id', profileUserId)
     .single();
 
@@ -495,14 +511,11 @@ async function loadProfileGame() {
     return;
   }
 
-
-
-const canShowGame = (() => {
-  if (profileIsPrivate) return false;
-  if (!canShowStatus) return false; // Reuse same status visibility logic
-  return true;
-})();
-
+  const canShowGame = (() => {
+    if (profileIsPrivate) return false;
+    if (!canShowStatus) return false;
+    return true;
+  })();
 
   if (!canShowGame) {
     console.log('🚫 Not allowed to show now playing (privacy settings).');
@@ -510,28 +523,83 @@ const canShowGame = (() => {
     return;
   }
 
+  const status = profileSettings.status;
+
+  // Handle custom status cards for AI chat or web surfing
+  if (status && CUSTOM_STATUS_CARDS[status]) {
+    const card = CUSTOM_STATUS_CARDS[status];
+    const gameCard = document.getElementById('current-game-card');
+
+    document.getElementById('current-game-name').textContent = card.name;
+    document.getElementById('current-game-desc').textContent = card.desc;
+    document.getElementById('current-game-img').src = card.img;
+    gameCard.style.display = 'block';
+
+    console.log(`✨ Showing custom status card for: ${status}`);
+    return; // Done here, skip the rest
+  }
+
   if (!profileUserId) {
-    console.log('🎮 No profile user ID, hiding game card.');
+    console.log('🎮 No profile user ID, hiding game/video card.');
     document.getElementById('current-game-card').style.display = 'none';
     return;
   }
 
-  // Fetch current_game_id for profileUserId
+  // Fetch current_game_id AND last_video_url
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('current_game_id')
+    .select('current_game_id, last_video_url')
     .eq('id', profileUserId)
-    .single();
+    .maybeSingle();
 
-  if (error || !profile || !profile.current_game_id) {
-    console.warn('⚠️ Could not fetch profile game:', error);
+  if (error || !profile) {
+    console.warn('⚠️ Could not fetch profile game/video info:', error);
     document.getElementById('current-game-card').style.display = 'none';
     return;
   }
 
-  console.log('👾 Current game ID for profile:', profile.current_game_id);
-  await loadCurrentGame(profile.current_game_id);
+  if (profile.current_game_id) {
+    console.log('👾 Current game ID for profile:', profile.current_game_id);
+    await loadCurrentGame(profile.current_game_id);
+  } else if (profile.last_video_url) {
+    console.log('🎥 Showing YouTube video:', profile.last_video_url);
+    await showNowWatchingYouTube(profile.last_video_url);
+  } else {
+    console.log('🚫 No game or video set — hiding card.');
+    document.getElementById('current-game-card').style.display = 'none';
+  }
 }
+
+// Helper function to show YouTube now watching card
+async function showNowWatchingYouTube(videoUrl) {
+  const videoIdMatch = videoUrl.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  const videoId = videoIdMatch?.[1];
+
+  if (!videoId) {
+    console.warn('❌ Invalid YouTube URL:', videoUrl);
+    document.getElementById('current-game-card').style.display = 'none';
+    return;
+  }
+
+  try {
+    const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+    if (!res.ok) throw new Error('Failed to fetch video data');
+
+    const videoData = await res.json();
+
+    const videoCard = document.getElementById('current-game-card');
+    videoCard.style.display = 'block';
+
+    document.getElementById('current-game-img').src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+    document.getElementById('current-game-name').textContent = videoData.title;
+    document.getElementById('current-game-desc').textContent = 'Watching on startv via YouTube';
+
+  } catch (err) {
+    console.error('🎥 Failed to load YouTube video info:', err);
+    document.getElementById('current-game-card').style.display = 'none';
+  }
+}
+
 
 const searchInput = document.getElementById('profile-search-input');
 const searchResults = document.getElementById('profile-search-results');
