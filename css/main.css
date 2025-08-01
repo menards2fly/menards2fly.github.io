@@ -168,8 +168,8 @@ button:nth-child(2):hover {
   max-width: 340px;
   background: linear-gradient(
     90deg,
-    rgba(138, 43, 226, 0.3) 60%,
-    rgba(255, 75, 43, 0.3) 100%
+    rgba(138, 43, 226, 0.1) 60%,
+    rgba(255, 75, 43, 0.1) 100%
   );
   backdrop-filter: blur(12px);
   color: #fff;
@@ -180,8 +180,8 @@ button:nth-child(2):hover {
   padding: 18px 28px 16px 22px;
   margin-bottom: 4px;
   opacity: 0;
-  transform: translateY(-20px) scale(0.98);
-  animation: notif-in 0.4s cubic-bezier(0.4, 2, 0.6, 1) forwards;
+  transform: translate(40px, 20px) scale(0.9);
+ 
   pointer-events: auto;
   display: flex;
   flex-direction: column;
@@ -191,13 +191,26 @@ button:nth-child(2):hover {
     opacity 0.3s,
     transform 0.3s;
 }
+.notification.notif-in {
+  animation: notif-in 0.4s cubic-bezier(0.4, 2, 0.6, 1) forwards;
+}
+.notification.notif-out {
+  pointer-events: none;
+  animation: notif-out 0.35s cubic-bezier(0.4, 2, 0.6, 1) forwards;
+}
+
 
 @keyframes notif-in {
-  to {
+  0% {
+    opacity: 0;
+    transform: translate(40px, 20px) scale(0.9);
+  }
+  100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translate(0, 0) scale(1);
   }
 }
+
 
 .notification.hide {
   pointer-events: none;
@@ -205,11 +218,16 @@ button:nth-child(2):hover {
 }
 
 @keyframes notif-out {
-  to {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
     opacity: 0;
     transform: translateX(60px) scale(0.96);
   }
 }
+
 
 .notification-title {
   font-weight: 700;
