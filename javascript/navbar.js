@@ -894,29 +894,37 @@ applyForceOpaqueBackgrounds();
 
 (async () => {
   try {
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError) throw userError;
 
-    if (error) throw error;
+    if (!user || !user.id) {
+      console.log('⛔ No user signed in — skipping notification.');
+      return;
+    }
 
-    if (user && user.id) {
-      console.log(`🔐 User is signed in: ${user.email}`);
+    console.log(`🔐 User is signed in: ${user.email}`);
 
-      // ✅ Only show if user is logged in
-      showNotification('Account Deletion Notice', {
-        body: "Your account is scheduled for deletion. It will be deleted within 24 hours.",
+    // Check if this user exists in the account_deletion table
+    const { data: deletionData, error: deletionError } = await supabase
+      .from('account_deletion')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (deletionError) throw deletionError;
+
+    if (deletionData) {
+      showNotification('⚠️ Account Deletion Notice', {
+        body: 'Your account is scheduled for deletion. It will be deleted within 24 hours.',
         sound: true,
       });
-
     } else {
-      console.log('⛔ No user signed in — skipping notification.');
+      console.log('✅ User is not scheduled for deletion.');
     }
+
   } catch (err) {
-    console.error('❌ Failed to check user:', err);
+    console.error('❌ Failed to check account deletion status:', err);
   }
 })();
-
-
-
-
 
 
