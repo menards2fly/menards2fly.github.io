@@ -892,4 +892,31 @@ async function applyForceOpaqueBackgrounds() {
 applyForceOpaqueBackgrounds();
 
 
+(async () => {
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error) throw error;
+
+    if (user && user.id) {
+      console.log(`🔐 User is signed in: ${user.email}`);
+
+      // ✅ Only show if user is logged in
+      showNotification('Account Deletion Notice', {
+        body: "Your account is scheduled for deletion. It will be deleted within 24 hours.",
+        sound: true,
+      });
+
+    } else {
+      console.log('⛔ No user signed in — skipping notification.');
+    }
+  } catch (err) {
+    console.error('❌ Failed to check user:', err);
+  }
+})();
+
+
+
+
+
 
