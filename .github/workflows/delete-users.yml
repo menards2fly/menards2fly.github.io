@@ -11,6 +11,6 @@ jobs:
     steps:
       - name: Call Supabase Edge Function
         run: |
-          curl -X POST ${{ secrets.EDGE_FUNCTION_URL_3 }} \
+          curl -X POST "${{ secrets.EDGE_FUNCTION_URL_3 }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_KEY }}" \
             -H "Content-Type: application/json"
