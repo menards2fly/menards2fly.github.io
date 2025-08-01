@@ -1,19 +1,21 @@
-/* /javascript/screentimetracking.js */
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const supabase = createClient(
+  'https://jbekjmsruiadbhaydlbt.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY'
+);
+
 (function () {
   /***********************
    * UTILITY FUNCTIONS
    ***********************/
-  // Format seconds as HH:MM:SS
   function formatTime(seconds) {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    return [hrs, mins, secs]
-      .map((num) => String(num).padStart(2, '0'))
-      .join(':');
+    return [hrs, mins, secs].map((num) => String(num).padStart(2, '0')).join(':');
   }
 
-  // Return today's date as YYYY-MM-DD
   function getTodayString() {
     return new Date().toISOString().split('T')[0];
   }
@@ -23,62 +25,97 @@
    ***********************/
   let trackingInterval = null;
   let midnightTimeout = null;
+
   const DEFAULT_SETTINGS = {
-    usageLimitSeconds: 3600, // Default to 1 hour
+    usageLimitSeconds: 3600,
     limitActive: false,
-    limitAction: 'reminder', // Options: "reminder" or "lockout"
-    disabledUntil: null, // e.g., "2025-02-11" when tracking is disabled
+    limitAction: 'reminder',
+    disabledUntil: null,
     reminderPage: '/reminder.html',
     lockoutPage: '/lockout.html',
-    lastReminderRedirect: 0, // Used to control the 5-minute reminder interval
+    lastReminderRedirect: 0,
   };
 
+  let currentUserId = null;
+
   /***********************
-   * LOCAL STORAGE HANDLERS
+   * SETTINGS LOAD & SAVE
    ***********************/
-  // Load settings from localStorage (or return defaults)
-  function loadSettings() {
-    const settingsJSON = localStorage.getItem('screenTimeSettings');
-    let settings;
-    if (settingsJSON) {
-      try {
-        settings = JSON.parse(settingsJSON);
-      } catch (e) {
-        settings = DEFAULT_SETTINGS;
+
+  // Load settings either from Supabase or localStorage
+  async function loadSettings() {
+    if (currentUserId) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('settings')
+        .eq('id', currentUserId)
+        .single();
+
+      if (error) {
+        console.warn('Supabase fetch settings error:', error);
+        return loadLocalSettings();
       }
+      return data?.settings || DEFAULT_SETTINGS;
     } else {
-      settings = DEFAULT_SETTINGS;
+      return loadLocalSettings();
     }
-    return settings;
   }
 
-  // Save settings to localStorage
-  function saveSettings(settings) {
+  // Save settings either to Supabase or localStorage
+  async function saveSettings(settings) {
+    if (currentUserId) {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ settings })
+        .eq('id', currentUserId);
+
+      if (error) {
+        console.warn('Supabase save settings error:', error);
+        saveLocalSettings(settings); // fallback save locally
+      }
+    } else {
+      saveLocalSettings(settings);
+    }
+  }
+
+  // LocalStorage helpers
+  function loadLocalSettings() {
+    const settingsJSON = localStorage.getItem('screenTimeSettings');
+    if (settingsJSON) {
+      try {
+        return JSON.parse(settingsJSON);
+      } catch {
+        return DEFAULT_SETTINGS;
+      }
+    } else {
+      return DEFAULT_SETTINGS;
+    }
+  }
+
+  function saveLocalSettings(settings) {
     localStorage.setItem('screenTimeSettings', JSON.stringify(settings));
   }
 
-  // Load today's tracking data (or initialize it)
+  /***********************
+   * TRACKING DATA (always localStorage)
+   ***********************/
   function loadTrackingData() {
     const dataJSON = localStorage.getItem('screenTimeData');
     const todayStr = getTodayString();
-    let data;
     if (dataJSON) {
       try {
-        data = JSON.parse(dataJSON);
-        // If the stored date is not today, reset the counter
+        const data = JSON.parse(dataJSON);
         if (data.date !== todayStr) {
-          data = { date: todayStr, secondsSpent: 0 };
+          return { date: todayStr, secondsSpent: 0 };
         }
-      } catch (e) {
-        data = { date: todayStr, secondsSpent: 0 };
+        return data;
+      } catch {
+        return { date: todayStr, secondsSpent: 0 };
       }
-    } else {
-      data = { date: todayStr, secondsSpent: 0 };
     }
-    return data;
+    return { date: todayStr, secondsSpent: 0 };
   }
 
-  // Save tracking data to localStorage
   function saveTrackingData(data) {
     localStorage.setItem('screenTimeData', JSON.stringify(data));
   }
@@ -86,58 +123,45 @@
   /***********************
    * MIDNIGHT RESET
    ***********************/
-  // Schedule a reset of the tracking data at midnight
   function scheduleMidnightReset() {
     if (midnightTimeout) clearTimeout(midnightTimeout);
     const now = new Date();
-    const nextMidnight = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() + 1
-    );
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     const msUntilMidnight = nextMidnight - now;
     midnightTimeout = setTimeout(() => {
-      const newData = { date: getTodayString(), secondsSpent: 0 };
-      saveTrackingData(newData);
+      saveTrackingData({ date: getTodayString(), secondsSpent: 0 });
       updateDisplay();
-      scheduleMidnightReset(); // Reschedule for the next day
+      scheduleMidnightReset();
     }, msUntilMidnight);
   }
 
   /***********************
    * TRACKING & DISPLAY
    ***********************/
-  // Start a timer that increments seconds spent every second
   function startTracking() {
     if (trackingInterval) clearInterval(trackingInterval);
-    trackingInterval = setInterval(() => {
-      const settings = loadSettings();
+    trackingInterval = setInterval(async () => {
+      const settings = await loadSettings();
 
-      // Check if tracking is disabled
       if (settings.disabledUntil) {
         const disabledDate = new Date(settings.disabledUntil);
         const today = new Date(getTodayString());
-        if (today <= disabledDate) {
-          // Skip tracking while disabled
-          return;
-        } else {
-          // Tracking period is over; re-enable tracking
+        if (today <= disabledDate) return; // skip tracking while disabled
+        else {
           settings.disabledUntil = null;
-          saveSettings(settings);
+          await saveSettings(settings);
         }
       }
 
-      // Increment seconds spent and save
       let data = loadTrackingData();
-      data.secondsSpent += 1;
+      data.secondsSpent++;
       saveTrackingData(data);
       updateDisplay();
       checkLimitReached();
     }, 1000);
   }
 
-  // Update on-page display (if elements exist) and change text to red if limit is reached
-  function updateDisplay() {
+  async function updateDisplay() {
     const data = loadTrackingData();
     const timeSpentElem = document.getElementById('timeSpent');
     const timeRemainingElem = document.getElementById('timeRemaining');
@@ -146,16 +170,15 @@
       timeSpentElem.textContent = formatTime(data.secondsSpent);
     }
 
-    const settings = loadSettings();
+    const settings = await loadSettings();
+
     if (settings.limitActive && timeRemainingElem) {
       const remaining = settings.usageLimitSeconds - data.secondsSpent;
-      timeRemainingElem.textContent =
-        remaining > 0 ? formatTime(remaining) : '00:00:00';
+      timeRemainingElem.textContent = remaining > 0 ? formatTime(remaining) : '00:00:00';
     } else if (timeRemainingElem) {
       timeRemainingElem.textContent = 'No Limit';
     }
 
-    // Change text color to red if the limit has been reached
     if (data.secondsSpent >= settings.usageLimitSeconds) {
       if (timeSpentElem) timeSpentElem.style.color = 'red';
       if (timeRemainingElem) timeRemainingElem.style.color = 'red';
@@ -168,29 +191,22 @@
   /***********************
    * LIMIT HANDLING
    ***********************/
-  // Check if the usage limit has been reached and perform the configured action.
-  // On the settings page (if a settings form is present), no lockout or reminder is triggered.
-  function checkLimitReached() {
+  async function checkLimitReached() {
     const data = loadTrackingData();
-    const settings = loadSettings();
+    const settings = await loadSettings();
+
     if (!settings.limitActive) return;
 
-    // If on the settings page, do not perform any redirection.
-    if (document.getElementById('settingsForm')) {
-      return;
-    }
+    if (document.getElementById('settingsForm')) return;
 
     if (data.secondsSpent >= settings.usageLimitSeconds) {
       if (settings.limitAction === 'lockout') {
         window.location.href = settings.lockoutPage;
       } else if (settings.limitAction === 'reminder') {
         const now = Date.now();
-        if (
-          !settings.lastReminderRedirect ||
-          now - settings.lastReminderRedirect >= 5 * 60 * 1000
-        ) {
+        if (!settings.lastReminderRedirect || now - settings.lastReminderRedirect >= 5 * 60 * 1000) {
           settings.lastReminderRedirect = now;
-          saveSettings(settings);
+          await saveSettings(settings);
           window.location.href = settings.reminderPage;
         }
       }
@@ -200,19 +216,17 @@
   /***********************
    * SETTINGS FORM HANDLERS
    ***********************/
-  // Initialize settings form fields with saved values
-  function initSettingsForm() {
-    const settings = loadSettings();
+  async function initSettingsForm() {
+    const settings = await loadSettings();
+
     const limitActiveCheckbox = document.getElementById('limitActiveCheckbox');
     const presetTimeDropdown = document.getElementById('presetTimeDropdown');
     const customTimeInput = document.getElementById('customTimeInput');
     const limitActionDropdown = document.getElementById('limitActionDropdown');
 
-    if (limitActiveCheckbox) {
-      limitActiveCheckbox.checked = settings.limitActive;
-    }
+    if (limitActiveCheckbox) limitActiveCheckbox.checked = settings.limitActive;
+
     if (presetTimeDropdown && customTimeInput) {
-      // Preset times (in seconds): 900, 1800, 3600, 7200, 10800
       const presets = [900, 1800, 3600, 7200, 10800];
       if (presets.includes(settings.usageLimitSeconds)) {
         presetTimeDropdown.value = String(settings.usageLimitSeconds);
@@ -220,40 +234,33 @@
       } else {
         presetTimeDropdown.value = 'custom';
         document.getElementById('customTimeContainer').style.display = 'inline';
-        // Format the stored usageLimitSeconds as HH:MM:SS
         let hrs = Math.floor(settings.usageLimitSeconds / 3600);
         let rem = settings.usageLimitSeconds % 3600;
         let mins = Math.floor(rem / 60);
         let secs = rem % 60;
-        customTimeInput.value = [hrs, mins, secs]
-          .map((n) => String(n).padStart(2, '0'))
-          .join(':');
+        customTimeInput.value = [hrs, mins, secs].map((n) => String(n).padStart(2, '0')).join(':');
       }
     }
-    if (limitActionDropdown) {
-      limitActionDropdown.value = settings.limitAction;
-    }
+
+    if (limitActionDropdown) limitActionDropdown.value = settings.limitAction;
   }
 
-  // Save settings based on form input values
-  function handleSaveSettings() {
+  async function handleSaveSettings() {
     const limitActiveCheckbox = document.getElementById('limitActiveCheckbox');
     const presetTimeDropdown = document.getElementById('presetTimeDropdown');
     const customTimeInput = document.getElementById('customTimeInput');
     const limitActionDropdown = document.getElementById('limitActionDropdown');
 
-    const limitActive = limitActiveCheckbox
-      ? limitActiveCheckbox.checked
-      : true;
+    const limitActive = limitActiveCheckbox ? limitActiveCheckbox.checked : true;
     let usageLimitSeconds;
 
     if (presetTimeDropdown.value === 'custom') {
-      let customTime = customTimeInput.value;
-      let parts = customTime.split(':');
+      const customTime = customTimeInput.value;
+      const parts = customTime.split(':');
       if (parts.length === 3) {
-        let hours = parseInt(parts[0], 10);
-        let minutes = parseInt(parts[1], 10);
-        let seconds = parseInt(parts[2], 10);
+        const hours = parseInt(parts[0], 10);
+        const minutes = parseInt(parts[1], 10);
+        const seconds = parseInt(parts[2], 10);
         usageLimitSeconds = hours * 3600 + minutes * 60 + seconds;
         if (isNaN(usageLimitSeconds)) {
           alert('Invalid custom time. Please enter time as HH:MM:SS.');
@@ -266,54 +273,55 @@
     } else {
       usageLimitSeconds = parseInt(presetTimeDropdown.value, 10);
     }
-    const limitAction = limitActionDropdown
-      ? limitActionDropdown.value
-      : 'reminder';
 
-    let settings = loadSettings();
+    const limitAction = limitActionDropdown ? limitActionDropdown.value : 'reminder';
+
+    let settings = await loadSettings();
     settings.limitActive = limitActive;
     settings.usageLimitSeconds = usageLimitSeconds;
     settings.limitAction = limitAction;
-    saveSettings(settings);
+
+    await saveSettings(settings);
     alert('Settings saved!');
     updateDisplay();
   }
 
-  // Disable tracking for today or for multiple days
-  function handleDisableTracking() {
+  async function handleDisableTracking() {
     const disableDaysDropdown = document.getElementById('disableDaysDropdown');
-    const days = disableDaysDropdown
-      ? parseInt(disableDaysDropdown.value, 10)
-      : 0;
+    const days = disableDaysDropdown ? parseInt(disableDaysDropdown.value, 10) : 0;
     const today = new Date(getTodayString());
     today.setDate(today.getDate() + days);
     const disabledUntilStr = today.toISOString().split('T')[0];
 
-    let settings = loadSettings();
+    let settings = await loadSettings();
     settings.disabledUntil = disabledUntilStr;
-    saveSettings(settings);
+    await saveSettings(settings);
     alert('Tracking disabled until ' + disabledUntilStr);
   }
 
   /***********************
    * INITIALIZATION
    ***********************/
-  document.addEventListener('DOMContentLoaded', function () {
-    // If the settings form exists on the page, initialize it and attach listeners.
+  document.addEventListener('DOMContentLoaded', async () => {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    currentUserId = user?.id || null;
+
     if (document.getElementById('settingsForm')) {
-      initSettingsForm();
+      await initSettingsForm();
 
       const saveSettingsButton = document.getElementById('saveSettingsButton');
-      if (saveSettingsButton) {
-        saveSettingsButton.addEventListener('click', handleSaveSettings);
-      }
+      if (saveSettingsButton) saveSettingsButton.addEventListener('click', handleSaveSettings);
+
       const disableButton = document.getElementById('disableButton');
-      if (disableButton) {
-        disableButton.addEventListener('click', handleDisableTracking);
-      }
+      if (disableButton) disableButton.addEventListener('click', handleDisableTracking);
     }
+
     scheduleMidnightReset();
     startTracking();
-    updateDisplay();
+    await updateDisplay();
   });
 })();

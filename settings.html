@@ -486,90 +486,146 @@
     <div id="particles-js"></div>
     <!-- Scripts: Place ALL scripts here, at the end of body -->
     <script type="module" src="/javascript/navbar.js"></script>
-    <script src="/javascript/cloaking.js"></script>
+    <script src="/javascript/cloaking.js" type="module"></script>
     <script src="/javascript/antitabclose.js"></script>
-    <script src="/javascript/screentimetracking.js"></script>
+    <script src="/javascript/screentimetracking.js" type="module"></script>
     <script src="/javascript/scrollbar.js"></script>
     <script src="/javascript/particles.js"></script>
     <script src="/javascript/particles-config.js"></script>
-    <script src="/javascript/panic.js"></script>
+    <script src="/javascript/panic.js" type="module"></script>
     <script src="/javascript/notifications.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        var presetDropdown = document.getElementById('presetTimeDropdown');
-        var customTimeContainer = document.getElementById(
-          'customTimeContainer'
-        );
-        if (presetDropdown && customTimeContainer) {
-          presetDropdown.addEventListener('change', function () {
-            if (this.value === 'custom') {
-              customTimeContainer.style.display = 'inline';
-            } else {
-              customTimeContainer.style.display = 'none';
-            }
-          });
-        }
-      });
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-function togglePerformanceMode() {
-  const current = localStorage.getItem('performanceMode') === 'true';
-  const newValue = !current;
+const supabase = createClient(
+  'https://jbekjmsruiadbhaydlbt.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY'
+);
 
-  localStorage.setItem('performanceMode', newValue ? 'true' : 'false');
+async function fetchSettings(userId) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('settings')
+    .eq('id', userId)
+    .single();
 
-  window.location.reload();
+  if (error) {
+    console.error('Failed to fetch settings:', error);
+    return {};
+  }
+  return data?.settings || {};
 }
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('performanceModeToggle').checked =
-    localStorage.getItem('performanceMode') === 'true';
 
-  document.getElementById('toggleAntiTabClose').checked =
-    localStorage.getItem('antiTabCloseEnabled') === 'true';
-});
+async function saveSettings(userId, settings) {
+  if (!userId) return; // No user, skip Supabase save
 
-document.addEventListener('DOMContentLoaded', () => {
-  // Existing toggles
+  const { error } = await supabase
+    .from('profiles')
+    .update({ settings })
+    .eq('id', userId);
+
+  if (error) {
+    console.error('Failed to save settings:', error);
+  } else {
+    console.log('Settings saved!');
+  }
+}
+
+function updateLocalStorage(settings) {
+  for (const [key, value] of Object.entries(settings)) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // Your preset/custom time dropdown logic — keep as is
+  const presetDropdown = document.getElementById('presetTimeDropdown');
+  const customTimeContainer = document.getElementById('customTimeContainer');
+  if (presetDropdown && customTimeContainer) {
+    presetDropdown.addEventListener('change', function () {
+      if (this.value === 'custom') {
+        customTimeContainer.style.display = 'inline';
+      } else {
+        customTimeContainer.style.display = 'none';
+      }
+    });
+  }
+
+  // Get logged-in user
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  const userId = user?.id || null;
+
+  // Fetch from Supabase or fallback to localStorage
+  let settings = {};
+  if (userId) {
+    settings = await fetchSettings(userId);
+    updateLocalStorage(settings);
+  }
+
+  // Now your original toggle logic exactly, but with hooks to save to Supabase if logged in
+
+  // Performance Mode
   const performanceToggle = document.getElementById('performanceModeToggle');
-  const antiTabCloseToggle = document.getElementById('toggleAntiTabClose');
-  const dynamicIslandToggle = document.getElementById('dynamicIslandToggle');
-  const reduceTransparencyToggle = document.getElementById('reduceTransparencyToggle');
-
   if (performanceToggle) {
-    performanceToggle.checked = localStorage.getItem('performanceMode') === 'true';
-  }
-
-  if (antiTabCloseToggle) {
-    antiTabCloseToggle.checked = localStorage.getItem('antiTabCloseEnabled') === 'true';
-  }
-
-  // Dynamic Island: defaults to ON
-  if (dynamicIslandToggle) {
-    const saved = localStorage.getItem('dynamicIslandShow');
-    dynamicIslandToggle.checked = saved === null || saved === 'true';
-    dynamicIslandToggle.addEventListener('change', () => {
-      localStorage.setItem('dynamicIslandShow', dynamicIslandToggle.checked ? 'true' : 'false');
+    performanceToggle.checked = JSON.parse(localStorage.getItem('performanceMode') || 'false');
+    performanceToggle.addEventListener('click', async () => {
+      const newValue = performanceToggle.checked;
+      localStorage.setItem('performanceMode', newValue ? 'true' : 'false');
+      settings.performanceMode = newValue;
+      await saveSettings(userId, settings);
       window.location.reload();
     });
   }
 
+  // Anti Tab Close
+  const antiTabCloseToggle = document.getElementById('toggleAntiTabClose');
+  if (antiTabCloseToggle) {
+    antiTabCloseToggle.checked = JSON.parse(localStorage.getItem('antiTabCloseEnabled') || 'false');
+    antiTabCloseToggle.addEventListener('change', async () => {
+      const newValue = antiTabCloseToggle.checked;
+      localStorage.setItem('antiTabCloseEnabled', newValue ? 'true' : 'false');
+      settings.antiTabCloseEnabled = newValue;
+      await saveSettings(userId, settings);
+      // no reload here
+    });
+  }
 
+  // Dynamic Island (default ON)
+  const dynamicIslandToggle = document.getElementById('dynamicIslandToggle');
+  if (dynamicIslandToggle) {
+    const saved = localStorage.getItem('dynamicIslandShow');
+    const defaultVal = saved === null ? true : JSON.parse(saved);
+    dynamicIslandToggle.checked = defaultVal;
+    dynamicIslandToggle.addEventListener('change', async () => {
+      const newValue = dynamicIslandToggle.checked;
+      localStorage.setItem('dynamicIslandShow', newValue ? 'true' : 'false');
+      settings.dynamicIslandShow = newValue;
+      await saveSettings(userId, settings);
+      window.location.reload();
+    });
+  }
 
-if (reduceTransparencyToggle) {
-  // On load, set checkbox state from localStorage
-  reduceTransparencyToggle.checked = localStorage.getItem('forceOpaqueBackgrounds') === 'true';
-
-  reduceTransparencyToggle.addEventListener('change', () => {
-    localStorage.setItem('forceOpaqueBackgrounds', reduceTransparencyToggle.checked ? 'true' : 'false');
-    window.location.reload();
-  });
-}
-
+  // Reduce Transparency
+  const reduceTransparencyToggle = document.getElementById('reduceTransparencyToggle');
+  if (reduceTransparencyToggle) {
+    reduceTransparencyToggle.checked = JSON.parse(localStorage.getItem('forceOpaqueBackgrounds') || 'false');
+    reduceTransparencyToggle.addEventListener('change', async () => {
+      const newValue = reduceTransparencyToggle.checked;
+      localStorage.setItem('forceOpaqueBackgrounds', newValue ? 'true' : 'false');
+      settings.forceOpaqueBackgrounds = newValue;
+      await saveSettings(userId, settings);
+      window.location.reload();
+    });
+  }
 });
+</script>
 
 
 
-
-    </script>
     <!-- Scheduler -->
 
     <script src="/javascript/schedule.js"></script>
