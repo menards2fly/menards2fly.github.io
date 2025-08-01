@@ -753,9 +753,29 @@ document.getElementById('mobileOverlay').addEventListener('click', (e) => {
     e.target.classList.remove('active');
   }
 });
-function applyPerformanceModeIfEnabled() {
+async function applyPerformanceModeIfEnabled() {
   const perfStyleId = 'perf-style-tag';
-  const isPerfMode = localStorage.getItem('performanceMode') === 'true';
+
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+
+  let isPerfMode = false;
+
+  if (user) {
+    // Fetch user profile settings from Supabase
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('settings')
+      .eq('id', user.id)
+      .single();
+
+    if (!error && profile?.settings?.performanceMode === true) {
+      isPerfMode = true;
+    }
+  } else {
+    // Fallback to localStorage for guests
+    isPerfMode = localStorage.getItem('performanceMode') === 'true';
+  }
 
   if (isPerfMode && !document.getElementById(perfStyleId)) {
     const styleTag = document.createElement('style');
@@ -778,7 +798,10 @@ function applyPerformanceModeIfEnabled() {
     document.head.appendChild(styleTag);
   }
 }
+
+// Call the function
 applyPerformanceModeIfEnabled();
+
 function forceOpaqueBackgrounds() {
   const allElems = document.querySelectorAll('*');
 
@@ -839,10 +862,34 @@ function forceOpaqueBackgrounds() {
 
 
 
+async function applyForceOpaqueBackgrounds() {
+  // Get current user from Supabase
+  const { data: { user } } = await supabase.auth.getUser();
 
-if (localStorage.getItem('forceOpaqueBackgrounds') === 'true') {
-  forceOpaqueBackgrounds();
+  if (user) {
+    // User logged in — fetch settings from profile
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('settings')
+      .eq('id', user.id)
+      .single();
+
+    if (!error && profile?.settings?.forceOpaqueBackgrounds === true) {
+      forceOpaqueBackgrounds();
+    } else {
+      // No setting in profile or error — fallback or do nothing
+      console.log('No forceOpaqueBackgrounds setting found in profile');
+    }
+  } else {
+    // Not logged in — check localStorage fallback
+    if (localStorage.getItem('forceOpaqueBackgrounds') === 'true') {
+      forceOpaqueBackgrounds();
+    }
+  }
 }
+
+// Run it right away
+applyForceOpaqueBackgrounds();
 
 
 
