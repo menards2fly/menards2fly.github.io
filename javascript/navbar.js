@@ -235,36 +235,21 @@ const introOverlayHTML = `
   <div id="introOverlay" style="
     position: fixed;
     inset: 0;
-    background: #0a0a12;
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(50px);
     overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    cursor: pointer;
-    z-index: 100000;
+    cursor: default; /* no pointer since no skip */
+    z-index: 1000000000000000 !important;
     opacity: 1;
     transition: opacity 1s ease;
     color: white;
     font-family: 'Inter', sans-serif;
     user-select: none;
   ">
-    <div class="starfield" style="
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(2px 2px at 20% 30%, #ffffff 90%, transparent 100%),
-        radial-gradient(1.5px 1.5px at 40% 70%, #ffffff 90%, transparent 100%),
-        radial-gradient(2.5px 2.5px at 70% 50%, #ffffff 90%, transparent 100%),
-        radial-gradient(1.5px 1.5px at 85% 80%, #ffffff 90%, transparent 100%),
-        radial-gradient(1.7px 1.7px at 50% 20%, #ffffff 90%, transparent 100%);
-      background-repeat: repeat;
-      background-size: 200% 200%;
-      animation: starTwinkle 4s ease-in-out infinite alternate;
-      filter: none;
-      z-index: 1;
-    "></div>
-
     <div class="spaceship" style="
       position: relative;
       z-index: 10;
@@ -277,69 +262,69 @@ const introOverlayHTML = `
         user-select: none;
         pointer-events: none;
         transition: transform 0.3s ease;
-        filter: none;
+        animation: pulseSpaceship 5500ms ease forwards;
       "/>
     </div>
 
-
+    <!-- Text element -->
+    <div class="init-text" style="
+      position: absolute;
+      bottom: 38px; /* just above progress bar */
+      left: 10%;
+      width: 80%;
+      text-align: center;
+      font-size: 1.1rem;
+      color: #8a2be2;
+      font-weight: 600;
+      user-select: none;
+      z-index: 25;
+      pointer-events: none;
+    ">
+      starship is initializing...
+    </div>
 
     <div class="progress-bar-container" style="
       position: absolute;
       bottom: 20px;
       left: 10%;
       width: 80%;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 2px;
+      height: 8px;
+      background: rgba(138, 43, 226, 0.25);
+      border-radius: 4px;
       overflow: hidden;
-      box-shadow: 0 0 8px rgba(255,255,255,0.15);
+      box-shadow: 0 0 12px rgba(138, 43, 226, 0.7);
       z-index: 20;
+      backdrop-filter: blur(20px);
+      border: 1.5px solid rgba(138, 43, 226, 0.6);
     ">
       <div class="progress-bar" style="
         height: 100%;
         width: 0%;
-        background: white;
-        border-radius: 2px;
+        background: linear-gradient(90deg, #8a2be2, #b266ff);
+        border-radius: 4px;
+        box-shadow:
+          0 0 12px #8a2be2,
+          0 0 24px #b266ff,
+          0 0 36px #b266ff;
         transition: width 0.1s linear;
       "></div>
     </div>
   </div>
 
   <style>
-    @keyframes starTwinkle {
-      0% {
-        background-position: 0% 0%;
-        opacity: 0.8;
-      }
-      100% {
-        background-position: 100% 100%;
-        opacity: 1;
-      }
-    }
-
     @keyframes pulseSpaceship {
       0%, 60% {
         transform: scale(1);
         opacity: 1;
+        filter: none; /* no glow */
       }
       80% {
         transform: scale(1.1) translateY(-10px);
         opacity: 1;
+        filter: none;
       }
       100% {
         transform: scale(1.5) translateY(-150vh);
-        opacity: 0;
-      }
-    }
-
-    @keyframes fadeInOut {
-      0%, 15% {
-        opacity: 0;
-      }
-      25%, 75% {
-        opacity: 1;
-      }
-      85%, 100% {
         opacity: 0;
       }
     }
@@ -350,44 +335,29 @@ document.body.insertAdjacentHTML('afterbegin', introOverlayHTML);
 
 const overlay = document.getElementById('introOverlay');
 const progressBar = overlay.querySelector('.progress-bar');
-const hasSeenIntro = sessionStorage.getItem('seenIntro');
 
-function hideIntroOverlay() {
-  if (!overlay) return;
-  overlay.style.opacity = '0';
-  setTimeout(() => {
-    overlay.remove();
-  }, 1000);
-}
+let start = null;
+const duration = 5500; // 5.5 seconds
 
-if (hasSeenIntro) {
-  // Already seen this session — hide immediately
-  hideIntroOverlay();
-} else {
-  // First time — show animation & store flag
-  sessionStorage.setItem('seenIntro', 'true');
+function animateProgressBar(timestamp) {
+  if (!start) start = timestamp;
+  const elapsed = timestamp - start;
+  const progress = Math.min(elapsed / duration, 1);
+  progressBar.style.width = `${progress * 100}%`;
 
-  // Animate progress bar over 5.5 seconds
-  let start = null;
-  const duration = 5500; // in ms
-
-  function animateProgressBar(timestamp) {
-    if (!start) start = timestamp;
-    const elapsed = timestamp - start;
-    const progress = Math.min(elapsed / duration, 1);
-    progressBar.style.width = `${progress * 100}%`;
-    if (progress < 1) {
-      requestAnimationFrame(animateProgressBar);
-    }
+  if (progress < 1) {
+    requestAnimationFrame(animateProgressBar);
+  } else {
+    // Progress done — fade out overlay synced with spaceship animation end
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+      overlay.remove();
+    }, 1000); // fade out duration matches CSS transition
   }
-  requestAnimationFrame(animateProgressBar);
-
-  // Allow user to click to skip the animation
-  overlay.addEventListener('click', hideIntroOverlay);
-
-  // Auto-hide after animation duration (5.5 seconds)
-  setTimeout(hideIntroOverlay, duration);
 }
+
+requestAnimationFrame(animateProgressBar);
+
 
 // == Dynamic Island HTML Injection ==
 const dynamicIslandHTML = `
