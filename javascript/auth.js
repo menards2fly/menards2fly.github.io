@@ -747,3 +747,159 @@ statusVisibilityRadios.forEach((radio) => {
 });
 // Call on page load
 loadStatusVisibility();
+async function deleteAccount() {
+  const modal = document.getElementById('delete-modal');
+  const abortModal = document.getElementById('delete-abort-modal');
+  const successModal = document.getElementById('delete-success-modal');
+
+  modal.style.display = 'flex';
+
+  let currentLayer = 1;
+  const totalLayers = 4;
+
+  // Show the specified layer and hide others
+  function showLayer(n) {
+    [...modal.querySelectorAll('.modal-layer')].forEach(section => {
+      if (section.dataset.layer == n) {
+        section.style.display = 'block';
+        section.setAttribute('aria-hidden', 'false');
+      } else {
+        section.style.display = 'none';
+        section.setAttribute('aria-hidden', 'true');
+      }
+    });
+    currentLayer = n;
+    setupButtons();
+  }
+
+  // Setup buttons for current layer, including 5s delay on continue
+  function setupButtons() {
+    const layer = modal.querySelector(`.modal-layer[data-layer="${currentLayer}"]`);
+    const cancelBtn = layer.querySelector('.delete-modal-cancel-btn');
+    const continueBtn = layer.querySelector('.delete-modal-continue-btn');
+
+    // Cancel closes modal & resets
+    cancelBtn.onclick = () => {
+      modal.style.display = 'none';
+      resetModal();
+    };
+
+    // Disable continue initially and enable after countdown
+    continueBtn.disabled = true;
+    let countdown = 5;
+    const defaultText = currentLayer === totalLayers ? 'Delete Account' : 'Continue';
+    continueBtn.textContent = `${defaultText} (${countdown})`;
+    continueBtn.classList.add('delete-modal-red-btn');
+
+    const timer = setInterval(() => {
+      countdown--;
+      if (countdown <= 0) {
+        continueBtn.disabled = false;
+        continueBtn.textContent = defaultText;
+        clearInterval(timer);
+      } else {
+        continueBtn.textContent = `${defaultText} (${countdown})`;
+      }
+    }, 1000);
+
+    // On last layer, enable continue only if password entered
+    if (currentLayer === totalLayers) {
+      const passwordInput = layer.querySelector('.delete-modal-password');
+      continueBtn.disabled = true;
+      passwordInput.value = '';
+      passwordInput.focus();
+
+      passwordInput.oninput = () => {
+        continueBtn.disabled = passwordInput.value.trim().length === 0;
+      };
+    }
+
+continueBtn.onclick = async () => {
+  if (currentLayer < totalLayers) {
+    showLayer(currentLayer + 1);
+  } else {
+    const password = modal.querySelector('.delete-modal-password').value.trim();
+    console.log('Password entered:', password);
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user || !user.email) {
+      alert('No logged-in user found.');
+      modal.style.display = 'none';
+      resetModal();
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password,
+    });
+
+    modal.style.display = 'none';
+    resetModal();
+
+    if (error) {
+      console.log('Password verification failed:', error.message);
+      abortModal.style.display = 'flex';
+    } else {
+      console.log('Password verified!');
+      successModal.style.display = 'flex';
+      // Proceed with account deletion
+      const { data: userData, error: userFetchError } = await supabase.auth.getUser();
+const userId = userData?.user?.id;
+
+if (!userId || userFetchError) {
+  console.error('❌ Failed to get user ID:', userFetchError?.message);
+  return;
+}
+
+const { error: insertError } = await supabase
+  .from('account_deletion')
+  .insert({ user_id: userId });
+
+if (insertError) {
+  console.error('❌ Failed to queue deletion:', insertError.message);
+} else {
+  console.log('🗑️ Account deletion queued successfully.');
+}
+
+    }
+  }
+};
+
+  }
+
+  // Reset modal to first layer, but do not call showLayer to avoid recursion
+  function resetModal() {
+    currentLayer = 1;
+    [...modal.querySelectorAll('.modal-layer')].forEach(section => {
+      if (section.dataset.layer == 1) {
+        section.style.display = 'block';
+        section.setAttribute('aria-hidden', 'false');
+      } else {
+        section.style.display = 'none';
+        section.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+
+  showLayer(1);
+
+  // Hook up abort modal OK button
+  const abortOkBtn = document.getElementById('abort-ok-btn');
+  abortOkBtn.onclick = () => {
+    abortModal.style.display = 'none';
+  };
+
+  // Hook up success modal OK button
+  const successOkBtn = document.getElementById('success-ok-btn');
+  successOkBtn.onclick = () => {
+    successModal.style.display = 'none';
+    // Add any post-success logic here if you want
+  };
+}
+const deleteAccountBtn = document.getElementById('delete-btn');
+deleteAccountBtn?.addEventListener('click', (e) => {
+  e.preventDefault();
+  console.log('🗑️ Delete account button clicked');
+  deleteAccount();
+});

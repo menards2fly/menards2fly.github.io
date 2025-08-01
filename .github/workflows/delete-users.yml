@@ -1,0 +1,16 @@
+name: Delete Expired Users
+
+on:
+  schedule:
+    - cron: '0 7 * * *' # every day at 7:00 AM UTC
+  workflow_dispatch:     # allows manual trigger
+
+jobs:
+  call-delete-users:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Supabase Edge Function
+        run: |
+          curl -X POST ${{ secrets.EDGE_FUNCTION_URL_3 }} \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_KEY }}" \
+            -H "Content-Type: application/json"

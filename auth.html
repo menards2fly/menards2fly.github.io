@@ -37,6 +37,94 @@
     <div id="navbar"></div>
     <script type="module" src="/javascript/navbar.js"></script>
 
+  <!-- DELETE ACCOUNT WARNING MODAL -->
+<div id="delete-modal" style="display:none;">
+  <div class="delete-modal-overlay"></div>
+  <div class="delete-modal-content">
+    <section class="modal-layer" data-layer="1" aria-hidden="false">
+      <h2 class="delete-modal-h2">Woah there! You just clicked the Delete Account button</h2>
+      <p>Are you sure you want to?</p>
+      <div class="delete-modal-buttons">
+        <button class="delete-modal-cancel-btn delete-modal-button">Cancel</button>
+        <button class="delete-modal-continue-btn delete-modal-red-btn delete-modal-button" disabled>Continue</button>
+      </div>
+    </section>
+
+    <section class="modal-layer" data-layer="2" aria-hidden="true" style="display:none;">
+      <h2 class="delete-modal-h2">You are about to lose access to:</h2>
+      <ul class="delete-modal-ul">
+        <li>Favorited games</li>
+        <li>Followers and following data</li>
+        <li>Settings</li>
+        <li>Chats</li>
+        <li>Comments</li>
+        <li>Admin access (if you had it)</li>
+        <li>Reviews</li>
+      </ul>
+      <div class="delete-modal-buttons">
+        <button class="delete-modal-cancel-btn delete-modal-button">Cancel</button>
+        <button class="delete-modal-continue-btn delete-modal-red-btn delete-modal-button" disabled>Continue</button>
+      </div>
+    </section>
+
+    <section class="modal-layer" data-layer="3" aria-hidden="true" style="display:none;">
+      <h2 class="delete-modal-h2">One last time. Are you sure you want to do this?</h2>
+      <div class="delete-modal-buttons">
+        <button class="delete-modal-cancel-btn delete-modal-button">Cancel</button>
+        <button class="delete-modal-continue-btn delete-modal-red-btn delete-modal-button" disabled>Continue</button>
+      </div>
+    </section>
+
+    <section class="modal-layer" data-layer="4" aria-hidden="true" style="display:none;">
+      <h2 class="delete-modal-h2">Enter your current password to continue.</h2>
+      <input
+        type="password"
+        id="delete-password"
+        class="delete-modal-password"
+        placeholder="Your password"
+        autocomplete="current-password"
+      />
+      <div class="delete-modal-buttons">
+        <button class="delete-modal-cancel-btn delete-modal-button">Cancel</button>
+        <button
+          class="delete-modal-continue-btn delete-modal-red-btn delete-modal-button"
+          disabled
+        >
+          Delete Account
+        </button>
+      </div>
+      <p id="delete-feedback" style="color: #f66; margin-top: 10px;"></p>
+    </section>
+  </div>
+
+ 
+
+</div>
+
+ <!-- Incorrect password modal -->
+<div id="delete-abort-modal" class="delete-modal" role="dialog" aria-modal="true" style="display:none;">
+  <div class="delete-modal-overlay"></div>
+  <div class="delete-modal-content" role="document">
+    <h2 class="delete-modal-h2">Deletion aborted</h2>
+    <p>Password incorrect.</p>
+    <div class="delete-modal-buttons">
+      <button class="delete-modal-button delete-modal-red-btn" id="abort-ok-btn">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Success modal -->
+<div id="delete-success-modal" class="delete-modal" role="dialog" aria-modal="true" style="display:none;">
+  <div class="delete-modal-overlay"></div>
+  <div class="delete-modal-content" role="document">
+    <h2 class="delete-modal-h2">Account slated for deletion</h2>
+    <p>We're sad to see you go.</p>
+    <div class="delete-modal-buttons">
+      <button class="delete-modal-button delete-modal-cancel-btn" id="success-ok-btn">OK</button>
+    </div>
+  </div>
+</div>
+
 
 
     <!-- Auth Options -->
@@ -130,7 +218,7 @@
   <h3><i class="fa-solid fa-user-gear"></i> Account Settings</h3>
 
 <button id="logout-btn">Log Out</button>
-<button onClick="alert('To delete your account, please email support@starship-app.com, with your account name, email, and proof of ownership.')" id="delete-btn" style="background:red !important;">Delete My Account</button>
+<button  id="delete-btn" style="background:red !important;">Delete My Account</button>
 
 </div>
 
@@ -193,6 +281,7 @@
       <span class="slider"></span>
     </label>
   </div>
+
 
 
 
