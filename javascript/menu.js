@@ -211,6 +211,7 @@ async function displayGamesWithSkeleton() {
   }, 500);
 }
 
+
 /* ----------------- MUTUAL FRIENDS ----------------- */
 async function loadMutualFriends() {
   console.log('🚀 Loading mutual friends...');
@@ -225,12 +226,12 @@ async function loadMutualFriends() {
   }
   console.log(`👤 Logged in as ${user.id}`);
 
-  // Fetch follows
+  // Fetch follows (who user follows, who follows user)
   const { data: followingRows } = await supabase.from('follows').select('following_id').eq('follower_id', user.id);
   const { data: followerRows } = await supabase.from('follows').select('follower_id').eq('following_id', user.id);
-  const followingIds = (followingRows || []).map((r) => r.following_id);
-  const followerIds = (followerRows || []).map((r) => r.follower_id);
-  const mutualIds = followingIds.filter((id) => followerIds.includes(id));
+  const followingIds = (followingRows || []).map(r => r.following_id);
+  const followerIds = (followerRows || []).map(r => r.follower_id);
+  const mutualIds = followingIds.filter(id => followerIds.includes(id));
   console.log(`🔗 Found ${mutualIds.length} mutual friends.`);
 
   if (!mutualIds.length) {
@@ -239,18 +240,25 @@ async function loadMutualFriends() {
     return;
   }
 
-  // Preload all follow relationships (batch)
-  const { data: allFollows } = await supabase
+  // Preload all follow relationships (both directions for user & mutual friends)
+  const { data: allFollows, error: followError } = await supabase
     .from('follows')
     .select('follower_id, following_id')
-    .in('follower_id', [user.id, ...mutualIds])
-    .in('following_id', [user.id, ...mutualIds]);
+    .or(
+      [
+        `follower_id.eq.${user.id},following_id.in.(${mutualIds.join(',')})`,
+        `follower_id.in.(${mutualIds.join(',')}),following_id.eq.${user.id}`
+      ].join(',')
+    );
+
+  if (followError) console.warn('⚠️ Follow preload error:', followError);
+  console.log('🧪 allFollows:', allFollows);
 
   const isMutualFollow = (fid) =>
     allFollows?.some(f => f.follower_id === user.id && f.following_id === fid) &&
     allFollows?.some(f => f.follower_id === fid && f.following_id === user.id);
 
-  // Load profiles
+  // Load profiles of mutual friends
   const { data: profiles } = await supabase
     .from('profiles')
     .select('id, username, avatar_url, last_active, current_game_id, status, online_status_visibility')
@@ -268,11 +276,20 @@ async function loadMutualFriends() {
   list.innerHTML = '';
 
   for (const friend of profiles) {
-    const visibility = friend.online_status_visibility || 'everyone';
-    const canView = visibility === 'everyone' || (visibility === 'mutual_follow' && isMutualFollow(friend.id));
+    const visibility = (friend.online_status_visibility || 'everyone').toLowerCase();
+    
+    // Assume canView true unless visibility is explicitly 'noone'
+    const canView = visibility !== 'noone';
 
-    const isOnline = canView && friend.last_active &&
-      ((Date.now() - new Date(friend.last_active.replace(' ', 'T') + 'Z').getTime()) / 60000) < 5;
+    console.log(`🧪 Checking online status for ${friend.username}...`);
+    console.log(`➡️ visibility: ${visibility}, canView: ${canView}, last_active: ${friend.last_active}`);
+
+    let isOnline = false;
+    if (canView && friend.last_active) {
+      isOnline = isUserOnline(friend.last_active, 5); // still compares in UTC
+    }
+
+    console.log(`🔍 ${friend.username} is ${isOnline ? 'online' : 'offline'}.`);
 
     const game = canView && friend.current_game_id ? gameMap[friend.current_game_id] : null;
     const nowPlaying = game?.name || null;
@@ -283,8 +300,10 @@ async function loadMutualFriends() {
     else if (nowPlaying) statusText = nowPlaying;
     else if (friend.status && !friend.current_game_id) {
       const statuses = {
-        proxy: 'Surfing the web', aichat: 'Chatting with AI',
-        tv: 'Watching TV', sitechat: 'Hanging out in Chat'
+        proxy: 'Surfing the web',
+        aichat: 'Chatting with AI',
+        tv: 'Watching TV',
+        sitechat: 'Hanging out in Chat',
       };
       statusText = statuses[friend.status] || 'Active';
     }
@@ -306,7 +325,7 @@ async function loadMutualFriends() {
       if (routes[friend.status]) {
         clickUrl = routes[friend.status];
         avatarWrapper.style.cursor = 'pointer';
-        avatarWrapper.addEventListener('click', () => window.location.href = clickUrl);
+        avatarWrapper.addEventListener('click', () => (window.location.href = clickUrl));
       }
     }
 
@@ -315,6 +334,7 @@ async function loadMutualFriends() {
     avatarImg.src = friend.avatar_url || '/uploads/branding/default-avatar.png';
     avatarImg.alt = friend.username;
     avatarWrapper.appendChild(avatarImg);
+
     if (isOnline) {
       const dot = document.createElement('span');
       dot.className = 'online-dot';
@@ -336,12 +356,14 @@ async function loadMutualFriends() {
     card.appendChild(nowPlayingDiv);
     list.appendChild(card);
   }
+
   console.log('🎉 Finished loading mutual friends.');
 }
 
+
+
 /* ----------------- EVENT LISTENERS ----------------- */
 window.addEventListener('load', loadGamesFromSupabase);
-
 
 // Add this back to handle search properly
 function filterGames() {
@@ -369,40 +391,62 @@ window.addEventListener('DOMContentLoaded', () => {
   loadMutualFriends();
 });
 
+const greetings = [
+  'Hey, {username}!',
+  'Howdy there, {username}!',
+  'Welcome back, {username}!',
+  'Good to see you, {username}!',
+  'Ready to play, {username}?',
+  'Yo, {username}!',
+  "What's up, {username}?",
+  'Fancy seeing you here, {username}',
+];
 
-      const greetings = [
-        'Hey, {username}!',
-        'Howdy there, {username}!',
-        'Welcome back, {username}!',
-        'Good to see you, {username}!',
-        'Ready to play, {username}?',
-        'Yo, {username}!',
-        "What's up, {username}?",
-        'Fancy seeing you here, {username}',
-      ];
+async function setWelcome() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  let username = 'Guest';
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', user.id)
+      .maybeSingle();
+    if (profile && profile.username) {
+      username = profile.username;
+      localStorage.setItem('loggedInUser', JSON.stringify(profile));
+    }
+  }
+  const greeting = greetings[
+    Math.floor(Math.random() * greetings.length)
+  ].replace('{username}', username);
+  setTimeout(() => {
+    document.querySelector('.welcome').textContent = greeting;
+  }, 3000); // 3 second delay
+}
 
-      async function setWelcome() {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        let username = 'Guest';
-        if (user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', user.id)
-            .maybeSingle();
-          if (profile && profile.username) {
-            username = profile.username;
-            localStorage.setItem('loggedInUser', JSON.stringify(profile));
-          }
-        }
-        const greeting = greetings[
-          Math.floor(Math.random() * greetings.length)
-        ].replace('{username}', username);
-        setTimeout(() => {
-          document.querySelector('.welcome').textContent = greeting;
-        }, 3000); // 5 second delay
-      }
+setWelcome();
 
-      setWelcome();
+function isUserOnline(lastActiveStr, minutesThreshold = 5) {
+  if (!lastActiveStr) return false;
+
+  // Supabase returns UTC timestamps, so handle them right
+  const isoString = lastActiveStr.includes('T')
+    ? lastActiveStr.endsWith('Z') ? lastActiveStr : lastActiveStr + 'Z'
+    : lastActiveStr.replace(' ', 'T') + 'Z';
+
+  const lastActiveDate = new Date(isoString);
+  if (isNaN(lastActiveDate)) return false;
+
+  const now = Date.now();
+  const diffMinutes = (now - lastActiveDate.getTime()) / 60000;
+
+  console.log("📦 Raw timestamp from DB:", lastActiveStr);
+  console.log("🕰️ Interpreted as:", lastActiveDate.toISOString());
+  console.log("🧮 Minutes ago:", diffMinutes.toFixed(2));
+
+  return diffMinutes >= 0 && diffMinutes < minutesThreshold;
+}
+
+
