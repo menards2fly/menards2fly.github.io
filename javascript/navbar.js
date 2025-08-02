@@ -629,7 +629,7 @@ const clearProfileFieldsBasedOnPage = async () => {
     updates.last_video_url = null;
   }
 
-  if (!path.includes('/ai') && !path.includes('/route')) {
+  if (!path.includes('/ai') && !path.includes('/route') && !path.includes('/tv') && !path.includes('/chat')) {
     updates.status = null;
   }
 
