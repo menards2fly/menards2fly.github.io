@@ -12,6 +12,7 @@ export default supabase;
 
 
 
+
 // Elements
 const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
@@ -55,57 +56,124 @@ function showSignup() {
   signupSection.style.display = 'block';
   loginSection.style.display = 'none';
 }
-window. showLogin = showLogin;
+window.showLogin = showLogin;
 window.showSignup = showSignup;
+// Global tokens for each widget
+window.turnstileSignupToken = null;
+window.turnstileLoginToken = null;
+
+// Callbacks for the Turnstile widgets (set these in your HTML widget data-callback)
+window.onTurnstileSignupSuccess = function (token) {
+  window.turnstileSignupToken = token;
+  document.getElementById('signup-btn').disabled = false;
+  console.log('✅ Turnstile signup token received');
+};
+
+window.onTurnstileLoginSuccess = function (token) {
+  window.turnstileLoginToken = token;
+  document.getElementById('login-btn').disabled = false;
+  console.log('✅ Turnstile login token received');
+};
+
 async function signUp() {
-  const email = signupEmailInput.value;
+  const email = signupEmailInput.value.trim();
   const password = signupPasswordInput.value;
-  const confirmPassword = document.getElementById(
-    'signup-confirm-password'
-  ).value;
-  const username = signupUsernameInput.value.trim();
+  const confirmPassword = document.getElementById('signup-confirm-password').value;
 
-  console.log(`📝 SignUp attempt for email: ${email} username: ${username}`);
+  console.log(`📝 SignUp attempt for email: ${email}`);
 
-  if (!email || !password || !confirmPassword || !username) {
+  if (!email || !password || !confirmPassword) {
     console.warn('⚠️ SignUp failed: Missing fields');
     return setStatus('Please fill in all fields.', 'signup');
   }
+
   if (password !== confirmPassword) {
     console.warn('⚠️ SignUp failed: Passwords do not match');
     return setStatus('Passwords do not match.', 'signup');
   }
 
-  const { data, error } = await supabaseClient.auth.signUp({ email, password });
-  if (error) {
-    console.error('❌ SignUp error:', error);
-    return setStatus('Sign up error: ' + error.message, 'signup');
+  const token = window.turnstileSignupToken;
+  if (!token) {
+    console.warn('⚠️ No Turnstile token found.');
+    return setStatus('Please complete the bot check.', 'signup');
   }
 
-  console.log('✅ SignUp successful:', data);
-  setStatus(
-    'Signed up! Now you can, <a onclick="showLogin()" style="text-decoration: underline; cursor: pointer">log in</a>.',
-    'signup'
-  );
+  try {
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        captchaToken: token
+      }
+    });
+
+    if (error) {
+      console.error('❌ SignUp error:', error);
+      return setStatus('Sign up error: ' + error.message, 'signup');
+    }
+
+    console.log('✅ SignUp successful:', data);
+    location.reload();
+    setStatus(
+      'Signed up! Now you can, <a onclick="showLogin()" style="text-decoration: underline; cursor: pointer">log in</a>.',
+      'signup'
+    );
+
+    window.turnstileSignupToken = null;
+  } catch (e) {
+    console.error('❌ Unexpected error during signUp:', e);
+    return setStatus('Unexpected error. Please try again later.', 'signup');
+  }
 }
 
 async function signIn() {
-  console.log(`🔐 SignIn attempt for email: ${emailInput.value}`);
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: emailInput.value,
-    password: passwordInput.value,
-  });
-  if (error) {
-    console.error('❌ Login error:', error);
-    return setStatus('Login error: ' + error.message, 'login');
+  const token = window.turnstileLoginToken;
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+
+  if (!token) {
+    console.warn('⚠️ No Turnstile token found.');
+    return setStatus('Please complete the bot check.', 'login');
   }
-  console.log('✅ Logged in successfully:', data);
-  setStatus('Logged in!', 'login');
-  await ensureProfile();
-  await checkForAdmin();
-  await loadProfile();
-  location.reload();
+
+  console.log(`🔐 SignIn attempt for email: ${email}`);
+
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password,
+      options: {
+        captchaToken: token
+      }
+    });
+
+    if (error) {
+      console.error('❌ Login error:', error);
+      console.log('Turnstile token:', token);
+      return setStatus('Login error: ' + error.message, 'login');
+    }
+
+    console.log('✅ Logged in successfully:', data);
+    setStatus('Logged in!', 'login');
+    await ensureProfile();
+    await checkForAdmin();
+    await loadProfile();
+    location.reload();
+
+    window.turnstileLoginToken = null;
+  } catch (e) {
+    console.error('❌ Unexpected error during signIn:', e);
+    return setStatus('Unexpected error. Please try again later.', 'login');
+  }
 }
+
+
+
+
+
+
+
+
 
 async function signOut() {
   console.log('🚪 Signing out user');
@@ -218,11 +286,11 @@ async function updateUsername() {
   const newUsername = newUsernameInput.value.trim();
   console.log(`✏️ Attempting username update to: ${newUsername}`);
   if (containsBadWord(newUsername)) {
-              showNotification('Username Blocked', {
-            body: `Hey explorer, that username is a bit rough. Let's keep it friendly!`,
-            duration: 5000,
-            sound: true,
-          });
+    showNotification('Username Blocked', {
+      body: `Hey explorer, that username is a bit rough. Let's keep it friendly!`,
+      duration: 5000,
+      sound: true,
+    });
     return; // STOP here — don't update username
   }
   if (!newUsername) {
@@ -303,46 +371,75 @@ async function loadProfile() {
     return;
   }
 
+  async function createProfileWithUniqueUsername(user) {
+    const MAX_RETRIES = 10;
+
+    function generateUsername() {
+      const randomNum = Math.floor(100000 + Math.random() * 900000); // 6 digit number
+      return `user${randomNum}`;
+    }
+
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      const username = generateUsername();
+      console.log(`Attempt ${attempt}: Trying username "${username}"`);
+
+      const { error: createError } = await supabaseClient
+        .from('profiles')
+        .insert([{ id: user.id, username }]);
+
+      if (!createError) {
+        console.log(`✅ Profile created with username: ${username}`);
+        return username; // success!
+      } else {
+        console.warn(`❌ Username "${username}" rejected: ${createError.message}`);
+
+        // If the error is NOT a username conflict or validation issue, maybe break early
+        if (!createError.message.toLowerCase().includes('username')) {
+          throw new Error(`Unexpected error creating profile: ${createError.message}`);
+        }
+        // else continue retrying
+      }
+    }
+    throw new Error('Failed to create a unique username after max retries');
+  }
+
+  // Then replace your existing profile creation part with something like:
+
   if (!profile) {
-    // No profile found, create one
     console.warn('⚠️ No profile found for user, creating one...');
-    // Default username: use before @ in email, or "User"
-    const defaultUsername = user.email ? user.email.split('@')[0] : 'User';
-    const { error: createError } = await supabaseClient
-      .from('profiles')
-      .insert([{ id: user.id, username: defaultUsername }]);
-    if (createError) {
-      console.error('❌ Failed to create profile:', createError);
-      setStatus('Failed to create profile: ' + createError.message, 'login');
+    try {
+      const generatedUsername = await createProfileWithUniqueUsername(user);
+
+      // Reload profile after successful creation
+      const { data: newProfile, error: profileError } = await supabaseClient
+        .from('profiles')
+        .select('username, avatar_url')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (profileError || !newProfile) {
+        setStatus('Failed to load profile after creation.', 'login');
+        warningSection.style.display = 'block';
+        return;
+      }
+
+      profile = newProfile;
+      setStatus('Profile created! Please finish setting up your account.', 'login');
+      showNotification('Account recovered', {
+        body: 'Your account was successfully recovered and a profile was created. Customize your profile now.',
+        duration: 5000,
+        persistClose: true,
+      });
+      warningSection.style.display = 'none';
+
+    } catch (e) {
+      console.error('❌ Failed to create profile:', e);
+      setStatus('Failed to create profile: ' + e.message, 'login');
       warningSection.style.display = 'block';
       return;
     }
-    // Try to load the new profile again
-    ({ data: profile } = await supabaseClient
-      .from('profiles')
-      .select('username, avatar_url')
-      .eq('id', user.id)
-      .maybeSingle());
-    setStatus(
-      'Profile created! Please finish setting up your account.',
-      'login'
-    );
-    showNotification('Account recovered', {
-      body: 'Your account was successfully recovered and a profile was created. Customize your profile now.',
-      duration: 5000,
-      persistClose: true,
-    });
-    warningSection.style.display = 'none';
-  } else {
-    // Hide warning if profile exists
-    warningSection.style.display = 'none';
   }
 
-  if (!profile) {
-    // Still no profile, show warning
-    warningSection.style.display = 'block';
-    return;
-  }
 
   console.log('✅ Profile loaded:', profile);
   profileUsername.textContent = profile.username;
@@ -548,14 +645,14 @@ async function saveBio() {
   bioStatus.textContent = 'Saving...';
 
   const newBio = bioTextarea.value.trim();
-    if (containsBadWord(newBio)) {
-              showNotification('Bio Blocked', {
-            body: `Hey explorer, that bio is a bit rough. Let's keep it friendly!`,
-            duration: 5000,
-            sound: true,
-          });
-            bioStatus.style.color = 'red';
-  bioStatus.textContent = 'Bio contains inappropriate content.';
+  if (containsBadWord(newBio)) {
+    showNotification('Bio Blocked', {
+      body: `Hey explorer, that bio is a bit rough. Let's keep it friendly!`,
+      duration: 5000,
+      sound: true,
+    });
+    bioStatus.style.color = 'red';
+    bioStatus.textContent = 'Bio contains inappropriate content.';
     return; // STOP here — don't update username
   }
 
@@ -814,57 +911,57 @@ async function deleteAccount() {
       };
     }
 
-continueBtn.onclick = async () => {
-  if (currentLayer < totalLayers) {
-    showLayer(currentLayer + 1);
-  } else {
-    const password = modal.querySelector('.delete-modal-password').value.trim();
-    console.log('Password entered:', password);
+    continueBtn.onclick = async () => {
+      if (currentLayer < totalLayers) {
+        showLayer(currentLayer + 1);
+      } else {
+        const password = modal.querySelector('.delete-modal-password').value.trim();
+        console.log('Password entered:', password);
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user || !user.email) {
-      alert('No logged-in user found.');
-      modal.style.display = 'none';
-      resetModal();
-      return;
-    }
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user || !user.email) {
+          alert('No logged-in user found.');
+          modal.style.display = 'none';
+          resetModal();
+          return;
+        }
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: user.email,
-      password,
-    });
+        const { error } = await supabase.auth.signInWithPassword({
+          email: user.email,
+          password,
+        });
 
-    modal.style.display = 'none';
-    resetModal();
+        modal.style.display = 'none';
+        resetModal();
 
-    if (error) {
-      console.log('Password verification failed:', error.message);
-      abortModal.style.display = 'flex';
-    } else {
-      console.log('Password verified!');
-      successModal.style.display = 'flex';
-      // Proceed with account deletion
-      const { data: userData, error: userFetchError } = await supabase.auth.getUser();
-const userId = userData?.user?.id;
+        if (error) {
+          console.log('Password verification failed:', error.message);
+          abortModal.style.display = 'flex';
+        } else {
+          console.log('Password verified!');
+          successModal.style.display = 'flex';
+          // Proceed with account deletion
+          const { data: userData, error: userFetchError } = await supabase.auth.getUser();
+          const userId = userData?.user?.id;
 
-if (!userId || userFetchError) {
-  console.error('❌ Failed to get user ID:', userFetchError?.message);
-  return;
-}
+          if (!userId || userFetchError) {
+            console.error('❌ Failed to get user ID:', userFetchError?.message);
+            return;
+          }
 
-const { error: insertError } = await supabase
-  .from('account_deletion')
-  .insert({ user_id: userId });
+          const { error: insertError } = await supabase
+            .from('account_deletion')
+            .insert({ user_id: userId });
 
-if (insertError) {
-  console.error('❌ Failed to queue deletion:', insertError.message);
-} else {
-  console.log('🗑️ Account deletion queued successfully.');
-}
+          if (insertError) {
+            console.error('❌ Failed to queue deletion:', insertError.message);
+          } else {
+            console.log('🗑️ Account deletion queued successfully.');
+          }
 
-    }
-  }
-};
+        }
+      }
+    };
 
   }
 
@@ -903,3 +1000,5 @@ deleteAccountBtn?.addEventListener('click', (e) => {
   console.log('🗑️ Delete account button clicked');
   deleteAccount();
 });
+
+

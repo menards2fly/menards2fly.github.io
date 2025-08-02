@@ -7,6 +7,7 @@
   <link rel="icon" type="image/x-icon" href="/uploads/branding/favicon.png">
   <meta name="description" content="Play games, level up, and explore Starship - your new favorite gaming site.">
   <link rel="canonical" href="https://starship-app.com/auth" />
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="/css/navbar.css">
@@ -139,6 +140,8 @@
     <div id="login-section" style="display:none;">
       <input id="email" type="email" placeholder="Email" /><br>
       <input id="password" type="password" placeholder="Password" /><br>
+      <div class="cf-turnstile" data-sitekey="0x4AAAAAABnpTjrdDgkMZ8Nr"  data-theme="dark"   data-callback="onTurnstileLoginSuccess"></div>
+
       <button id="login-btn">Log In</button>
       <p id="status-lo"></p>
       <p>New to this galaxy? <a href="#" onclick="showSignup()"
@@ -158,6 +161,7 @@
         <button type="button" id="toggle-signup-confirm-password"
           style="position:absolute;right:0;top:8px;padding:2px 8px;"><i class="fa-solid fa-eye"></i></button>
       </div><br>
+      <div class="cf-turnstile" data-sitekey="0x4AAAAAABnpTjrdDgkMZ8Nr"   data-theme="dark"   data-callback="onTurnstileSignupSuccess"></div>
       <input id="signup-username" type="text" placeholder="Username (for sign up)" /><br>
       <p id="status">By signing up, you automatically agree to the Privacy Policy and Terms of Service. You also state
         that you are 13 or older, and that you know that you can delete your data at anytime by emailing
