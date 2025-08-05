@@ -34,10 +34,17 @@
 
 <body>
 
-  <center>
+ 
     <div id="navbar"></div>
     <script type="module" src="/javascript/navbar.js"></script>
-
+<div id="avatar-upload-popup"
+  style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.2); backdrop-filter:blur(12px); z-index: 9999;
+         display: none; align-items: center; justify-content: center;">
+  <div
+    style="background: rgba(0, 0, 0, 0.2); color: #fff; padding: 30px 40px; border-radius: 16px; font-size: 1.3em;">
+    <div class="spinner"></div>
+  </div>
+</div>
   <!-- DELETE ACCOUNT WARNING MODAL -->
 <div id="delete-modal" style="display:none;">
   <div class="delete-modal-overlay"></div>
@@ -85,6 +92,7 @@
         placeholder="Your password"
         autocomplete="current-password"
       />
+      <div class="cf-turnstile" data-sitekey="0x4AAAAAABnpTjrdDgkMZ8Nr"  data-theme="dark"   data-callback="onTurnstileCheckSuccess"></div>
       <div class="delete-modal-buttons">
         <button class="delete-modal-cancel-btn delete-modal-button">Cancel</button>
         <button
@@ -161,11 +169,13 @@
         <button type="button" id="toggle-signup-confirm-password"
           style="position:absolute;right:0;top:8px;padding:2px 8px;"><i class="fa-solid fa-eye"></i></button>
       </div><br>
+
+      <input id="signup-birthday" type="date" /><br>
+<p id="birthday-warning" style="color: red; display: none; margin-top: 4px;">
+  You aren't old enough to use Starship.
+</p>
       <div class="cf-turnstile" data-sitekey="0x4AAAAAABnpTjrdDgkMZ8Nr"   data-theme="dark"   data-callback="onTurnstileSignupSuccess"></div>
-      <input id="signup-username" type="text" placeholder="Username (for sign up)" /><br>
-      <p id="status">By signing up, you automatically agree to the Privacy Policy and Terms of Service. You also state
-        that you are 13 or older, and that you know that you can delete your data at anytime by emailing
-        "starship.site@gmail.com" or using the contact page.</p>
+      <p id="status">By signing up, you automatically agree to the <a href=/legal>Privacy Policy</a> and <a href=/legal>Terms Of Use</a>.</p>
       <button id="signup-btn">Sign Up</button>
     </div>
 
@@ -190,13 +200,9 @@
 
     <pre id="status"></pre>
 
-    <div id="avatar-upload-popup"
-      style="display:none; position:fixed; top:0; left:0;  height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
-      <div
-        style="background:#222; color:#fff; padding:30px 40px; border-radius:16px; font-size:1.3em; box-shadow:0 0 30px #AE54FF;">
-        <div class="spinner"></div>
-      </div>
-    </div>
+
+
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <div class="privacy-settings">
@@ -218,13 +224,7 @@
 
 </div>
 
-    <div class="privacy-settings">
-  <h3><i class="fa-solid fa-user-gear"></i> Account Settings</h3>
 
-<button id="logout-btn">Log Out</button>
-<button  id="delete-btn" style="background:red !important;">Delete My Account</button>
-
-</div>
 
     <div class="privacy-settings">
   <h3><i class="fa-solid fa-user-shield"></i> Privacy Settings</h3>
@@ -285,9 +285,15 @@
       <span class="slider"></span>
     </label>
   </div>
+</div>
 
+    <div class="privacy-settings">
+  <h3><i class="fa-solid fa-warning"></i> Danger Zone</h3>
 
+<button id="logout-btn">Log Out</button>
+<button  id="delete-btn" style="background:red !important;">Delete My Account</button>
 
+</div>
 
 </div></div>
   </center>

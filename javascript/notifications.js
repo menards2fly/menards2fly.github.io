@@ -1,5 +1,7 @@
 (function () {
   function showNotification(message, options = {}) {
+    const allowClose = options.allowClose !== false; // default true
+
     const notifKey = options.persistClose
       ? `notif_closed_${btoa(message)}`
       : null;
@@ -26,15 +28,24 @@
     if (options.isStatus) notif.classList.add('status-notification');
     notif.dataset.message = message;
 
-    notif.innerHTML =
+    // Build inner HTML without close button first
+    let innerHTML =
       `<div class="notification-title">${message}</div>` +
       (options.body
         ? `<div class="notification-body" style="text-align:center; margin-top:8px;">${options.body}</div>`
-        : '') +
-      `<a href="#" class="notification-close" aria-label="Close notification" tabindex="0" role="button">&times;</a>` +
-      (options.duration && options.duration > 0 && !options.sticky
-        ? `<div class="notification-timer"></div>`
         : '');
+
+    // Add close button only if allowClose is true
+    if (allowClose) {
+      innerHTML += `<a href="#" class="notification-close" aria-label="Close notification" tabindex="0" role="button">&times;</a>`;
+    }
+
+    // Add timer bar if duration is set and sticky not true
+    if (options.duration && options.duration > 0 && !options.sticky) {
+      innerHTML += `<div class="notification-timer"></div>`;
+    }
+
+    notif.innerHTML = innerHTML;
 
     // Apply background color and blur for status notifications or custom bgColor
     if (options.bgColor) {
@@ -66,17 +77,19 @@
       navigator.vibrate(100);
     }
 
-    const closeBtn = notif.querySelector('.notification-close');
-    closeBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      closeNotification(notif);
-    });
-    closeBtn.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
+    if (allowClose) {
+      const closeBtn = notif.querySelector('.notification-close');
+      closeBtn.addEventListener('click', (e) => {
         e.preventDefault();
         closeNotification(notif);
-      }
-    });
+      });
+      closeBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          closeNotification(notif);
+        }
+      });
+    }
 
     let timerInterval,
       timerBar,
@@ -174,7 +187,6 @@
       const indicator = summary.status.indicator || 'none';
       const description = summary.status.description || 'All Systems Operational';
 
-      // Remove status notification if status is good
       const container = document.getElementById('notifications-container');
       if (indicator === 'none') {
         if (container) {
@@ -184,7 +196,6 @@
         return;
       }
 
-      // Grab incident names if present (limit to 2)
       let incidentNames = '';
       if (summary.incidents && summary.incidents.length > 0) {
         incidentNames = summary.incidents
@@ -207,7 +218,7 @@
         sticky: false,
         sound: false,
         vibrate: false,
-        bgColor: statusColors[indicator] || 'rgba(108, 117, 125, 0.1)', // fallback gray
+        bgColor: statusColors[indicator] || 'rgba(108, 117, 125, 0.1)',
         body: body,
       });
     } catch (e) {

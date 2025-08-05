@@ -79,31 +79,60 @@ async function signUp() {
   const email = signupEmailInput.value.trim();
   const password = signupPasswordInput.value;
   const confirmPassword = document.getElementById('signup-confirm-password').value;
+  const username = document.getElementById('signup-username').value.trim();
+  const birthdayInput = document.getElementById('signup-birthday');
+  const birthdayWarning = document.getElementById('birthday-warning');
+  const birthdayValue = birthdayInput.value;
 
   console.log(`📝 SignUp attempt for email: ${email}`);
 
-  if (!email || !password || !confirmPassword) {
+  // --- Validate required fields ---
+  if (!email || !password || !confirmPassword || !username || !birthdayValue) {
     console.warn('⚠️ SignUp failed: Missing fields');
     return setStatus('Please fill in all fields.', 'signup');
   }
 
+  // --- Passwords match check ---
   if (password !== confirmPassword) {
     console.warn('⚠️ SignUp failed: Passwords do not match');
     return setStatus('Passwords do not match.', 'signup');
   }
 
+  // --- Age check ---
+  const birthday = new Date(birthdayValue);
+  const today = new Date();
+  const ageDifMs = today - birthday;
+  const ageDate = new Date(ageDifMs);
+  const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+
+  if (age < 13) {
+    birthdayInput.style.border = "2px solid red";
+    birthdayWarning.style.display = "block";
+    console.warn('⚠️ SignUp failed: User under 13');
+    return setStatus("You must be at least 13 years old to sign up.", "signup");
+  } else {
+    birthdayInput.style.border = "";
+    birthdayWarning.style.display = "none";
+  }
+
+  // --- Turnstile token check ---
   const token = window.turnstileSignupToken;
   if (!token) {
     console.warn('⚠️ No Turnstile token found.');
     return setStatus('Please complete the bot check.', 'signup');
   }
 
+  // --- Sign up using Supabase ---
   try {
     const { data, error } = await supabaseClient.auth.signUp({
       email,
       password,
       options: {
-        captchaToken: token
+        captchaToken: token,
+        data: {
+          username: username,
+          birthday: birthdayValue
+        }
       }
     });
 
@@ -125,6 +154,7 @@ async function signUp() {
     return setStatus('Unexpected error. Please try again later.', 'signup');
   }
 }
+
 
 async function signIn() {
   const token = window.turnstileLoginToken;
@@ -371,37 +401,41 @@ async function loadProfile() {
     return;
   }
 
-  async function createProfileWithUniqueUsername(user) {
-    const MAX_RETRIES = 10;
+ async function createProfileWithUniqueUsername(user) {
+  const MAX_RETRIES = 10;
 
-    function generateUsername() {
-      const randomNum = Math.floor(100000 + Math.random() * 900000); // 6 digit number
-      return `user${randomNum}`;
-    }
+  function generateUsername() {
+    const randomNum = Math.floor(100000 + Math.random() * 900000); // 6 digit number
+    return `user${randomNum}`;
+  }
 
-    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-      const username = generateUsername();
-      console.log(`Attempt ${attempt}: Trying username "${username}"`);
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    const username = generateUsername();
+    console.log(`Attempt ${attempt}: Trying username "${username}"`);
 
-      const { error: createError } = await supabaseClient
-        .from('profiles')
-        .insert([{ id: user.id, username }]);
+    const firstLetter = username.charAt(0).toUpperCase();
+    const avatarUrl = `https://placehold.co/100x100/8a2be2/white?text=${firstLetter}`;
 
-      if (!createError) {
-        console.log(`✅ Profile created with username: ${username}`);
-        return username; // success!
-      } else {
-        console.warn(`❌ Username "${username}" rejected: ${createError.message}`);
+    const { error: createError } = await supabaseClient
+      .from('profiles')
+      .insert([{ id: user.id, username, avatar_url: avatarUrl }]);
 
-        // If the error is NOT a username conflict or validation issue, maybe break early
-        if (!createError.message.toLowerCase().includes('username')) {
-          throw new Error(`Unexpected error creating profile: ${createError.message}`);
-        }
-        // else continue retrying
+    if (!createError) {
+      console.log(`✅ Profile created with username: ${username}`);
+      return username; // success!
+    } else {
+      console.warn(`❌ Username "${username}" rejected: ${createError.message}`);
+
+      // If it's not just a username conflict, break early
+      if (!createError.message.toLowerCase().includes('username')) {
+        throw new Error(`Unexpected error creating profile: ${createError.message}`);
       }
     }
-    throw new Error('Failed to create a unique username after max retries');
   }
+
+  throw new Error('Failed to create a unique username after max retries');
+}
+
 
   // Then replace your existing profile creation part with something like:
 
@@ -449,7 +483,11 @@ async function loadProfile() {
     profileAvatar.style.display = 'block';
     console.log('🖼️ Avatar set from data URL');
   } else {
-    profileAvatar.src = 'default-avatar.png'; // fallback avatar
+    let username = profile?.username || 'New User';
+const firstLetter = username?.charAt(0)?.toUpperCase() || 'U';
+profileAvatar.src = `https://placehold.co/100x100/8a2be2/white?text=${firstLetter}`;
+
+
     profileAvatar.style.display = 'block';
     console.log('🖼️ Using default avatar');
   }
@@ -911,57 +949,69 @@ async function deleteAccount() {
       };
     }
 
-    continueBtn.onclick = async () => {
-      if (currentLayer < totalLayers) {
-        showLayer(currentLayer + 1);
-      } else {
-        const password = modal.querySelector('.delete-modal-password').value.trim();
-        console.log('Password entered:', password);
+   continueBtn.onclick = async () => {
+  if (currentLayer < totalLayers) {
+    showLayer(currentLayer + 1);
+  } else {
+    const password = modal.querySelector('.delete-modal-password').value.trim();
+    console.log('Password entered:', password);
 
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user || !user.email) {
-          alert('No logged-in user found.');
-          modal.style.display = 'none';
-          resetModal();
-          return;
-        }
+    // ✅ Make sure Turnstile token is present
+    const token = window.turnstileDeleteToken;
+    if (!token) {
+      alert('Please complete the bot check.');
+      return;
+    }
 
-        const { error } = await supabase.auth.signInWithPassword({
-          email: user.email,
-          password,
-        });
+    // ✅ Get the current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user || !user.email) {
+      alert('No logged-in user found.');
+      modal.style.display = 'none';
+      resetModal();
+      return;
+    }
 
-        modal.style.display = 'none';
-        resetModal();
+    // ✅ Try signing in with the password and Turnstile token
+    const { error } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password,
+      options: {
+        captchaToken: turnstileDeleteToken,
+      },
+    });
 
-        if (error) {
-          console.log('Password verification failed:', error.message);
-          abortModal.style.display = 'flex';
-        } else {
-          console.log('Password verified!');
-          successModal.style.display = 'flex';
-          // Proceed with account deletion
-          const { data: userData, error: userFetchError } = await supabase.auth.getUser();
-          const userId = userData?.user?.id;
+    modal.style.display = 'none';
+    resetModal();
 
-          if (!userId || userFetchError) {
-            console.error('❌ Failed to get user ID:', userFetchError?.message);
-            return;
-          }
+    if (error) {
+      console.log('Password verification failed:', error.message);
+      abortModal.style.display = 'flex';
+    } else {
+      console.log('Password verified!');
+      successModal.style.display = 'flex';
 
-          const { error: insertError } = await supabase
-            .from('account_deletion')
-            .insert({ user_id: userId });
+      // Proceed with account deletion
+      const { data: userData, error: userFetchError } = await supabase.auth.getUser();
+      const userId = userData?.user?.id;
 
-          if (insertError) {
-            console.error('❌ Failed to queue deletion:', insertError.message);
-          } else {
-            console.log('🗑️ Account deletion queued successfully.');
-          }
-
-        }
+      if (!userId || userFetchError) {
+        console.error('❌ Failed to get user ID:', userFetchError?.message);
+        return;
       }
-    };
+
+      const { error: insertError } = await supabase
+        .from('account_deletion')
+        .insert({ user_id: userId });
+
+      if (insertError) {
+        console.error('❌ Failed to queue deletion:', insertError.message);
+      } else {
+        console.log('🗑️ Account deletion queued successfully.');
+      }
+    }
+  }
+};
 
   }
 
@@ -1001,4 +1051,27 @@ deleteAccountBtn?.addEventListener('click', (e) => {
   deleteAccount();
 });
 
+
+window.turnstileDeleteToken = null;
+
+window.onTurnstileCheckSuccess = function(token) {
+  console.log("✅ Turnstile passed for deletion:", token);
+  window.turnstileDeleteToken = token;
+
+  const deleteContinueBtn = document.querySelector('.delete-modal-continue-btn');
+  if (deleteContinueBtn) {
+    deleteContinueBtn.disabled = false; // Enable button after passing
+  }
+};
+
+
+
+const deleteContinueBtn = document.querySelector('.delete-modal-continue-btn');
+const deletePasswordInput = document.getElementById('delete-password');
+
+function checkDeleteReady() {
+  deleteContinueBtn.disabled = !(window.turnstileDeleteToken && deletePasswordInput.value.trim());
+}
+
+deletePasswordInput.addEventListener('input', checkDeleteReady);
 

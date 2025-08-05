@@ -938,39 +938,49 @@ async function applyForceOpaqueBackgrounds() {
 applyForceOpaqueBackgrounds();
 
 
-(async () => {
+async function checkAccountDeletionStatus(user) {
   try {
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError) throw userError;
-
     if (!user || !user.id) {
       console.log('⛔ No user signed in — skipping notification.');
       return;
     }
 
-    console.log(`🔐 User is signed in: ${user.email}`);
+    console.log(`🔐 User signed in: ${user.email} (ID: ${user.id})`);
 
-    // Check if this user exists in the account_deletion table
-    const { data: deletionData, error: deletionError } = await supabase
+    const { data, error } = await supabase
       .from('account_deletion')
-      .select('id')
-      .eq('user_id', user.id)
-      .maybeSingle();
+      .select('*')
+      .eq('user_id', user.id);
 
-    if (deletionError) throw deletionError;
+    if (error) {
+      console.error('❌ Error fetching deletion status:', error);
+      return;
+    }
 
-    if (deletionData) {
-      showNotification('⚠️ Account Deletion Notice', {
+    console.log('Deletion status data:', data);
+
+    if (data.length > 0) {
+      console.log('Showing account deletion notification...');
+      showNotification('Account Deletion Notice', {
         body: 'Your account is scheduled for deletion. It will be deleted within 24 hours.',
+         bgColor: 'rgba(255, 0, 0, 0.1)', // fallback gray
         sound: true,
+        allowClose: false, // Don't allow closing
       });
     } else {
       console.log('✅ User is not scheduled for deletion.');
     }
-
   } catch (err) {
     console.error('❌ Failed to check account deletion status:', err);
   }
-})();
+}
 
+(async () => {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error) {
+    console.error('Failed to get user:', error);
+    return;
+  }
+  await checkAccountDeletionStatus(user);
+})();
 
