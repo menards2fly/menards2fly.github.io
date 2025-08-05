@@ -10,30 +10,13 @@
       content="Play games, level up, and explore Starship - your new favorite gaming site."
     />
     <link rel="canonical" href="https://starship-app.com/reviews" />
-    <!-- Stylesheets -->
     <link rel="stylesheet" href="/css/navbar.css" />
     <link rel="stylesheet" href="/css/main.css" />
     <link rel="stylesheet" href="/css/reviews.css" />
-    <!-- Google Services -->
-
-    <script
-      async
-      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4851718454212779"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-ZZH4JE7RJF"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag('js', new Date());
-      gtag('config', 'G-ZZH4JE7RJF');
-    </script>
     <style>
+      :root {
+        --primary-purple: #8a2be2;
+      }
       .overlay {
         position: fixed;
         top: 0;
@@ -41,48 +24,34 @@
         width: 100vw;
         height: 100vh;
         background:
-          linear-gradient(
-            to bottom,
-            rgba(5, 5, 30, 0.9),
-            rgba(10, 10, 50, 0.9)
-          ),
+          linear-gradient(to bottom, rgba(5, 5, 30, 0.9), rgba(10, 10, 50, 0.9)),
           url('/uploads/branding/starship-bg.jpg') center/cover no-repeat;
         display: flex;
         justify-content: center;
         align-items: center;
         z-index: 9999;
       }
-
       .overlay.hidden {
         display: none;
       }
-
       .overlay-content {
-        background: linear-gradient(
-          135deg,
-          rgba(15, 12, 41, 0.5),
-          rgba(48, 43, 99, 0.5),
-          rgba(36, 36, 62, 0.5)
-        );
-        color: #ffffff;
+        background: linear-gradient(135deg, rgba(15, 12, 41, 0.5), rgba(48, 43, 99, 0.5), rgba(36, 36, 62, 0.5));
+        color: #fff;
         padding: 2rem;
         border-radius: 12px;
         width: 90%;
         max-width: 500px;
-        /* box-shadow: 0 0 30px rgba(0, 255, 255, 0.3); */
         display: flex;
         flex-direction: column;
         gap: 1rem;
         font-family: 'Orbitron', sans-serif;
       }
-
       .overlay-content h2 {
         margin: 0;
         font-size: 1.8rem;
         text-align: center;
-        color: #00ffff;
+        color: var(--primary-purple);
       }
-
       .overlay-content input,
       .overlay-content textarea {
         display: block;
@@ -91,217 +60,368 @@
         padding: 0.75rem;
         font-size: 1rem;
         border-radius: 6px;
-        border: 1px solid #00ffff;
+        border: 1px solid var(--primary-purple);
         background: #1a1a2e;
         color: #fff;
         font-family: 'Orbitron', sans-serif;
       }
-
       .overlay-content textarea {
         resize: vertical;
         min-height: 100px;
       }
-
       .overlay-content .buttons {
         display: flex;
         justify-content: space-between;
         gap: 1rem;
         width: 100%;
       }
-
       .star {
         font-size: 2rem;
         cursor: pointer;
         color: gray;
       }
-
       .selected {
         color: gold;
       }
-
       .average {
-        font-family: 'Orbitron', sans-serif;
+        font-family: 'Inter', sans-serif;
         font-size: 1.2rem;
-        color: #00ffff;
+        color: var(--primary-purple);
         margin-top: 1rem;
+      }
+      .review {
+        max-width: 600px;
+        background: #1a1a2e;
+        margin: 1rem auto;
+        padding: 1rem;
+        border-radius: 10px;
+        color: #fff;
+        border: 1px solid var(--primary-purple);
+      }
+      .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .userdisplay {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+      .userdisplay img {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
       }
     </style>
   </head>
-  <body>
-    <!-- Navigation -->
-    <div id="navbar"></div>
-    <script type="module" src="/javascript/navbar.js"></script>
+<body>
+  <!-- Navigation -->
+  <div id="navbar"></div>
+  <script type="module" src="/javascript/navbar.js"></script>
 
-    <center>
-      <h1>Review us!</h1>
-      <p>
-        We would love to hear your feedback! Please take a moment to review us:
-      </p>
-      <button class="createreview">Review Us</button><br />
-      <br />
-      <span class="average"
+  <div style="max-width: 700px; margin: 2rem auto; padding: 0 1rem; position: relative;">
+    <!-- Review Button fixed on left, vertically centered -->
+    <button
+      class="createreview"
+      disabled
+      style="
+        position: fixed;
+        top: 10%;
+        right: 1rem;
+        transform: translateY(-50%);
+        padding: 0.75rem 1.25rem;
+        background: rgba(138, 43, 226, 0.85);
+        border: none;
+        border-radius: 10px;
+        color: white;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1rem;
+        cursor: pointer;
+        box-shadow: 0 0 12px #8a2be2;
+        transition: background 0.3s ease;
+        z-index: 10;
+      "
+      onmouseover="this.style.background='rgba(138, 43, 226, 1)'"
+      onmouseout="this.style.background='rgba(138, 43, 226, 0.85)'"
+    >
+      Review Us
+    </button>
+
+    <div style="margin-left: 5.5rem;">
+      <span
+        class="average"
+        style="font-family: 'Inter', sans-serif; font-size: 1.3rem; color: #8a2be2; user-select:none;"
         >Average Rating: <span id="averageRating"></span></span
-      ><br />
-      <hr />
+      >
+      <hr style="border-color: #8a2be2; margin-top: 0.5rem; margin-bottom: 1rem;" />
       <div class="reviewlist" id="reviewList"></div>
-    </center>
-    <!-- Overlay for new review -->
-    <div id="overlay" class="overlay hidden">
-      <div class="overlay-content">
-        <h2>Leave a Review</h2>
-        <input type="text" id="reviewTitle" placeholder="Review Title" />
-        <textarea id="reviewContent" placeholder="Your feedback..."></textarea>
-        <input type="text" id="reviewUser" placeholder="Your name (optional)" />
-        <div id="rating">
-          <span class="star" data-value="1">★</span>
-          <span class="star" data-value="2">★</span>
-          <span class="star" data-value="3">★</span>
-          <span class="star" data-value="4">★</span>
-          <span class="star" data-value="5">★</span>
-        </div>
-        <div class="buttons">
-          <button id="submitReview">Submit</button>
-          <button id="cancelReview">Cancel</button>
-        </div>
+    </div>
+  </div>
+
+  <!-- Overlay for new review -->
+  <div id="overlay" class="overlay hidden">
+    <div class="overlay-content" style="backdrop-filter: blur(12px) saturate(130%);">
+      <h2>Leave a Review</h2>
+      <input type="text" id="reviewTitle" placeholder="Review Title" />
+      <textarea id="reviewContent" placeholder="Your feedback..."></textarea>
+      <label style="display:flex; align-items:center; gap: 0.5rem; font-family: 'Orbitron', sans-serif;">
+        <input type="checkbox" id="reviewAnonymous" />
+        Submit anonymously
+      </label>
+      <div id="rating" style="text-align:center; margin-top:8px;">
+        <i class="fa-regular fa-star star" data-value="1"></i>
+        <i class="fa-regular fa-star star" data-value="2"></i>
+        <i class="fa-regular fa-star star" data-value="3"></i>
+        <i class="fa-regular fa-star star" data-value="4"></i>
+        <i class="fa-regular fa-star star" data-value="5"></i>
+      </div>
+      <div class="buttons" style="margin-top: 1rem;">
+        <button id="submitReview">Submit</button>
+        <button id="cancelReview">Cancel</button>
       </div>
     </div>
-    <!-- Particles Background -->
-    <div id="particles-js"></div>
-    <script src="/javascript/particles.js"></script>
-    <script src="/javascript/particles-config.js"></script>
-    <!-- Utility Scripts -->
+  </div>
 
-    <script src="/javascript/scrollbar.js"></script>
-    <script src="/javascript/panic.js" type="module"></script>
-    <script src="/javascript/cloaking.js" type="module"></script>
-    <script src="/javascript/antitabclose.js"></script>
-    <script src="/javascript/notifications.js"></script>
-    <!-- Supabase & Review Logic -->
+  <!-- Particles Background -->
+  <div id="particles-js"></div>
+  <script src="/javascript/particles.js"></script>
+  <script src="/javascript/particles-config.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <script>
-      const stars = document.querySelectorAll('.star');
-      // const output = document.getElementById("output");
+  <!-- Utility Scripts -->
+  <script src="/javascript/scrollbar.js"></script>
+  <script src="/javascript/panic.js" type="module"></script>
+  <script src="/javascript/cloaking.js" type="module"></script>
+  <script src="/javascript/antitabclose.js"></script>
+  <script src="/javascript/notifications.js"></script>
 
-      let rating = 0;
+  <!-- Supabase & Review Logic -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    const supabaseUrl = 'https://jbekjmsruiadbhaydlbt.supabase.co';
+    const supabaseKey =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+    const reviewButton = document.querySelector('.createreview');
+    const overlay = document.getElementById('overlay');
+    const submitBtn = document.getElementById('submitReview');
+    const cancelBtn = document.getElementById('cancelReview');
+    const reviewList = document.getElementById('reviewList');
+    const stars = document.querySelectorAll('.star');
+    const anonymousCheckbox = document.getElementById('reviewAnonymous');
+
+    let rating = 0;
+    let user = null;
+    let profile = null;
+    let userHasReviewed = false;
+
+    function updateStars(rating) {
       stars.forEach((star) => {
-        star.addEventListener('click', () => {
-          rating = parseInt(star.getAttribute('data-value'));
-          updateStars(rating);
-          // output.textContent = rating;
-          // Optional: use rating value in your logic here
-          console.log('Rating returned:', getRating());
-        });
-      });
-
-      function updateStars(rating) {
-        stars.forEach((star) => {
-          const value = parseInt(star.getAttribute('data-value'));
-          star.classList.toggle('selected', value <= rating);
-        });
-      }
-
-      function getRating() {
-        return rating; // Returns the integer value
-      }
-    </script>
-    <script>
-      const supabaseUrl = 'https://jbekjmsruiadbhaydlbt.supabase.co';
-      const supabaseKey =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY';
-      const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-      const reviewButton = document.querySelector('.createreview');
-      const overlay = document.getElementById('overlay');
-      const submitBtn = document.getElementById('submitReview');
-      const cancelBtn = document.getElementById('cancelReview');
-      const reviewList = document.getElementById('reviewList');
-
-      reviewButton.addEventListener('click', () =>
-        overlay.classList.remove('hidden')
-      );
-      cancelBtn.addEventListener('click', () =>
-        overlay.classList.add('hidden')
-      );
-
-      submitBtn.addEventListener('click', async () => {
-        const title = document.getElementById('reviewTitle').value.trim();
-        const content = document.getElementById('reviewContent').value.trim();
-        const author = {
-          name:
-            document.getElementById('reviewUser').value.trim() || 'Anonymous',
-          avatar: JSON.parse(localStorage.getItem('loggedInUser')).avatar, // Default avatar
-        };
-        const stars = getRating(); // Get the selected rating
-
-        if (!title || !content) return alert('Please complete all fields.');
-
-        const { error } = await supabase
-          .from('reviews')
-          .insert({ title, content, author, stars });
-        if (error) return alert('Failed to submit review.');
-
-        alert('Thanks for your review!');
-        overlay.classList.add('hidden');
-        location.reload();
-      });
-
-      async function loadReviews() {
-        const { data, error } = await supabase
-          .from('reviews')
-          .select('title, content, author, stars, allowed')
-          .order('id', { ascending: false });
-
-        if (error) return console.error('Failed to load reviews', error);
-
-        if (!data || data.length === 0) {
-          reviewList.innerHTML =
-            '<p>No reviews yet. Be the first to review us!</p>';
-          return;
+        const value = parseInt(star.getAttribute('data-value'));
+        if (value <= rating) {
+          star.classList.remove('fa-regular');
+          star.classList.add('fa-solid', 'selected');
+          star.style.color = '#8a2be2';
+        } else {
+          star.classList.remove('fa-solid', 'selected');
+          star.classList.add('fa-regular');
+          star.style.color = 'gray';
         }
-        const ratings = [];
+      });
+    }
 
-        data.forEach((review) => {
-          if (!review.allowed) return; // Skip reviews that are not allowed
-          const { title, content, author, stars } = review;
-          const user = JSON.parse(author);
-          const filledStars = '★'.repeat(stars);
-          const emptyStars = '☆'.repeat(5 - stars);
+    function getRating() {
+      return rating; // integer value 0-5
+    }
 
-          const reviewEl = document.createElement('div');
-          reviewEl.className = 'review';
-          reviewEl.innerHTML = `
-      <div class="review-header">
-        <h3 class="review-title">${title}</h3>
-        <div class="star-rating">${filledStars}${emptyStars}</div>
-      </div>
-      <p>${content}</p>
-      <div class="userdisplay">
-        <img src="${user.avatar}" alt="User avatar" />
-        <h4>${user.name}</h4>
-      </div>
-    `;
+    stars.forEach((star) => {
+      star.addEventListener('click', () => {
+        rating = parseInt(star.getAttribute('data-value'));
+        updateStars(rating);
+      });
+    });
 
-          reviewList.appendChild(reviewEl);
-          ratings.push(stars);
-        });
+    async function loadUser() {
+      const {
+        data: { user: currentUser },
+        error,
+      } = await supabase.auth.getUser();
 
-        // Calculate and display average rating
-        const averageRating =
-          ratings.reduce((a, b) => a + b, 0) / ratings.length;
-        const roundedRating = Math.round(averageRating * 10) / 10;
-        document.getElementById('averageRating').textContent = isNaN(
-          averageRating
-        )
-          ? 'No ratings yet'
-          : roundedRating + ' ★';
+      if (error || !currentUser) {
+        user = null;
+        profile = null;
+        reviewButton.disabled = true;
+        return;
       }
+
+      user = currentUser;
+
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('username, avatar_url')
+        .eq('id', user.id)
+        .single();
+
+      profile = profileError ? null : profileData;
+
+      const { data: existingReview, error: reviewError } = await supabase
+        .from('reviews')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      userHasReviewed = !reviewError && !!existingReview;
+
+      reviewButton.disabled = userHasReviewed;
+      reviewButton.textContent = userHasReviewed ? 'You have already reviewed' : 'Review Us';
+    }
+
+    async function loadReviews() {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('title, content, user_id, stars, anonymous, allowed')
+        .order('id', { ascending: false });
+
+      if (error) {
+        reviewList.innerHTML = '<p>Failed to load reviews. Please try again later.</p>';
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        reviewList.innerHTML = '<p>No reviews yet. Be the first to review us!</p>';
+        return;
+      }
+
+      reviewList.innerHTML = '';
+
+      const userIds = data.map((r) => r.user_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, avatar_url')
+        .in('id', userIds);
+
+      const profileMap = {};
+      if (!profilesError && profiles) {
+        profiles.forEach((p) => {
+          profileMap[p.id] = p;
+        });
+      }
+
+      const ratings = [];
+
+      data.forEach((review) => {
+        if (!review.allowed) return;
+
+        const starsHtml = Array(5)
+          .fill(0)
+          .map((_, i) =>
+            i < review.stars
+              ? `<i class="fa-solid fa-star" style="color:#8a2be2;"></i>`
+              : `<i class="fa-regular fa-star" style="color:#8a2be2;"></i>`
+          )
+          .join('');
+
+        const isAnonymous = review.anonymous === true || review.anonymous === 'true';
+
+        let userDisplay = '';
+        if (!isAnonymous && profileMap[review.user_id]) {
+          const p = profileMap[review.user_id];
+          userDisplay = `
+            <div class="userdisplay">
+              <img src="${p.avatar_url}" alt="User avatar" />
+              <h4>${p.username}</h4>
+            </div>`;
+        } else {
+          userDisplay = `
+            <div class="userdisplay">
+              <img src="/uploads/branding/default-avatar.png" alt="Anonymous avatar" />
+              <h4>Anonymous</h4>
+            </div>`;
+        }
+
+        const reviewEl = document.createElement('div');
+        reviewEl.className = 'review';
+        reviewEl.innerHTML = `
+          <div class="review-header">
+            <h3 class="review-title">${review.title}</h3>
+            <div class="star-rating">${starsHtml}</div>
+          </div>
+          <p>${review.content}</p>
+          ${userDisplay}
+        `;
+
+        reviewList.appendChild(reviewEl);
+        ratings.push(review.stars);
+      });
+
+      const averageRating = ratings.reduce((a, b) => a + b, 0) / (ratings.length || 1);
+      const roundedRating = Math.round(averageRating * 10) / 10;
+      document.getElementById('averageRating').textContent =
+        ratings.length === 0 ? 'No ratings yet' : roundedRating + ' ★';
+    }
+
+    reviewButton.addEventListener('click', () => {
+      if (!user || userHasReviewed) return;
+      overlay.classList.remove('hidden');
+    });
+    cancelBtn.addEventListener('click', () => {
+      overlay.classList.add('hidden');
+      clearReviewForm();
+    });
+
+    function clearReviewForm() {
+      document.getElementById('reviewTitle').value = '';
+      document.getElementById('reviewContent').value = '';
+      anonymousCheckbox.checked = false;
+      rating = 0;
+      updateStars(rating);
+    }
+
+    submitBtn.addEventListener('click', async () => {
+      const title = document.getElementById('reviewTitle').value.trim();
+      const content = document.getElementById('reviewContent').value.trim();
+      const isAnonymous = anonymousCheckbox.checked;
+      const starsCount = getRating();
+
+      if (!title || !content) return alert('Please complete all fields.');
+      if (starsCount === 0) return alert('Please select a star rating.');
+      if (!user) return alert('You must be logged in to submit a review.');
+
+      const { error } = await supabase.from('reviews').insert({
+        title,
+        content,
+        stars: starsCount,
+        user_id: user.id,
+        anonymous: isAnonymous,
+        allowed: true, 
+      });
+
+      if (error) {
+        alert('Failed to submit review.');
+        return;
+      }
+
+      alert('Thanks for your review!');
+      overlay.classList.add('hidden');
+      clearReviewForm();
+
+      userHasReviewed = true;
+      reviewButton.disabled = true;
+      reviewButton.textContent = 'You have already reviewed';
 
       loadReviews();
-    </script>
-    <!-- Scheduler -->
+    });
 
-    <script src="/javascript/schedule.js"></script>
-  </body>
+    (async () => {
+      await loadUser();
+      await loadReviews();
+    })();
+  </script>
+
+  <!-- Scheduler -->
+  <script src="/javascript/schedule.js"></script>
+</body>
+
 </html>
