@@ -214,7 +214,7 @@ commentForm.addEventListener('submit', async (e) => {
     .insert({
       post_id, // TODO: Replace with actual post ID
       comment,
-      author,
+      user_id: user.id
     })
     .then(() => {
       commentInput.value = ''; // Clear input after submission
@@ -226,7 +226,7 @@ commentForm.addEventListener('submit', async (e) => {
 async function displayComments(postId) {
   const { data, error } = await supabase
     .from('comments')
-    .select('author, comment')
+    .select('user_id, comment')
     .eq('post_id', postId)
     .order('created_at', { ascending: false });
 
@@ -240,13 +240,17 @@ async function displayComments(postId) {
 
   console.log(data);
 
-  data.forEach((comment) => {
+  data.forEach(async (comment) => {
     const commentDiv = document.createElement('div');
     commentDiv.classList.add('comment');
 
     const authorP = document.createElement('p');
     authorP.classList.add('comment-author');
-    authorP.textContent = comment.author;
+    authorP.textContent = await supabase.from('profiles')
+      .select('username')
+      .eq('id', comment.user_id)
+      .single()
+      .then((res) => res.data.username || 'Anonymous');
 
     const textP = document.createElement('p');
     textP.classList.add('comment-text');
