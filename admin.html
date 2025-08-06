@@ -157,7 +157,7 @@
         <button class="tab-button active" data-tab="bandg">Blog & Games</button>
         <button class="tab-button" data-tab="admins">Admins</button>
         <button class="tab-button" data-tab="reviews">Reviews</button>
-        <button class="tab-button" data-tab="tools">Image to Data URL</button>
+        <button class="tab-button" data-tab="tools">Tools</button>
       </div>
 
       <!-- Tab contents -->
@@ -250,6 +250,7 @@
           <textarea id="dataUrlOutput" rows="10" readonly></textarea><br />
           <button id="copyBtn">Copy to Clipboard</button>
         </div>
+        <!-- TODO: Website tester tool (To see if it will work on chromebooks) using a blocking filter from alpine. -->
       </div>
     </div>
   </div>
@@ -402,10 +403,13 @@
             const gameName = document.getElementById("gameName").value;
             const gameCover = document.getElementById("gameCover").files[0];
             const gameURL = document.getElementById("gameURL").value;
+            const gameDescription = document.getElementById("gameDescription").value;
+            const gameTagOGvalue = document.getElementById("gameTags").value;
+            const gameTags = gameTagOGvalue.split(',').map(tag => tag.trim()).filter(tag => tag);
 
             console.log("#6");
 
-            addGame(gameName, gameURL, gameCover);
+            addGame(gameName, gameURL, gameCover, gameDescription, gameTags);
             closeOverlay();
           } else if (gameForm.dataset.coe === "Edit") {
             e.preventDefault();

@@ -38,6 +38,10 @@ const overlayScreens = {
                 <input type="text" id="gameName" required />
                 <label for="gameCover">Game Cover:</label>
                 <input type="file" accept="image/*" id="gameCover" required />
+                <label for="gameDescription">Description:</label>
+                <textarea id="gameDescription" required></textarea>
+                <label for="gameTags">Tags (comma-separated):</label>
+                <input type="text" id="gameTags" required />
                 <label for="gameURL">Game URL:</label>
                 <input id="gameURL" type="text" required />
                 <button type="submit" id="gameSubmitBtn">Submit</button>
@@ -70,7 +74,7 @@ const overlayScreens = {
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // #region Game Functions
-async function addGame(gameName, gameLink, gameCoverFile) {
+async function addGame(gameName, gameLink, gameCoverFile, gameDescription, gameTags) {
   if (!gameName || !gameLink || !gameCoverFile) {
     alert('Please fill in all fields.');
     return;
@@ -84,6 +88,8 @@ async function addGame(gameName, gameLink, gameCoverFile) {
     {
       name: gameName,
       url: gameLink,
+      description: gameDescription,
+      tags: gameTags.length > 0 ? gameTags : null, // Save as array if tags exist
       img_url: base64Image, // Save as base64 string
     },
   ]);
@@ -219,9 +225,9 @@ async function refreshBlogPosts() {
         </button>
       </div>
       <p class="markdown-preview" data-markdown="${post.content.replace(
-        /"/g,
-        '&quot;'
-      )}" hidden></p>
+      /"/g,
+      '&quot;'
+    )}" hidden></p>
     `;
 
     container.appendChild(card);
@@ -312,7 +318,7 @@ async function refreshAdminList() {
 
   const { data: admins, error } = await supabase
     .from('adminpanel_access')
-    .select('user_uid, avatar, username, email, role');
+    .select('user_uid, username, email, role');
 
   if (error) {
     console.error('❌ Failed to fetch admins:', error.message);
@@ -321,8 +327,16 @@ async function refreshAdminList() {
   }
   console.log('Fetched admins:', admins);
 
-  admins.forEach((admin) => {
+  admins.forEach(async (admin) => {
     const row = document.createElement('tr');
+
+    const { data, error } = await supabase.from('profiles').select('avatar_url').eq('id', admin.user_uid)
+
+    if (error) {
+      console.error('❌ Failed to fetch admin avatar:', error.message);
+      tableBody.innerHTML = `<tr><td colspan="5">Error loading admins</td></tr>`;
+      return;
+    }
 
     // Change Role display
     if (admin.role === 'super') {
@@ -341,7 +355,7 @@ async function refreshAdminList() {
     row.innerHTML = `
       <td>
         <img
-          src="${admin.avatar}"
+          src="${data[0].avatar_url}"
           alt="${admin.username}'s avatar"
           style="width: 36px; height: 36px; border-radius: 999px; object-fit: cover;"
         />
