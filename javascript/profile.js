@@ -677,3 +677,53 @@ async function searchProfiles(query) {
 }
 
 
+// Elements
+const reportBtn = document.getElementById('report-profile-btn');
+const reportModal = document.getElementById('report-modal');
+const cancelReportBtn = document.getElementById('cancel-report');
+const reportForm = document.getElementById('report-form');
+
+reportBtn?.addEventListener('click', () => {
+  if (!currentUserId || !profileUserId || currentUserId === profileUserId) {
+    alert("You can't report this profile.");
+    return;
+  }
+  // Show
+document.getElementById('report-modal').classList.add('active');
+});
+
+cancelReportBtn?.addEventListener('click', () => {
+// Hide
+document.getElementById('report-modal').classList.remove('active');
+});
+
+// Submit report to Supabase
+reportForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const reason = document.getElementById('report-reason').value;
+  const details = document.getElementById('report-details').value;
+
+  const { error } = await supabase.from('profile_reports').insert([
+    {
+      reporter_id: currentUserId,
+      reported_id: profileUserId,
+      reason,
+      details
+    }
+  ]);
+
+  if (error) {
+    alert("Failed to submit report.");
+    console.error('❌ Report error:', error);
+  } else {
+        showNotification('Report sent! ✅', {
+      body: "Thanks for helping us keep the community safe. We'll review your report soon.",
+      duration: 10000,
+  
+      sound: true,
+    });
+    // Hide
+document.getElementById('report-modal').classList.remove('active');
+  }
+});
