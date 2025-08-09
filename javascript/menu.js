@@ -13,8 +13,32 @@ let games = [];
 let showClickCounts = false;
 let currentSortOption = 'favorites';
 let typingTimeout;
+let userBlurCovers = true; // default to true if no user or no profile
 
-/* ----------------- GAME LIST ----------------- */
+async function loadUserBlurSetting() {
+  const { data: { user }, error } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    userBlurCovers = true; // no user signed in or error -> default true
+    return;
+  }
+
+  const { data, error: profileError } = await supabase
+    .from('profiles')
+    .select('blur_covers')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !data) {
+    console.warn('Could not fetch user profile, defaulting blur_covers to true', profileError);
+    userBlurCovers = true;
+  } else {
+    userBlurCovers = data.blur_covers === true;
+  }
+}
+
+
+
 function getCardHTML(game) {
   return `
 <div class="card game-card">
@@ -26,11 +50,11 @@ function getCardHTML(game) {
     </div>
     <div class="card-content">
       <div class="card-image">
-        <img src="${game.image}" alt="${game.name}" />
+        <img src="${game.image}" alt="${game.name}" style="filter: ${game.blur ? 'blur(9px)' : 'none'}" />
       </div>
       <div class="card-text-content">
         <h5 class="card-title">${game.name}</h5>
-        <p style="display:none;" class="card-text">${game.description || ''}</p>
+        <p style="display:${game.blur ? 'block' : 'none'}; color:red;" class="card-text"><i class="fa fa-warning"></i> Cover hidden due to your content settings.</p>
         <div class="card-stats">
           <div class="stat"><i class="fa fa-clock"></i> ${game.clickCount} plays</div>
           <div class="stat"><i class="fa fa-thumbs-up"></i> ${game.globalLikes || 0} likes</div>
@@ -42,13 +66,17 @@ function getCardHTML(game) {
   `;
 }
 
+
 async function loadGamesFromSupabase() {
   console.log('🎮 Loading games from Supabase...');
   showSkeletonLoader();
 
+  // First, load the user blur setting
+  await loadUserBlurSetting();
+
   const { data, error } = await supabase
     .from('games_menu')
-    .select('id, name, url, img_url, description, tags, play_count, likes');
+    .select('id, name, url, img_url, description, tags, play_count, likes, blur');
 
   if (error) {
     console.error('❌ Error loading games:', error.message);
@@ -69,11 +97,14 @@ async function loadGamesFromSupabase() {
     path: '/play',
     globalLikes: row.likes || 0,
     globalClicks: row.play_count || 0,
+    // Only blur if the game’s own blur flag is true AND userBlurCovers is true
+    blur: row.blur === true && userBlurCovers,
   }));
 
   await loadFavoritesFromSupabase();
   displayGamesWithSkeleton();
 }
+
 
 async function saveFavoritesToSupabase() {
   const { data: { user } } = await supabase.auth.getUser();

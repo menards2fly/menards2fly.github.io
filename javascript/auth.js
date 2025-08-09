@@ -1079,3 +1079,68 @@ document.addEventListener('DOMContentLoaded', () => {
   // your code here
 });
 
+const blurToggle = document.getElementById('blur-sensitive-toggle');
+async function loadBlurSetting() {
+  console.log('🔍 Loading blur_covers setting...');
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) {
+    console.warn('⚠️ No logged in user found when loading blur setting');
+    blurToggle.checked = true; // default true (blur enabled) if no user
+    return;
+  }
+
+  const { data: profile, error } = await supabaseClient
+    .from('profiles')
+    .select('blur_covers')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error('❌ Error loading blur setting:', error.message);
+    blurToggle.checked = true; // fail safe to blur on error
+    return;
+  }
+
+  console.log(`✅ Blur setting loaded: blur_covers=${profile?.blur_covers || false}`);
+  blurToggle.checked = profile?.blur_covers !== false; // default to true if null or undefined
+}
+blurToggle.addEventListener('change', async () => {
+  console.log('🔄 Blur toggle changed');
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) {
+    alert('You need to be logged in.');
+    console.warn('⚠️ Blur toggle change aborted - user not logged in');
+    // revert toggle to previous value or default true
+    blurToggle.checked = true;
+    return;
+  }
+
+  const newBlur = blurToggle.checked;
+  console.log(`🎨 Updating blur_covers setting to: ${newBlur}`);
+
+  const { error } = await supabaseClient
+    .from('profiles')
+    .update({ blur_covers: newBlur })
+    .eq('id', user.id);
+
+  if (error) {
+    alert('Failed to update blur setting: ' + error.message);
+    console.error('❌ Failed to update blur setting:', error);
+    // revert toggle
+    blurToggle.checked = !newBlur;
+  } else {
+    console.log(`✅ Blur setting updated successfully to ${newBlur}`);
+    showNotification(
+      newBlur
+        ? 'Sensitive content hidden'
+        : 'Sensitive content shown',
+      {
+        body: newBlur
+          ? 'Game covers will now be blurred for your settings.'
+          : 'Game covers will now show normally.',
+        duration: 4000,
+      }
+    );
+  }
+});
+loadBlurSetting();
