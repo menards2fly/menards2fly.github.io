@@ -79,7 +79,7 @@ async function signUp() {
   const email = signupEmailInput.value.trim();
   const password = signupPasswordInput.value;
   const confirmPassword = document.getElementById('signup-confirm-password').value;
-  const username = document.getElementById('signup-username').value.trim();
+  const username = document.getElementById('signup-username')  ;
   const birthdayInput = document.getElementById('signup-birthday');
   const birthdayWarning = document.getElementById('birthday-warning');
   const birthdayValue = birthdayInput.value;
@@ -1074,4 +1074,8 @@ function checkDeleteReady() {
 }
 
 deletePasswordInput.addEventListener('input', checkDeleteReady);
+
+document.addEventListener('DOMContentLoaded', () => {
+  // your code here
+});
 
