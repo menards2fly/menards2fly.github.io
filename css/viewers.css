@@ -1,6 +1,7 @@
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300..700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
 #particles-js {
   position: fixed;
   top: 0;
@@ -19,7 +20,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: black;
+  background-color: #0b0a0f; /* Darker for that deep space feel */
   z-index: 0;
   height: 100vh;
   overflow: hidden;
@@ -27,200 +28,227 @@ body {
 
 /* Unified container for iframe and controls */
 .game-container {
-  width: 1000px; /* Set a larger fixed width */
-  background-color: rgba(
-    20,
-    20,
-    20,
-    0.95
-  ); /* Unified background for iframe and controls */
-  border: 4px solid #ae54ff; /* Purple border around the entire container */
-  border-radius: 12px; /* Rounded corners for the entire container */
-  box-shadow: 0 0 30px rgba(174, 84, 255, 0.8); /* Enhanced glow for the container */
-  overflow: hidden; /* Ensure content stays within the rounded corners */
+  width: 1000px;
+  background-color: rgba(18, 12, 42, 0.4); /* Very subtle dark translucent, no heavy bg */
+  border: 3px solid #8a2be2; /* Your starship purple accent */
+  border-radius: 14px;
+
+  box-shadow: 0 0 22px rgba(138, 43, 226, 0.5); /* soft purple glow */
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 20px auto; /* Center the container on the page */
-  padding: 0; /* Remove any internal padding */
-  background-color: rgba(34, 34, 34, 0.2);
-  backdrop-filter: blur(6px);
-  margin-bottom: 300px; /* Add space at the bottom */
+  margin: 20px auto 300px;
+  padding: 0;
+  backdrop-filter: blur(8px);
 }
 
 /* Adjust iframe to fit within the unified container */
 iframe {
-  width: 100%; /* Take the full width of the container */
-  height: 800px; /* Increase height for better proportions */
-  border: none; /* Remove individual iframe border */
-  box-shadow: none; /* Remove individual iframe shadow */
-  margin: 0; /* Remove any margin */
-  padding: 0; /* Remove any padding */
-  z-index: 1; /* Ensure it stays above the controls */
+  width: 100%;
+  height: 800px;
+  border: none;
+  box-shadow: none;
+  margin: 0;
+  padding: 0;
+  z-index: 1;
+  border-radius: 0 0 14px 14px;
+  transition: box-shadow 0.3s ease;
+}
+
+iframe:hover {
+  box-shadow: 0 0 20px #8a2be2aa;
 }
 
 /* Style the controls container */
 .controls {
-  width: 100%; /* Match the width of the container */
-
+  width: 100%;
   display: flex;
   height: 50px;
-  /* flex-direction: column; */
   align-items: center;
-  margin: 0; /* Remove any margin */
-  z-index: 0; /* Ensure it sits below the iframe */
+  margin: 0;
+  z-index: 10;
+  gap: 12px;
+  padding: 0 20px;
+  /* No background, clean transparent */
 }
 
-/* Style the buttons */
+/* Style the buttons container */
 .buttons {
   display: flex;
-  gap: 12px; /* Add spacing between buttons */
-  float: right; /* Keep the float */
-  margin-right: 15px; /* Add spacing to the right */
+  gap: 14px;
+  margin-left: auto; /* pushes buttons to right */
 }
 
 .buttons button {
   font-size: 16px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  background-color: black;
-  color: white;
-  border: 2px solid #ae54ff; /* Purple border */
+  background: transparent;
+  color: #8a2be2;
+  border: 2.5px solid #8a2be2;
+  padding: 8px 16px;
+  font-weight: 600;
   transition:
-    box-shadow 0.3s,
-    transform 0.2s;
+    box-shadow 0.25s ease,
+    transform 0.2s ease,
+    color 0.3s ease;
+  text-shadow: 0 0 6px #8a2be2aa;
 }
 
 .buttons button:hover {
-  box-shadow: 0 0 15px rgba(174, 84, 255, 0.8); /* Subtle glow on hover */
-  transform: scale(1.05); /* Slightly enlarge the button on hover */
+  box-shadow: 0 0 16px #8a2be2cc;
+  color: #b18eff;
+  transform: scale(1.08);
+  background: rgba(138, 43, 226, 0.12);
 }
 
 /* Style the game-info section */
 .game-info {
   display: flex;
-  justify-content: space-between; /* Space between the image/name and buttons */
+  justify-content: space-between;
   align-items: center;
-  width: 100%; /* Full width of the container */
-  padding: 16px;
-  border-radius: 8px; /* Rounded corners */
-  margin: 0; /* Remove any margin */
-}
-
-.game-img {
-  max-height: 50px;
-  max-width: 50px;
-}
-
-/* Style the game image */
-.game-info img {
-  width: 60px; /* Set a good size for the image */
-  height: 60px; /* Set a good size for the image */
-  border-radius: 8px; /* Rounded corners for the image */
-  margin-right: 16px; /* Add spacing between the image and the text */
-  box-shadow: 0 0 10px rgba(174, 84, 255, 0.8); /* Purple glow for the image */
-  margin-left: 15px;
-}
-
-/* Style the game name */
-.game-info h2 {
+  width: 100%;
+  padding: 16px 24px;
+  border-radius: 10px;
   margin: 0;
-
-  font-size: 30px; /* Adjust font size for better readability */
-  font-family: 'Bebas Neue', sans-serif;
-  background: linear-gradient(to right, #ffffff, #ae54ff); /* Gradient text */
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  text-shadow: 0 0 10px rgba(174, 84, 255, 0.8); /* Subtle glow for the text */
+  background: transparent;
+  /* No heavy background, keep it minimal */
   user-select: none;
 }
 
-/* Align the game details (image and name) */
+/* Game image container */
+.game-img {
+  max-height: 60px;
+  max-width: 60px;
+  border-radius: 10px;
+  box-shadow: 0 0 16px #8a2be2bb;
+  transition: box-shadow 0.3s ease;
+}
+
+.game-info img {
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  margin-right: 20px;
+  box-shadow: 0 0 18px #8a2be2cc;
+}
+
+.game-info img:hover {
+  box-shadow: 0 0 28px #8a2be2ff;
+}
+
+/* Game name */
+.game-info h2 {
+  margin: 0;
+  font-size: 32px;
+  font-family: 'Bebas Neue', cursive, sans-serif;
+  background: linear-gradient(90deg, #b4a9ff, #8a2be2);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 12px #8a2be2cc;
+  user-select: none;
+  letter-spacing: 1.2px;
+}
+
+/* Align the game details (image + name) */
 .game-info .game-details {
   display: flex;
   align-items: center;
+  gap: 12px;
 }
 
-/* Align the buttons */
+/* Align buttons */
 .game-info .buttons {
-  display: flex;
-  gap: 0px; /* Add spacing between buttons */
+  gap: 10px;
 }
 
-/* Style the buttons new */
+/* Style the buttons inside game-info */
 .game-info .buttons button {
-  background: rgba(34, 34, 34, 0.2);
-  backdrop-filter: blur(10px);
-  padding: 7px 10px;
+  background: transparent;
+  backdrop-filter: none;
+  padding: 8px 14px;
   font-size: 14px;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
-  background-color: black;
-  color: white;
-  border: 2px solid #ae54ff; /* Purple border */
-  transition:
-    box-shadow 0.3s,
-    transform 0.2s;
+  color: #8a2be2;
+  border: 2px solid #8a2be2;
+  font-weight: 600;
+  transition: box-shadow 0.25s ease, transform 0.2s ease;
+  text-shadow: 0 0 8px #8a2be2aa;
 }
 
 .game-info .buttons button:hover {
-  box-shadow: 0 0 15px rgba(174, 84, 255, 0.8); /* Subtle glow on hover */
-  transform: scale(1.05); /* Slightly enlarge the button on hover */
+  box-shadow: 0 0 20px #8a2be2cc;
+  transform: scale(1.06);
+  color: #c9a9ff;
+  background: rgba(138, 43, 226, 0.08);
 }
 
-/* Style for the toggle button */
+/* Toggle button */
 .toggle-button {
   margin: 10px auto;
-  padding: 10px 20px;
+  padding: 10px 24px;
   font-size: 16px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   background-color: #8a2be2;
   color: white;
   border: none;
+  font-weight: 700;
   transition: background-color 0.3s ease;
+  box-shadow: 0 0 20px #8a2be2cc;
 }
 
 .toggle-button:hover {
-  background-color: #8e3bcc;
+  background-color: #9a3ced;
+  box-shadow: 0 0 25px #9a49ffdd;
 }
 
+/* Like ratio bar container */
 #likeRatioBarContainer {
   position: absolute;
   left: 50%;
   bottom: 75px;
   transform: translateX(-50%);
-
   width: 1000px;
-
   box-shadow: 0 2px 12px #000a;
-
-  z-index: 10;
+  z-index: 20;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
+
+/* Like ratio bar wrapper */
 #likeRatioBar {
   width: 100%;
   height: 12px;
-
   overflow: hidden;
   display: flex;
-  background: none; /* Remove background color */
+  background: transparent; /* No background */
+  border-radius: 12px;
 }
 
+/* Like segment */
 #likeRatioLike {
   height: 100%;
   background: #4caf50;
   transition: width 0.3s cubic-bezier(0.4, 2, 0.6, 1);
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
 }
 
+/* Dislike segment */
 #likeRatioDislike {
   height: 100%;
   background: #f44336;
   transition: width 0.3s cubic-bezier(0.4, 2, 0.6, 1);
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
 }
+
+/* Responsive tweaks */
 @media (max-width: 700px) {
   body {
     padding: 0;
@@ -233,11 +261,11 @@ iframe {
     margin: 12px auto;
     border-width: 2px;
     border-radius: 20px;
-    box-shadow: 0 0 15px rgba(174, 84, 255, 0.6);
+    box-shadow: 0 0 15px rgba(138, 43, 226, 0.45);
   }
 
   iframe {
-    height: 400px; /* Shorter iframe for small screens */
+    height: 400px;
   }
 
   .game-info {
@@ -250,6 +278,7 @@ iframe {
   .game-info .game-details {
     flex-direction: column;
     align-items: center;
+    gap: 8px;
   }
 
   .game-info img {
@@ -272,16 +301,15 @@ iframe {
     flex-direction: column;
     height: auto;
     gap: 10px;
-    padding: 10px;
+    padding: 10px 20px;
   }
 
   .buttons {
-    float: none;
+    margin-left: 0;
     justify-content: center;
     width: 100%;
     flex-wrap: wrap;
     gap: 10px;
-    margin: 0 auto;
   }
 
   .buttons button {
@@ -295,30 +323,34 @@ iframe {
     bottom: 120px;
   }
 }
+
 @media (max-width: 767px) {
   .buttons {
     display: none !important;
   }
 }
+
+/* Description container */
 .description-container {
   width: 1000px;
   backdrop-filter: blur(6px);
-
-  color: #eee;
+  color: #e8e3ff;
   animation: scaleAndSlideUp 1s ease-in-out 2s forwards;
-  transform: scale(0.9) translateY(20px);
+  transform: scale(0.92) translateY(18px);
   opacity: 0;
+  user-select: none;
 }
 
 .description-container h2 {
   font-size: 28px;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: 'Bebas Neue', cursive, sans-serif;
   text-align: center;
-  background: linear-gradient(to right, #ffffff, #ae54ff);
+  background: linear-gradient(to right, #b494ff, #8a2be2);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   margin-bottom: 16px;
+  text-shadow: 0 0 10px #8a2be2cc;
 }
 
 .description-container p {
@@ -327,6 +359,7 @@ iframe {
   color: #ccc;
   text-align: center;
 }
+
 @media (max-width: 700px) {
   .description-container {
     width: 95%;
