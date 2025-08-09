@@ -212,8 +212,8 @@ body {
 
 /* Images inside messages */
 .message img {
-  max-width: 600px !important;
-  max-height: 600px !important;
+  max-width: 300px !important;
+  max-height: 300px !important;
   border-radius: 16px;
   box-shadow: 0 0 22px #8a2be2cc;
   animation: imageAppear 0.6s ease forwards;
