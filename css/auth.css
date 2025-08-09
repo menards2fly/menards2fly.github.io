@@ -151,7 +151,7 @@ textarea:focus {
   border-radius: 50%;
   margin: 24px auto;
   object-fit: cover;
-  border: 4px solid #8a2be2;
+  border: 8px solid #8a2be2;
   box-shadow:
     0 0 24px #ae54ffcc,
     inset 0 0 10px #8a2be2cc;
