@@ -248,6 +248,36 @@
         ></div>
       </div>
     </div>
+
+<div id="blurWarning" style="
+  display: none;
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 69, 0, 0.95);
+  color: white;
+  padding: 20px 28px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.7);
+  z-index: 10000;
+  font-family: 'Space Grotesk', sans-serif;
+  max-width: 90vw;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  font-size: 1.1rem;
+">
+  <h1 style="margin: 0 0 8px; font-weight: 700; font-size: 1.8rem;">⚠️ Heads up!</h1>
+  <p style="margin: 0 0 8px;">
+    This game may contain scary or disturbing visuals.<br />
+    We don’t allow games with inappropriate content, but this one might be intense for some.
+  </p>
+  <a href="/games"><button>Go back</button></a><br>
+  <small style="opacity: 0.8;">Click here to dismiss</small>
+</div>
+
+
     <!-- Supabase UMD -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
 
@@ -498,6 +528,30 @@ function updateLikeRatioBar(likes, dislikes) {
 const waitForNavbar = setInterval(() => {
   if (initLikeDislikeSystem()) clearInterval(waitForNavbar);
 }, 200);
+
+  const blurWarning = document.getElementById('blurWarning');
+
+  console.log('🚦 DOM loaded, checking blur warning');
+
+  const blurSetting = localStorage.getItem('blur');
+  console.log('📦 localStorage blur value:', blurSetting);
+
+  // Show warning every time, ignore dismissal for now
+  if (blurSetting === 'true') {
+    console.log('⚠️ Blur setting is true, showing warning');
+    blurWarning.style.display = 'block';
+  } else {
+    console.log('ℹ️ Blur setting is false or missing, not showing warning');
+  }
+
+  blurWarning.addEventListener('click', () => {
+    console.log('🛑 Blur warning dismissed by user');
+    blurWarning.style.display = 'none';
+    // Commenting out dismissal storage so it always shows
+    // localStorage.setItem('blurWarningDismissed', 'yes');
+  });
+  console.log('✅ Blur warning setup complete');
+
 
 </script>
 

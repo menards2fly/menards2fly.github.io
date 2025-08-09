@@ -202,6 +202,8 @@ function displayGames(filter = '') {
       localStorage.setItem('gameName', game.name);
       localStorage.setItem('gameLink', game.link);
       localStorage.setItem('gameDesc', game.description);
+      localStorage.setItem('blur', game.blur ? 'true' : 'false');
+
       displayGames(filter);
       window.location.href = game.path;
     });
