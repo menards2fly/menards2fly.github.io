@@ -79,7 +79,7 @@ export async function summarizePost(postText) {
   if (!postText.trim()) return 'No post content to summarize!';
 
   const instruction = 
-    "Summarize the following post in 2-3 sentences in a friendly, third person, clear tone:\n\n";
+    "Summarize the following post in 2-3 sentences in a friendly, clear tone:\n\n";
 
   const prompt = instruction + postText;
 
