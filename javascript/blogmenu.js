@@ -6,14 +6,14 @@
 
 // 1. Import Supabase client from CDN
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
+console.log('🔗 Supabase client loaded');
 // 2. Initialize Supabase (replace with your actual values)
 const SUPABASE_URL = 'https://jbekjmsruiadbhaydlbt.supabase.co'; // 🔁 Replace with your project URL
 const SUPABASE_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY'; // 🔁 Replace with your anon key
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY); 
+import { summarizePost } from './orbit-global.js';
 // 3. Global state
 let blogPosts = []; // Will hold the array of posts fetched from Supabase
 let currentSortOption = 'age'; // Default sort: newest first
@@ -93,6 +93,8 @@ function displayBlogPosts(filter = '') {
     const postContainer = document.createElement('a');
     postContainer.href = 'javascript:void(0)';
     postContainer.classList.add('post');
+    console.log('blogTitle element:', document.getElementById('blogTitle'));
+
     postContainer.addEventListener('click', () =>
       showOverlay({
         title: post.title,
@@ -146,23 +148,62 @@ window.showOverlay = function (post) {
   const blogAuthor = document.getElementById('blogAuthor');
   const blogContent = document.getElementById('blogContent');
   const blogCover = document.getElementById('blogCover');
+  const summaryResult = document.getElementById('summaryResult'); // Use your existing container
   const commentForm = document.querySelector('.comments form');
 
   blogTitle.textContent = post.title;
-  blogAuthor.textContent = `by: ${post.author || 'Starship Team'}`; // Show author if available
-  blogContent.innerHTML = marked.parse(post.content);
+  blogAuthor.textContent = `by: ${post.author || 'Starship Team'}`;
   blogCover.src = post.image;
-  commentForm.setAttribute('post_id', post.id); // Set post_id for comments
+  blogContent.innerHTML = marked.parse(post.content);
+  commentForm.setAttribute('post_id', post.id);
+
   overlay.style.display = 'flex';
   document.body.classList.add('overlay-open');
-  displayComments(post.id); // Load comments for this post
+  displayComments(post.id);
+
+  // Clear and prep the summaryResult container
+  summaryResult.textContent = 'Summarizing with Orbit AI... 🚀';
+  summaryResult.style.border = '1px solid #8a2be2'; // keep your debug styles if you want
+  summaryResult.style.padding = '10px';
+  summaryResult.style.backgroundColor = '#111';
+
+  (async () => {
+    try {
+      const rawText = post.content.replace(/<\/?[^>]+(>|$)/g, "");
+      const summaryText = await summarizePost(rawText);
+      console.log('Summary generated:', summaryText);
+
+      summaryResult.innerHTML = `<strong>Summarized with Orbit:</strong><br>`;
+
+      const summarySpan = document.createElement('span');
+      summaryResult.appendChild(summarySpan);
+
+      if (typeof typewriterEffect === 'function') {
+        await typewriterEffect(summarySpan, summaryText);
+      } else {
+        summarySpan.textContent = summaryText;
+      }
+
+      const disclaimer = document.createElement('p');
+      disclaimer.style.marginTop = '12px';
+      disclaimer.style.fontSize = '0.85rem';
+      disclaimer.style.color = '#8a2be2cc';
+      disclaimer.style.fontStyle = 'italic';
+      disclaimer.textContent = '⚠️ Orbit AI can make mistakes. Check important info.';
+      summaryResult.appendChild(disclaimer);
+    } catch (e) {
+      console.error('Error during summary generation:', e);
+      summaryResult.textContent = 'Oops, failed to summarize. Try again later.';
+    }
+  })();
 };
 
-window.closeOverlay = function () {
-  const overlay = document.getElementById('overlay');
-  overlay.style.display = 'none';
-  document.body.classList.remove('overlay-open');
-};
+
+
+
+
+
+
 
 // 10. Kick off the fetch on page load
 window.addEventListener('DOMContentLoaded', fetchBlogPosts);
@@ -289,3 +330,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   const latestPostTitle = await getLatestPost();
   document.querySelector('#latestNews').textContent = latestPostTitle;
 });
+
+async function typewriterEffect(element, text, delay = 15) {
+  element.innerHTML = ''; // Clear existing content
+
+  for (let i = 0; i < text.length; i++) {
+    const span = document.createElement('span');
+    span.textContent = text[i];
+    span.style.color = '#8a2be2'; // glowing purple color initially
+    element.appendChild(span);
+
+    // Animate color back to white after a short delay, staggered per letter
+    setTimeout(() => {
+      span.style.transition = 'color 0.5s ease';
+      span.style.color = '#eee';
+    }, delay * (i + 1) * 0.9);
+
+    await new Promise(r => setTimeout(r, delay)); // wait before typing next letter
+  }
+}

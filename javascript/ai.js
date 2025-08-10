@@ -281,6 +281,83 @@ Talk like a human. Be upbeat, playful, and space-themed. Use slang like “💀,
 
 You can be creative AF, help write stuff ✍️, drop space puns 🌠, and use emojis. Just don’t break character. You’re the internet-literate, slightly chaotic co-pilot of this Starship, and you’re ready to vibe 🌌`; // your system prompt
 
+// ----------------- Helper: normalize whatever the LLM returns into a plain string -----------------
+function normalizeLLMObject(obj) {
+  console.log('🔍 Normalizing LLM response:', obj);
+  if (!obj) return '';
+
+  // If it's already a string, try parse JSON (some providers return JSON strings)
+  if (typeof obj === 'string') {
+    try {
+      const parsed = JSON.parse(obj);
+      return normalizeLLMObject(parsed);
+    } catch (e) {
+      return obj;
+    }
+  }
+
+  // Common direct fields
+  if (typeof obj.response === 'string') return obj.response;
+  if (typeof obj.text === 'string') return obj.text;
+  if (typeof obj.reply === 'string') return obj.reply;
+
+  // message / message.content styles
+  if (typeof obj.message === 'string') return obj.message;
+  if (obj.message && typeof obj.message.content === 'string') return obj.message.content;
+
+  // content field
+  if (typeof obj.content === 'string') return obj.content;
+
+  // choices array (OpenAI-like)
+  if (Array.isArray(obj.choices) && obj.choices.length) {
+    const c = obj.choices[0];
+    if (typeof c.text === 'string') return c.text;
+    if (c.message && typeof c.message.content === 'string') return c.message.content;
+  }
+
+  // fallback: try to stringify relevant parts (keeps output readable)
+  try {
+    if (obj.data && typeof obj.data === 'string') return obj.data;
+    if (typeof obj === 'object') return JSON.stringify(obj);
+    return String(obj);
+  } catch (e) {
+    return String(obj);
+  }
+}
+
+// ---------------- Helper: send text to ApiFreeLLM (SDK preferred, REST fallback) ----------------
+async function sendToApiFreeLLM(prompt) {
+  // If an ApiFreeLLM browser SDK is loaded and provides a chat function, use it
+  if (window.apifree && typeof window.apifree.chat === 'function') {
+    try {
+      const sdkRes = await window.apifree.chat(prompt);
+      return { text: normalizeLLMObject(sdkRes) };
+    } catch (err) {
+      console.warn('ApiFreeLLM SDK error:', err);
+      throw err;
+    }
+  }
+
+  // REST fallback (no key shown here). If you need auth, do via server proxy.
+  try {
+    const resp = await fetch('https://apifreellm.com/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: prompt })
+    });
+    if (!resp.ok) {
+      const txt = await resp.text();
+      throw new Error(`ApiFreeLLM REST error ${resp.status}: ${txt}`);
+    }
+    const data = await resp.json();
+    return { text: normalizeLLMObject(data) };
+  } catch (err) {
+    console.warn('ApiFreeLLM REST error:', err);
+    throw err;
+  }
+}
+
+// ---------------- Updated sendChat() (drop-in replacement) ----------------
 async function sendChat(text) {
   if (!text.trim()) {
     console.warn('⚠️ Tried to send empty message. Ignoring.');
@@ -292,12 +369,12 @@ async function sendChat(text) {
     return;
   }
 
-  // ADD THIS BLOCK RIGHT HERE:
+  // quick client-side moderation
   if (containsBadWord(text)) {
     appendMessage('orbit', 'Ayooo 🚨 that’s crossing the line. Kinda rough vibes 😅 but I’m here to help — wanna try that again?');
     setSendButtonState(true);
     isProcessing = false;
-    return; // STOP here — don't send to AI
+    return;
   }
 
   isProcessing = true;
@@ -313,8 +390,8 @@ async function sendChat(text) {
   const loadingElem = appendLoading();
 
   try {
+    // ---------- IMAGE GENERATION ----------
     if (text.toLowerCase().startsWith('generate:')) {
-      // === IMAGE GENERATION ===
       const desc = text.replace(/^generate:/i, '').trim();
 
       if (!isAdmin && !isSuperAdmin && usage.imgGenCount >= imgGenLimit) {
@@ -334,14 +411,12 @@ async function sendChat(text) {
       removeLoading(loadingElem);
 
       if (imgRes?.error) {
-        const errMsg = imgRes.error.toLowerCase();
+        const errMsg = String(imgRes.error || '').toLowerCase();
         if (errMsg.includes('insufficient funds') || errMsg.includes('insufficient balance')) {
           appendMessage('orbit', `🚀 Whoa, your energy’s too low to finish this mission right now. Try again soon! 🌌`);
-          isProcessing = false;
-          setSendButtonState(true);
-          return;
+        } else {
+          appendMessage('orbit', `⚠️ Uh oh, something went wrong with the image launch. Try again? 🌠`);
         }
-        appendMessage('orbit', `⚠️ Uh oh, something went wrong with the image launch. Try again? 🌠`);
         isProcessing = false;
         setSendButtonState(true);
         return;
@@ -354,68 +429,93 @@ async function sendChat(text) {
         return;
       }
 
+      // Expecting Puter returns an element or HTML — keep your current usage
       appendMessage('orbit', `Here’s your generated image of "${desc}".`);
-      appendMessage('orbit', imgRes.outerHTML, { isHtml: true });
+      appendMessage('orbit', imgRes.outerHTML || imgRes.html || (Array.isArray(imgRes) ? imgRes.join('') : String(imgRes)), { isHtml: true });
 
       incrementImgGenCount();
       isProcessing = false;
       setSendButtonState(true);
       return;
-    } else {
-      // === NORMAL CHAT or IMAGE ANALYSIS ===
+    }
 
-      if (!isAdmin && !isSuperAdmin && usage.chatCount >= chatLimit) {
-        removeLoading(loadingElem);
-        appendMessage('orbit',
-          `🛑 Whoa, you've blasted through your daily chat limit of ${chatLimit} messages! ` +
-          `Sign in or come back tomorrow for more interstellar convos! 🌟💬`);
-        isProcessing = false;
-        setSendButtonState(true);
-        return;
-      }
-
-      console.log(`📨 User sent message: "${text}"`);
-      conversationMemory.push({ role: 'user', content: text });
-
-      const convoHistoryText = conversationMemory
-        .filter(m => m.role === 'user')
-        .map(m => m.content)
-        .join('\n');
-
-      const fullPrompt =
-        `Here is your base system prompt and rules. You need to follow it.\n` +
-        `${BASE_PROMPT}\n\n` +
-        `Here is the conversation history. This is your memory.\n` +
-        `${convoHistoryText}\n\n` +
-        `Here is your prompt.\n` +
-        `${text}`;
-
-      // 🔍 Detect image URL (jpg, png, etc)
-      const imageUrlMatch = text.match(/https?:\/\/[^\s]+\.(png|jpe?g|webp|gif)/i);
-      const imageUrl = imageUrlMatch ? imageUrlMatch[0] : null;
-
-      const res = imageUrl
-        ? await puter.ai.chat(fullPrompt, imageUrl)
-        : await puter.ai.chat(fullPrompt);
-
+    // ---------- NORMAL CHAT or IMAGE ANALYSIS ----------
+    if (!isAdmin && !isSuperAdmin && usage.chatCount >= chatLimit) {
       removeLoading(loadingElem);
-
-      const replyTextRaw = res?.message?.content || '';
-      const replyTextLower = replyTextRaw.toLowerCase();
-
-      if (replyTextLower.includes('insufficient funds') || replyTextLower.includes('insufficient balance')) {
-        appendMessage('orbit', `🚀 Whoa, your energy’s too low to finish this mission right now. Try again soon! 🌌`);
-      } else {
-        const replyText = replyTextRaw || '⚠️ No response from Orbit.';
-        console.log(`💬 Orbit replied: "${replyText}"`);
-        appendMessage('orbit', replyText);
-        conversationMemory.push({ role: 'orbit', content: replyText });
-        incrementChatCount();
-      }
-
+      appendMessage('orbit',
+        `🛑 Whoa, you've blasted through your daily chat limit of ${chatLimit} messages! ` +
+        `Sign in or come back tomorrow for more interstellar convos! 🌟💬`);
       isProcessing = false;
       setSendButtonState(true);
+      return;
     }
+
+    console.log(`📨 User sent message: "${text}"`);
+    conversationMemory.push({ role: 'user', content: text });
+
+    const convoHistoryText = conversationMemory
+      .map(m => `${m.role === 'user' ? 'User' : 'Orbit'}: ${m.content}`)
+      .join('\n');
+
+    const fullPrompt =
+      `Here is your base system prompt and rules. You need to follow it.\n` +
+      `${BASE_PROMPT}\n\n` +
+      `Here is the conversation history. This is your memory.\n` +
+      `${convoHistoryText}\n\n` +
+      `Here is your prompt.\n` +
+      `${text}`;
+
+    // Detect image URL (jpg, png, webp, gif)
+    const imageUrlMatch = text.match(/https?:\/\/[^\s]+\.(png|jpe?g|webp|gif)/i);
+    const imageUrl = imageUrlMatch ? imageUrlMatch[0] : null;
+
+    let res; // will hold normalized response object
+
+    if (imageUrl) {
+      // If there's an image URL, use Puter for multimodal analysis/chat
+      res = await puter.ai.chat(fullPrompt, imageUrl);
+    } else {
+      // Text-only conversation -> use ApiFreeLLM
+      try {
+        const afr = await sendToApiFreeLLM(fullPrompt);
+        // normalize into the shape you expect downstream
+        res = { message: { content: afr.text } };
+      } catch (apiErr) {
+        console.warn('ApiFreeLLM failed, attempting Puter as fallback for text:', apiErr);
+        // try Puter as a fallback so user still gets a reply (optional)
+        try {
+          res = await puter.ai.chat(fullPrompt);
+        } catch (puterErr) {
+          // Both failed -> show error to user
+          removeLoading(loadingElem);
+          console.error('Both ApiFreeLLM and Puter failed:', apiErr, puterErr);
+          appendMessage('orbit', '⚠️ Uh oh — the cosmic servers are being moody. Try again in a bit? 🌌');
+          isProcessing = false;
+          setSendButtonState(true);
+          return;
+        }
+      }
+    }
+
+    removeLoading(loadingElem);
+
+    // <-- use normalizeLLMObject here so we only display the actual text -->
+    const replyTextRaw = normalizeLLMObject(res) || '';
+    const replyTextLower = String(replyTextRaw).toLowerCase();
+
+    if (replyTextLower.includes('insufficient funds') || replyTextLower.includes('insufficient balance')) {
+      appendMessage('orbit', `🚀 Whoa, your energy’s too low to finish this mission right now. Try again soon! 🌌`);
+    } else {
+      const replyText = replyTextRaw || '⚠️ No response from Orbit.';
+      console.log(`💬 Orbit replied: "${replyText}"`);
+      appendMessage('orbit', replyText);
+      conversationMemory.push({ role: 'orbit', content: replyText });
+      incrementChatCount();
+    }
+
+    isProcessing = false;
+    setSendButtonState(true);
+
   } catch (err) {
     removeLoading(loadingElem);
     console.error('🚨 Orbit error:', err);
@@ -425,13 +525,15 @@ async function sendChat(text) {
     if (errMsg.includes('insufficient_funds') || errMsg.includes('insufficient_balance')) {
       appendMessage('orbit', `🚀 Whoa, your energy’s too low to finish this mission right now. Try again soon! 🌌`);
     } else {
-      appendMessage('orbit', `🚀 Whoa, your energy’s too low to finish this mission right now. Try again soon! 🌌`);
+      appendMessage('orbit', `🚀 Whoa, the cosmic pipes are clogged rn. Try again in a bit! 🌌`);
     }
 
     isProcessing = false;
     setSendButtonState(true);
   }
 }
+
+
 
 
 
@@ -591,4 +693,24 @@ function containsBadWord(text) {
     const pattern = new RegExp(`\\b${word}\\b`, 'i');
     return pattern.test(lowered);
   });
+}
+
+
+// GLOBAL SUMMARIZE FEATURE
+
+export async function summarizePost(postText) {
+  if (!postText.trim()) return 'No post content to summarize!';
+
+  const instruction = 
+    "Summarize the following post in 2-3 sentences in a friendly, clear tone:\n\n";
+
+  const prompt = instruction + postText;
+
+  try {
+    const response = await sendToApiFreeLLM(prompt);
+    return response.text.trim();
+  } catch (err) {
+    console.error('Error summarizing post:', err);
+    return 'Oops, couldn’t summarize the post right now. Try again later!';
+  }
 }
