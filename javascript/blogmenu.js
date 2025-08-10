@@ -331,6 +331,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.querySelector('#latestNews').textContent = latestPostTitle;
 });
 
+// Typewriter function to display text with glowing typed letters
 async function typewriterEffect(element, text, delay = 15) {
   element.innerHTML = ''; // Clear existing content
 
@@ -340,11 +341,11 @@ async function typewriterEffect(element, text, delay = 15) {
     span.style.color = '#8a2be2'; // glowing purple color initially
     element.appendChild(span);
 
-    // Animate color back to white after a short delay, staggered per letter
+    // Animate color back to white after a short delay
     setTimeout(() => {
       span.style.transition = 'color 0.5s ease';
       span.style.color = '#eee';
-    }, delay * (i + 1) * 0.9);
+    }, delay * 0.9);
 
     await new Promise(r => setTimeout(r, delay)); // wait before typing next letter
   }
