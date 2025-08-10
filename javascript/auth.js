@@ -79,17 +79,44 @@ async function signUp() {
   const email = signupEmailInput.value.trim();
   const password = signupPasswordInput.value;
   const confirmPassword = document.getElementById('signup-confirm-password').value;
-  const username = document.getElementById('signup-username')  ;
+  const usernameInput = document.getElementById('signup-username');
+  const username = usernameInput.value.trim();
   const birthdayInput = document.getElementById('signup-birthday');
   const birthdayWarning = document.getElementById('birthday-warning');
   const birthdayValue = birthdayInput.value;
 
-  console.log(`📝 SignUp attempt for email: ${email}`);
+  console.log(`👤 SignUp attempt for email: ${email}, username: ${username}, birthday: ${birthdayValue}`);
 
-  // --- Validate required fields ---
+  // Reset any previous username input styles/messages
+  usernameInput.style.border = '';
+  const usernameWarning = document.getElementById('username-warning');
+  if (usernameWarning) usernameWarning.style.display = 'none';
+
   if (!email || !password || !confirmPassword || !username || !birthdayValue) {
     console.warn('⚠️ SignUp failed: Missing fields');
     return setStatus('Please fill in all fields.', 'signup');
+  }
+
+  // New: Block bad usernames
+  if (containsBadWord(username)) {
+    usernameInput.style.border = '2px solid red';
+    
+    // Show or create a warning message under username input
+    if (usernameWarning) {
+      usernameWarning.textContent = "This username isn't appropriate for starship.";
+      usernameWarning.style.color = 'red';
+      usernameWarning.style.display = 'block';
+    } else {
+      const warningEl = document.createElement('div');
+      warningEl.id = 'username-warning';
+      warningEl.style.color = 'red';
+      warningEl.style.marginTop = '4px';
+      warningEl.textContent = "This username isn't appropriate for starship.";
+      usernameInput.insertAdjacentElement('afterend', warningEl);
+    }
+    
+    console.warn('⚠️ SignUp failed: Username contains banned word');
+    return setStatus("This username isn't appropriate for starship.", 'signup');
   }
 
   // --- Passwords match check ---
@@ -142,6 +169,10 @@ async function signUp() {
     }
 
     console.log('✅ SignUp successful:', data);
+    // right before location.reload() in signUp
+localStorage.setItem('pendingUsername', username);
+location.reload();
+
     location.reload();
     setStatus(
       'Signed up! Now you can, <a onclick="showLogin()" style="text-decoration: underline; cursor: pointer">log in</a>.',
@@ -154,6 +185,7 @@ async function signUp() {
     return setStatus('Unexpected error. Please try again later.', 'signup');
   }
 }
+
 
 
 async function signIn() {
@@ -256,9 +288,7 @@ async function checkForAdmin() {
 
 async function ensureProfile() {
   console.log('⏳ Ensuring profile exists for logged in user...');
-  const {
-    data: { user },
-  } = await supabaseClient.auth.getUser();
+  const { data: { user } } = await supabaseClient.auth.getUser();
   if (!user) {
     console.warn('⚠️ No logged in user found during ensureProfile');
     return;
@@ -272,19 +302,31 @@ async function ensureProfile() {
 
   if (!profile) {
     console.log('🆕 No profile found, creating new profile');
-    const usernameInputExists = document.body.contains(signupUsernameInput);
-    let username = usernameInputExists
-      ? signupUsernameInput.value.trim()
-      : user.email?.split('@')[0] || 'New User';
+    
+    // Get username from localStorage first
+    let username = localStorage.getItem('pendingUsername');
+
+    // If no stored username, fallback to input field or email prefix
+    if (!username) {
+      const signupUsernameInput = document.getElementById('signup-username');
+      username = signupUsernameInput?.value.trim() || user.email?.split('@')[0] || 'New User';
+    }
+
     await supabaseClient
       .from('profiles')
       .insert([{ id: user.id, username, avatar_url: null }]);
+
     console.log(`✅ Profile created with username: ${username}`);
+
+    // Clear localStorage after use
+    localStorage.removeItem('pendingUsername');
   } else {
     console.log('✅ Profile exists:', profile);
     localStorage.setItem('loggedInUser', JSON.stringify(profile));
   }
 }
+
+
 
 async function uploadAvatar(userId, file) {
   if (!file) {
@@ -366,6 +408,7 @@ async function loadProfile() {
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();
+
   if (!user) {
     console.warn('⚠️ No logged in user found during profile load');
     return setStatus('Not logged in', 'login');
@@ -385,10 +428,13 @@ async function loadProfile() {
     warningSection.style =
       'background:rgba(255,0,0,0.15);color:#b00;padding:18px 24px;margin:16px auto;border-radius:12px;max-width:500px;font-weight:bold;display:none;';
     warningSection.innerHTML =
-      "<h3> Your account isn't connected to a profile. </h3>  <p>This can cause issues with your account, and may cause failures with sync, and other features. Please log out, then log back in to fix it. If this keeps happening after, please contact support.</p><button id='logout-btn'>Log Out</button>";
+      "<h3>Your account isn't connected to a profile.</h3>" +
+      "<p>This can cause issues with your account, and may cause failures with sync, and other features. Please log out, then log back in to fix it. If this keeps happening after, please contact support.</p>" +
+      "<button id='logout-btn'>Log Out</button>";
     document.body.insertBefore(warningSection, document.body.firstChild);
+
     // Attach logout event
-    document.getElementById('logout-btn')?.addEventListener('click', () => {
+    document.getElementById('logout-btn').addEventListener('click', () => {
       console.log('🚪 Logout button clicked (from warning section)');
       signOut();
     });
@@ -401,50 +447,56 @@ async function loadProfile() {
     return;
   }
 
- async function createProfileWithUniqueUsername(user) {
-  const MAX_RETRIES = 10;
+  async function createProfileWithUsername(user, desiredUsername) {
+    const MAX_RETRIES = 5;
 
-  function generateUsername() {
-    const randomNum = Math.floor(100000 + Math.random() * 900000); // 6 digit number
-    return `user${randomNum}`;
-  }
+    let username = desiredUsername;
 
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    const username = generateUsername();
-    console.log(`Attempt ${attempt}: Trying username "${username}"`);
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      if (!username) {
+        const randomNum = Math.floor(100000 + Math.random() * 900000);
+        username = `user${randomNum}`;
+      }
 
-    const firstLetter = username.charAt(0).toUpperCase();
-    const avatarUrl = `https://placehold.co/100x100/8a2be2/white?text=${firstLetter}`;
+      console.log(`Attempt ${attempt}: Trying username "${username}"`);
 
-    const { error: createError } = await supabaseClient
-      .from('profiles')
-      .insert([{ id: user.id, username, avatar_url: avatarUrl }]);
+      const firstLetter = username.charAt(0).toUpperCase();
+      const avatarUrl = `https://placehold.co/100x100/8a2be2/white?text=${firstLetter}`;
 
-    if (!createError) {
-      console.log(`✅ Profile created with username: ${username}`);
-      return username; // success!
-    } else {
-      console.warn(`❌ Username "${username}" rejected: ${createError.message}`);
+      const { error: createError } = await supabaseClient
+        .from('profiles')
+        .insert([{ id: user.id, username, avatar_url: avatarUrl }]);
 
-      // If it's not just a username conflict, break early
-      if (!createError.message.toLowerCase().includes('username')) {
-        throw new Error(`Unexpected error creating profile: ${createError.message}`);
+      if (!createError) {
+        console.log(`✅ Profile created with username: ${username}`);
+        return username; // success!
+      } else {
+        console.warn(`❌ Username "${username}" rejected: ${createError.message}`);
+
+        if (!createError.message.toLowerCase().includes('username')) {
+          throw new Error(`Unexpected error creating profile: ${createError.message}`);
+        }
+
+        username = null; // clear to generate new next attempt
       }
     }
+
+    throw new Error('Failed to create a unique username after max retries');
   }
-
-  throw new Error('Failed to create a unique username after max retries');
-}
-
-
-  // Then replace your existing profile creation part with something like:
 
   if (!profile) {
     console.warn('⚠️ No profile found for user, creating one...');
-    try {
-      const generatedUsername = await createProfileWithUniqueUsername(user);
 
-      // Reload profile after successful creation
+    // Use pending username from localStorage if any, else null
+    const storedUsername = localStorage.getItem('pendingUsername')?.trim() || null;
+
+    try {
+      const finalUsername = await createProfileWithUsername(user, storedUsername);
+
+      // Clear stored username after use
+      localStorage.removeItem('pendingUsername');
+
+      // Reload profile after creation
       const { data: newProfile, error: profileError } = await supabaseClient
         .from('profiles')
         .select('username, avatar_url')
@@ -474,8 +526,9 @@ async function loadProfile() {
     }
   }
 
-
+  // Update UI with profile info
   console.log('✅ Profile loaded:', profile);
+
   profileUsername.textContent = profile.username;
 
   if (profile?.avatar_url && profile.avatar_url.startsWith('data:image/')) {
@@ -484,10 +537,8 @@ async function loadProfile() {
     console.log('🖼️ Avatar set from data URL');
   } else {
     let username = profile?.username || 'New User';
-const firstLetter = username?.charAt(0)?.toUpperCase() || 'U';
-profileAvatar.src = `https://placehold.co/100x100/8a2be2/white?text=${firstLetter}`;
-
-
+    const firstLetter = username?.charAt(0)?.toUpperCase() || 'U';
+    profileAvatar.src = `https://placehold.co/100x100/8a2be2/white?text=${firstLetter}`;
     profileAvatar.style.display = 'block';
     console.log('🖼️ Using default avatar');
   }
@@ -500,6 +551,7 @@ profileAvatar.src = `https://placehold.co/100x100/8a2be2/white?text=${firstLette
   const navbarUsername = document.querySelector('.username');
   if (navbarUsername) navbarUsername.textContent = profile.username;
 }
+
 
 profileAvatar.addEventListener('click', async () => {
   console.log('👆 Avatar clicked, triggering file input...');
