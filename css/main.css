@@ -307,6 +307,7 @@ button:nth-child(2):hover {
   border-radius: 15px;
   padding: 14px 18px;
   color: #eee;
+
   font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   background: rgba(28, 10, 45, 1);   /* inner semi-transparent fill */
   overflow: hidden;
@@ -345,11 +346,12 @@ button:nth-child(2):hover {
   position: absolute;
   inset: var(--border-gap);
   border-radius: calc(15px - var(--border-gap));
-  z-index: 1;
+  z-index: 0;
   pointer-events: none;
   background: rgba(28, 10, 45, 1); /* same as main fill to mask center */
   /* you can add a subtle inner shadow if you want */
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+
 }
 
 /* ensure children sit above the mask & animated layer */

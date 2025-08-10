@@ -148,7 +148,7 @@ window.showOverlay = function (post) {
   const blogAuthor = document.getElementById('blogAuthor');
   const blogContent = document.getElementById('blogContent');
   const blogCover = document.getElementById('blogCover');
-  const summaryResult = document.getElementById('summaryResult'); // Use your existing container
+  const summaryResult = document.getElementById('summaryResult'); // Your container
   const commentForm = document.querySelector('.comments form');
 
   blogTitle.textContent = post.title;
@@ -161,29 +161,63 @@ window.showOverlay = function (post) {
   document.body.classList.add('overlay-open');
   displayComments(post.id);
 
-  // Clear and prep the summaryResult container
-  summaryResult.textContent = 'Summarizing with Orbit AI... 🚀';
-  summaryResult.style.border = '1px solid #8a2be2'; // keep your debug styles if you want
+  // Reset summaryResult styles & clear
+  summaryResult.innerHTML = '';
+  summaryResult.style.border = '1px solid #8a2be2';
   summaryResult.style.padding = '10px';
   summaryResult.style.backgroundColor = '#111';
 
   (async () => {
     try {
+      // Step 1: Show "Summarizing..." with typewriter effect
+      await typewriterEffect(summaryResult, 'Summarizing...', 30);
+
+      // Step 2: Get plain text from post and generate summary
       const rawText = post.content.replace(/<\/?[^>]+(>|$)/g, "");
       const summaryText = await summarizePost(rawText);
       console.log('Summary generated:', summaryText);
 
-      summaryResult.innerHTML = `<strong>Summarized with Orbit:</strong><br>`;
+      // Step 3: Clear previous content to prep for summary header + text
+      summaryResult.innerHTML = '';
 
-      const summarySpan = document.createElement('span');
-      summaryResult.appendChild(summarySpan);
+      // Create header with Orbit logo + label
+      const header = document.createElement('div');
+      header.style.display = 'flex';
+      header.style.alignItems = 'center';
+      header.style.gap = '8px';
+      header.style.marginBottom = '12px';
 
+      // Orbit logo img (update src to your logo path)
+      const logo = document.createElement('img');
+      logo.src = '/uploads/branding/orbit.png';  // <— update this path
+      logo.alt = 'Orbit logo';
+      logo.style.width = '24px';
+      logo.style.height = '24px';
+      logo.style.filter = 'drop-shadow(0 0 6px #8a2be2)';
+
+      // Label text
+      const label = document.createElement('span');
+      label.textContent = 'Summarized with Orbit';
+      label.style.color = '#8a2be2';
+      label.style.fontWeight = '700';
+      label.style.fontSize = '16px';
+
+      header.appendChild(logo);
+      header.appendChild(label);
+      summaryResult.appendChild(header);
+
+      // Summary text container for typewriter effect
+      const summaryTextContainer = document.createElement('div');
+      summaryResult.appendChild(summaryTextContainer);
+
+      // Step 4: Type out the summary text with glow effect
       if (typeof typewriterEffect === 'function') {
-        await typewriterEffect(summarySpan, summaryText);
+        await typewriterEffect(summaryTextContainer, summaryText, 25);
       } else {
-        summarySpan.textContent = summaryText;
+        summaryTextContainer.textContent = summaryText;
       }
 
+      // Step 5: Add disclaimer below summary, no emoji
       const disclaimer = document.createElement('p');
       disclaimer.style.marginTop = '12px';
       disclaimer.style.fontSize = '0.85rem';
@@ -191,6 +225,7 @@ window.showOverlay = function (post) {
       disclaimer.style.fontStyle = 'italic';
       disclaimer.textContent = 'Orbit AI can make mistakes. Check important info.';
       summaryResult.appendChild(disclaimer);
+
     } catch (e) {
       console.error('Error during summary generation:', e);
       summaryResult.textContent = 'Oops, failed to summarize. Try again later.';

@@ -91,3 +91,23 @@ export async function summarizePost(postText) {
     return 'Oops, couldn’t summarize the post right now. Try again later!';
   }
 }
+
+// SUMMARIZE CHAT FEATURE
+export async function summarizeChat(chatMessages) {
+  if (!chatMessages || !Array.isArray(chatMessages) || chatMessages.length === 0) {
+    return 'No chat messages to summarize!';
+  }
+
+  const instruction = 
+    "Summarize the following chat conversation in 2-3 sentences in a friendly, clear tone. Only give me the summary. Nothing else. Here is the chat:\n\n";
+
+  const prompt = instruction + chatMessages.map(m => m.content).join('\n');
+
+  try {
+    const response = await sendToApiFreeLLM(prompt);
+    return response.text.trim();
+  } catch (err) {
+    console.error('Error summarizing chat:', err);
+    return 'Oops, couldn’t summarize the chat right now. Try again later!';
+  }
+}

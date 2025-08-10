@@ -182,11 +182,9 @@
     <!-- Navigation Bar -->
     <div id="navbar"></div>
     <script type="module" src="/javascript/navbar.js"></script>
-    <br />
-    <br />
-    <br />
-    <br />
-    <div id="typing-indicator" aria-live="polite"></div>
+
+    <div id="summaryResult" ></div>
+<br>
     <div id="messages" aria-live="polite" aria-relevant="additions"></div>
     <form id="message-form" autocomplete="off" name="message-form">
       <input
@@ -200,6 +198,8 @@
     <script type="module">
       import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
       import { bannedWords } from '/javascript/filter.js';
+      import { summarizeChat } from '/javascript/orbit-global.js';
+
       const supabase = createClient(
         'https://jbekjmsruiadbhaydlbt.supabase.co',
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY'
@@ -244,16 +244,73 @@
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }
 
-      async function loadMessages() {
-        const { data } = await supabase
-          .from('messages')
-          .select('*, profiles(username, avatar_url)')
-          .order('inserted_at', { ascending: true });
+const summaryDiv = document.getElementById('summaryResult');
 
-        messagesDiv.innerHTML = '';
-        data.forEach(addMessageToDOM);
-        scrollToBottom();
-      }
+async function loadMessages() {
+  const { data } = await supabase
+    .from('messages')
+    .select('*, profiles(username, avatar_url)')
+    .order('inserted_at', { ascending: true });
+
+  messagesDiv.innerHTML = '';
+  data.forEach(addMessageToDOM);
+  scrollToBottom();
+
+  // Show "Summarizing..." with typewriter effect
+  await typewriterEffect(summaryDiv, 'Summarizing...', 30);
+
+const summary = await summarizeChat(data);
+const orbitLogoUrl = '/uploads/branding/orbit.png'; // update with your actual logo path
+
+  // Clear summaryDiv content before adding new content
+  summaryDiv.innerHTML = '';
+
+  // Create a container for the header with logo and text
+  const header = document.createElement('div');
+  header.style.display = 'flex';
+  header.style.alignItems = 'center';
+  header.style.gap = '8px';
+  header.style.marginBottom = '12px';
+
+  // Orbit logo image
+  const logo = document.createElement('img');
+  logo.src = orbitLogoUrl;
+  logo.alt = 'Orbit logo';
+  logo.style.width = '24px';
+  logo.style.height = '24px';
+  logo.style.filter = 'drop-shadow(0 0 4px #8a2be2)'; // subtle purple glow
+
+  // Text "Summarized with Orbit"
+  const label = document.createElement('span');
+  label.textContent = 'Summarized with Orbit';
+  label.style.color = '#8a2be2';
+  label.style.fontWeight = '700';
+  label.style.fontSize = '16px';
+
+  header.appendChild(logo);
+  header.appendChild(label);
+  summaryDiv.appendChild(header);
+
+  // Then type out the actual summary text below header
+  const summaryTextContainer = document.createElement('div');
+  summaryDiv.appendChild(summaryTextContainer);
+
+  await typewriterEffect(summaryTextContainer, summary, 25);
+
+  // Add the caution note after summary
+  const caution = document.createElement('div');
+  caution.style.marginTop = '12px';
+  caution.style.fontSize = '14px';
+  caution.style.color = '#cc88ff';
+  caution.style.fontWeight = '600';
+  caution.textContent = '⚠️ Orbit can make mistakes — please check important info carefully.';
+  summaryDiv.appendChild(caution);
+
+  return data;
+}
+
+
+
 
       function addMessageToDOM(message) {
         const div = document.createElement('div');
@@ -373,6 +430,26 @@
       }
 
       init();
+
+      async function typewriterEffect(element, text, delay = 15) {
+  element.innerHTML = ''; // Clear existing content
+
+  for (let i = 0; i < text.length; i++) {
+    const span = document.createElement('span');
+    span.textContent = text[i];
+    span.style.color = '#8a2be2'; // glowing purple color initially
+    element.appendChild(span);
+
+    // Animate color back to white after a short delay
+    setTimeout(() => {
+      span.style.transition = 'color 0.5s ease';
+      span.style.color = '#eee';
+    }, delay * 0.9);
+
+    await new Promise(r => setTimeout(r, delay)); // wait before typing next letter
+  }
+}
+
     </script>
     <!-- Particles.JS Background -->
     <div id="particles-js"></div>
