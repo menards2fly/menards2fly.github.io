@@ -189,7 +189,7 @@ window.showOverlay = function (post) {
       disclaimer.style.fontSize = '0.85rem';
       disclaimer.style.color = '#8a2be2cc';
       disclaimer.style.fontStyle = 'italic';
-      disclaimer.textContent = '⚠️ Orbit AI can make mistakes. Check important info.';
+      disclaimer.textContent = 'Orbit AI can make mistakes. Check important info.';
       summaryResult.appendChild(disclaimer);
     } catch (e) {
       console.error('Error during summary generation:', e);
