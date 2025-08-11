@@ -174,6 +174,91 @@
     .quick-link:hover i {
       filter: drop-shadow(0 0 18px #ae54ffdd);
     }
+    /* Special Neon Roblox Quick Link with #8a2be2 accent */
+.quick-link-roblox {
+  background: linear-gradient(120deg, #e100ff 0%, #8a2be2 100%);
+  border-radius: 20px;
+  padding: 1.3rem 1.8rem;
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: #0a0a0a;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  justify-content: center;
+  box-shadow:
+    0 0 32px #e100ff,
+    0 0 80px #8a2be2aa,
+    0 0 8px #e100ff;
+  cursor: pointer;
+  user-select: none;
+  border: 2.5px solid #8a2be2;
+  min-width: 140px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  transition:
+    background 0.35s cubic-bezier(.4,0,.2,1),
+    box-shadow 0.35s cubic-bezier(.4,0,.2,1),
+    color 0.35s cubic-bezier(.4,0,.2,1),
+    transform 0.3s cubic-bezier(.4,0,.2,1),
+    border-color 0.3s cubic-bezier(.4,0,.2,1);
+  animation: robloxGlow 2.5s linear infinite alternate;
+}
+
+@keyframes robloxGlow {
+  0% {
+    box-shadow:
+      0 0 32px #e100ff,
+      0 0 80px #8a2be2aa,
+      0 0 8px #e100ff;
+    border-color: #8a2be2;
+  }
+  50% {
+    box-shadow:
+      0 0 60px #e100ff,
+      0 0 120px #8a2be2,
+      0 0 24px #e100ff;
+    border-color: #e100ff;
+  }
+  100% {
+    box-shadow:
+      0 0 32px #e100ff,
+      0 0 80px #8a2be2aa,
+      0 0 8px #e100ff;
+    border-color: #8a2be2;
+  }
+}
+
+.quick-link-roblox:hover {
+  background: linear-gradient(120deg, #8a2be2 0%, #e100ff 100%);
+  color: #fff;
+  box-shadow:
+    0 0 80px #e100ff,
+    0 0 160px #8a2be2,
+    0 0 32px #ff009d;
+  transform: translateY(-7px) scale(1.09) rotate(-2deg);
+  border-color: #fff;
+  filter: drop-shadow(0 0 32px #8a2be2cc);
+  z-index: 2;
+}
+
+.quick-link-roblox i {
+  font-size: 2.1rem;
+  filter: drop-shadow(0 0 16px #e100ff);
+  transition: filter 0.3s cubic-bezier(.4,0,.2,1);
+  animation: robloxIconPulse 1.7s infinite alternate;
+}
+
+@keyframes robloxIconPulse {
+  0% { filter: drop-shadow(0 0 8px #e100ff); }
+  100% { filter: drop-shadow(0 0 24px #8a2be2); }
+}
+
+.quick-link-roblox:hover i {
+  filter: drop-shadow(0 0 32px #e100ff);
+}
   </style>
 </head>
 <body>
@@ -212,6 +297,9 @@
     </a>
     <a href="https://open.spotify.com" class="quick-link" rel="noopener" aria-label="Spotify">
       <i class="fab fa-spotify"></i> Spotify
+    </a>
+        <a href="https://doctoraux.com" class="quick-link-roblox" rel="noopener" aria-label="Roblox">
+      <i class="fa-solid fa-key"></i> Roblox
     </a>
   </div>
 
