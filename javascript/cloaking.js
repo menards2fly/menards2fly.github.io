@@ -15,7 +15,7 @@ const cloaks = [
   { name: 'gdrive', title: 'Google Drive', icon: '/uploads/cloaks/gdrive.png', link: 'https://drive.google.com/' },
   { name: 'google', title: 'Google', icon: '/uploads/cloaks/google.png', link: 'https://www.google.com/' },
   { name: 'gassign', title: 'Google Assignments', icon: '/uploads/cloaks/gassign.png', link: 'https://assignments.google.com/' },
-  { name: 'blank', title: '        ', icon: '/uploads/cloaks/transparent.png', link: '' },
+  { name: 'blank', title: '\u200B', icon: '/uploads/cloaks/transparent.png', link: '' },
 ];
 
 window.cloaks = cloaks;
