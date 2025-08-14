@@ -4,7 +4,8 @@ const supabase = createClient(
   'https://jbekjmsruiadbhaydlbt.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY'
 );
-
+window.supabase = supabase;
+window.supabaseClient = supabase;
 // --- Navbar Insert ---
 const style = document.createElement('style');
 style.innerHTML = `

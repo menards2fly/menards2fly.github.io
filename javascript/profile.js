@@ -118,18 +118,25 @@ async function updateFollowerCount() {
 
 
 
+
 async function toggleFollow() {
   if (!currentUserId || !profileUserId) {
     console.warn('⚠️ Cannot toggle follow — missing user IDs');
     return;
   }
+
   if (currentUserId === profileUserId) {
     console.log('ℹ️ User cannot follow themselves.');
     return;
   }
 
-  // Check current follow status before toggling
-  isFollowing = await checkIfFollowing(currentUserId, profileUserId);
+  // Check current follow status
+  try {
+    isFollowing = await checkIfFollowing(currentUserId, profileUserId);
+  } catch (err) {
+    console.error('❌ Error checking follow status:', err);
+    return;
+  }
 
   if (isFollowing) {
     console.log('🚫 Unfollowing user:', profileUserId);
@@ -147,21 +154,28 @@ async function toggleFollow() {
     isFollowing = false;
   } else {
     console.log('➕ Following user:', profileUserId);
-    const { error } = await supabase
+    const { error: followError } = await supabase
       .from('follows')
       .insert({ follower_id: currentUserId, following_id: profileUserId });
 
-    if (error) {
-      console.error('❌ Error following:', error);
+    if (followError) {
+      console.error('❌ Error following:', followError);
       return;
     }
 
     isFollowing = true;
+
+    
   }
 
+  // Update UI
   updateFollowButton();
   updateFollowerCount();
 }
+
+
+
+
 
 
 async function loadProfile() {

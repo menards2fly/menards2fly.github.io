@@ -1,12 +1,18 @@
+
 (function () {
+
+
+  // --- NOTIFICATION UI ---
   function showNotification(message, options = {}) {
+    console.log('🟢 showNotification called with message:', message, options);
+
     const allowClose = options.allowClose !== false; // default true
+    const notifKey = options.persistClose ? `notif_closed_${btoa(message)}` : null;
 
-    const notifKey = options.persistClose
-      ? `notif_closed_${btoa(message)}`
-      : null;
-
-    if (notifKey && localStorage.getItem(notifKey) === '1') return;
+    if (notifKey && localStorage.getItem(notifKey) === '1') {
+      console.log('ℹ️ Notification already closed (persisted):', message);
+      return;
+    }
 
     const container =
       document.getElementById('notifications-container') ||
@@ -14,13 +20,16 @@
         const c = document.createElement('div');
         c.id = 'notifications-container';
         document.body.appendChild(c);
+        console.log('📦 Created notifications container');
         return c;
       })();
 
-    // Remove existing status notification if this is a status notif, avoid duplicates
     if (options.isStatus) {
       const existing = container.querySelector('.notification.status-notification');
-      if (existing) existing.remove();
+      if (existing) {
+        existing.remove();
+        console.log('🟡 Removed existing status notification');
+      }
     }
 
     const notif = document.createElement('div');
@@ -28,26 +37,22 @@
     if (options.isStatus) notif.classList.add('status-notification');
     notif.dataset.message = message;
 
-    // Build inner HTML without close button first
     let innerHTML =
       `<div class="notification-title">${message}</div>` +
       (options.body
         ? `<div class="notification-body" style="text-align:center; margin-top:8px;">${options.body}</div>`
         : '');
 
-    // Add close button only if allowClose is true
     if (allowClose) {
       innerHTML += `<a href="#" class="notification-close" aria-label="Close notification" tabindex="0" role="button">&times;</a>`;
     }
 
-    // Add timer bar if duration is set and sticky not true
     if (options.duration && options.duration > 0 && !options.sticky) {
       innerHTML += `<div class="notification-timer"></div>`;
     }
 
     notif.innerHTML = innerHTML;
 
-    // Apply background color and blur for status notifications or custom bgColor
     if (options.bgColor) {
       notif.style.background = options.bgColor;
       notif.style.backdropFilter = 'blur(12px)';
@@ -55,7 +60,6 @@
       notif.style.boxShadow = `0 4px 24px ${hexToRgba(options.bgColor, 0.3)}`;
     }
 
-    // For status notifications, insert at the top, else append normally
     if (options.isStatus) {
       container.prepend(notif);
     } else {
@@ -64,13 +68,10 @@
 
     requestAnimationFrame(() => notif.classList.add('notif-in'));
 
-    // Play sound only for normal notifications (not status)
     if (options.sound !== false && !options.isStatus) {
-      const audio = new Audio(
-        options.soundUrl || '/uploads/branding/notifsound.mp3'
-      );
+      const audio = new Audio(options.soundUrl || '/uploads/branding/notifsound.mp3');
       audio.volume = 0.25;
-      audio.play().catch(() => {});
+      audio.play().catch(() => console.warn('⚠️ Notification sound failed to play'));
     }
 
     if (options.vibrate && navigator.vibrate) {
@@ -142,14 +143,13 @@
     }
 
     function closeNotification(n) {
+      console.log('🔴 Closing notification:', n.dataset.message);
       n.classList.remove('notif-in');
       n.classList.add('notif-out');
-
       clearTimeout(timerInterval);
       if (notifKey) {
         localStorage.setItem(notifKey, '1');
       }
-
       n.addEventListener('animationend', () => n.remove(), { once: true });
     }
   }
@@ -169,18 +169,18 @@
     return `rgba(${r},${g},${b},${alpha})`;
   }
 
+  // --- STATUSPAGE API ---
   const statusColors = {
-    none: 'rgba(40, 167, 69, 0.1)',       // green
-    minor: 'rgba(255, 193, 7, 0.1)',      // yellow
-    major: 'rgba(253, 126, 20, 0.1)',     // orange
-    critical: 'rgba(220, 53, 69, 0.1)',   // red
+    none: 'rgba(40, 167, 69, 0.1)',
+    minor: 'rgba(255, 193, 7, 0.1)',
+    major: 'rgba(253, 126, 20, 0.1)',
+    critical: 'rgba(220, 53, 69, 0.1)',
   };
 
   async function fetchAndShowStatus() {
+    console.log('🛰️ Fetching status page...');
     try {
-      const res = await fetch(
-        'https://77qdzlh2x429.statuspage.io/api/v2/summary.json'
-      );
+      const res = await fetch('https://77qdzlh2x429.statuspage.io/api/v2/summary.json');
       if (!res.ok) throw new Error('Failed to fetch status summary');
       const summary = await res.json();
 
@@ -193,26 +193,22 @@
           const existing = container.querySelector('.notification.status-notification');
           if (existing) existing.remove();
         }
+        console.log('✅ Status: All systems operational');
         return;
       }
 
       let incidentNames = '';
       if (summary.incidents && summary.incidents.length > 0) {
-        incidentNames = summary.incidents
-          .slice(0, 2)
-          .map(inc => inc.name)
-          .join(', ');
+        incidentNames = summary.incidents.slice(0, 2).map(inc => inc.name).join(', ');
         if (summary.incidents.length > 2) incidentNames += ', ...';
       }
 
       const statusPageUrl = 'https://77qdzlh2x429.statuspage.io/';
-
-      const message = description;
       const body = incidentNames
         ? `<div>${incidentNames}</div><a href="${statusPageUrl}" target="_blank" rel="noopener noreferrer" style="color:#fff; text-decoration:underline; margin-top:8px; display:block; text-align:center;">View status page</a>`
         : `<a href="${statusPageUrl}" target="_blank" rel="noopener noreferrer" style="color:#fff; text-decoration:underline; margin-top:8px; display:block; text-align:center;">View status page</a>`;
 
-      showNotification(message, {
+      showNotification(description, {
         isStatus: true,
         duration: 15000,
         sticky: false,
@@ -222,26 +218,87 @@
         body: body,
       });
     } catch (e) {
-      console.error('Statuspage fetch error:', e);
+      console.error('❌ Statuspage fetch error:', e);
     }
   }
 
+  // --- SUPABASE REALTIME NOTIFICATIONS ---
+async function fetchSupabaseNotifications() {
+  if (!window.supabase) {
+    console.warn('❌ Supabase client not initialized');
+    return;
+  }
+
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.warn('⚠️ No logged-in user found for notifications');
+      return;
+    }
+
+    const { data: notifications, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('❌ Error fetching notifications:', error);
+      return;
+    }
+
+    if (!notifications || notifications.length === 0) return;
+
+    notifications.forEach((notif) => {
+      showNotification(notif.title, {
+        body: notif.body,
+        allowClose: notif.allow_close ?? true,
+        persistClose: notif.persist_close ?? false,
+        sticky: notif.sticky ?? false,
+        duration: notif.duration ?? 4000,
+        bgColor: notif.bg_color ?? '',
+        sound: notif.sound ?? true,
+        soundUrl: notif.sound_url,
+        vibrate: notif.vibrate ?? true,
+        onClose: async () => {
+          try {
+            await supabase.from('notifications').delete().eq('id', notif.id);
+            console.log('✅ Notification deleted:', notif.id);
+          } catch (err) {
+            console.error('❌ Failed to delete notification:', err);
+          }
+        },
+      });
+    });
+  } catch (err) {
+    console.error('❌ Failed to fetch notifications:', err);
+  }
+}
+
+// Poll every 10 seconds
+fetchSupabaseNotifications();
+
+
+
+
+  // --- INIT ---
   document.addEventListener('DOMContentLoaded', () => {
-    // Your base notifications still fire normally
+    console.log('📅 DOM loaded, initializing notifications...');
+
+    // Example static notifications
     showNotification('Privacy Policy and TOS Changes', {
-      body: "To accommodate recent changes to our website, we've updated our Privacy Policy and TOS. Please <a href='/legal' style='text-decoration:underline;'>review them</a> to understand how we handle your data.",
+      body: "We've updated our Privacy Policy and TOS. Please <a href='/legal' style='text-decoration:underline;'>review them</a>.",
       persistClose: true,
       sound: true,
     });
 
     showNotification('Leave us a review!', {
-      body: "If you enjoy using our site, please consider leaving a review. It helps us improve and reach more users! <br><br> Leave a review <a href='/reviews' style='text-decoration:underline;'>here.</a>",
+      body: "Enjoy using our site? Leave a review <a href='/reviews' style='text-decoration:underline;'>here</a>.",
       duration: 10000,
       persistClose: true,
       sound: true,
     });
 
-    // Status page integration
+    // Status page
     fetchAndShowStatus();
     setInterval(fetchAndShowStatus, 5 * 60 * 1000);
   });
