@@ -566,6 +566,50 @@
 .submit-btn:hover {
   background-color: #c8231b;
 }
+/* Horizontal profile stats row like Instagram */
+.profile-stats-row {
+  display: flex;
+  justify-content: space-around; /* evenly spaced across container */
+  margin-top: 15px;
+  width: 100%;
+  max-width: 500px; /* optional, keeps it compact */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Each stat box */
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: default;
+  transition: transform 0.2s ease;
+}
+
+/* Big number */
+.stat-item span {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 0 6px #8a2be2;
+}
+
+/* Label below number */
+.stat-item small {
+  font-size: 0.75rem;
+  color: #ccc;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* Optional hover effect */
+.stat-item:hover span {
+  color: #8a2be2;
+  text-shadow: 0 0 10px #8a2be2;
+  transform: scale(1.05);
+}
+
 
     </style>
   </head>
@@ -598,12 +642,20 @@
           <div class="bio" id="profile-bio"></div>
           <div id="profile-status-text" style="margin-top: 8px; font-style: italic; color: #aaa; display: none; user-select: none;"></div>
 
-          <div class="follower-count" id="follower-count">0 followers</div>
-          <button class="follow-button" id="follow-btn">Follow</button>
-          <button id="share-profile-btn" class="share-btn">
-            Share Profile
-          </button>
-          <span id="share-status" class="share-status"></span>
+<div class="profile-stats-row">
+  <div class="stat-item">
+    <span>1.2k</span>
+    <small>Followers</small>
+  </div>
+  <div class="stat-item">
+    <span>345</span>
+    <small>Following</small>
+  </div>
+  <div class="stat-item">
+    <span>78</span>
+    <small>Favorites</small>
+  </div>
+</div>
           <div id="current-game-card" class="game-card">
             
             <div class="card-content">
@@ -614,6 +666,13 @@
               </div>
             </div>
           </div>
+
+          <button class="follow-button" id="follow-btn">Follow</button>
+          <button id="share-profile-btn" class="share-btn">
+            Share Profile
+          </button>
+          <span id="share-status" class="share-status"></span>
+
         
         <!-- 🔗 Report Button -->
 <button id="report-profile-btn" class="text-red-500 hover:underline text-sm mt-3">

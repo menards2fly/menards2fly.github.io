@@ -84,37 +84,67 @@ async function updateFollowButton() {
   }
 }
 
-async function updateFollowerCount() {
-  const followerCountEl = document.getElementById('follower-count');
 
-  // If no user is logged in, don't even fetch
-  if (!currentUserId) {
-    followerCountEl.textContent = 'Sign in to see followers';
-    console.log('👥 Followers hidden — user is not signed in.');
+async function updateProfileStats(profileUserId) {
+  if (!profileUserId || typeof profileUserId !== 'string') {
+    console.warn('⚠️ Invalid profileUserId:', profileUserId);
     return;
   }
 
-  if (!profileUserId) {
-    console.warn('⚠️ No profile user ID to update follower count.');
-    followerCountEl.textContent = '';
-    return;
+  try {
+    const id = profileUserId;
+
+    // --- Followers count ---
+    const { data: followersData, error: followersError } = await supabase
+      .from('follows')
+      .select('id', { count: 'exact' })
+      .eq('following_id', id);
+
+    if (followersError) throw followersError;
+    const followersCount = followersData?.length || 0;
+
+    // --- Following count ---
+    const { data: followingData, error: followingError } = await supabase
+      .from('follows')
+      .select('id', { count: 'exact' })
+      .eq('follower_id', id);
+
+    if (followingError) throw followingError;
+    const followingCount = followingData?.length || 0;
+
+    // --- Favorites count ---
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('favorites')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (profileError) throw profileError;
+
+    let favoritesCount = 0;
+    if (Array.isArray(profileData?.favorites)) {
+      favoritesCount = profileData.favorites.length;
+    }
+
+    // --- Update DOM safely ---
+const followersEl = document.querySelector('.profile-stats-row .stat-item:nth-child(1) span');
+const followingEl = document.querySelector('.profile-stats-row .stat-item:nth-child(2) span');
+const favoritesEl = document.querySelector('.profile-stats-row .stat-item:nth-child(3) span');
+
+
+    if (followersEl) followersEl.textContent = followersCount;
+    if (followingEl) followingEl.textContent = followingCount;
+    if (favoritesEl) favoritesEl.textContent = favoritesCount;
+
+  } catch (err) {
+    console.error('Failed to load profile stats:', err);
   }
-
-  const { data, count, error } = await supabase
-    .from('follows')
-    .select('*', { count: 'exact' })
-    .eq('following_id', profileUserId);
-
-  if (error) {
-    console.error('❌ Error fetching follower count:', error);
-    followerCountEl.textContent = 'Followers unavailable';
-    return;
-  }
-
-  const totalFollowers = typeof count === 'number' ? count : (data?.length || 0);
-  followerCountEl.textContent = `${totalFollowers} follower${totalFollowers === 1 ? '' : 's'}`;
-  console.log('👥 Follower count set to:', followerCountEl.textContent);
 }
+
+
+
+
+
 
 
 
@@ -198,6 +228,7 @@ async function loadProfile() {
     document.getElementById('profile-bio').textContent = '';
     return;
   }
+
 
   console.log('✅ Profile data loaded:', data);
   profileUserId = data.id;
@@ -284,7 +315,7 @@ canShowStatus = (() => {
   }
 
   // ✅ Update follower count
-  await updateFollowerCount();
+
 
  // 🟢 Online + Activity visibility logic
 const onlineDot = document.getElementById('online-indicator');
@@ -292,7 +323,8 @@ const profileStatusEl = document.getElementById('profile-status-text');
 const gameCard = document.getElementById('current-game-card');
 
 
-
+  // ✅ Call stats loader *after* profileUserId is set and DOM is ready
+  updateProfileStats(profileUserId);
 
 // Hide everything if not allowed
 if (!canShowStatus) {
@@ -421,7 +453,6 @@ console.log('👥 profileFollowsViewer:', profileFollowsViewer);
 
 
 }
-
 
 
 
