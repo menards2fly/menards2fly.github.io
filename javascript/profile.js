@@ -94,6 +94,30 @@ async function updateProfileStats(profileUserId) {
   try {
     const id = profileUserId;
 
+    // --- Get profile data first (for show_stats + favorites) ---
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('favorites, show_stats')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (profileError) throw profileError;
+
+    const showStats = profileData?.show_stats ?? true;
+
+    // Elements
+    const followersEl = document.querySelector('.profile-stats-row .stat-item:nth-child(1) span');
+    const followingEl = document.querySelector('.profile-stats-row .stat-item:nth-child(2) span');
+    const favoritesEl = document.querySelector('.profile-stats-row .stat-item:nth-child(3) span');
+
+    if (!showStats) {
+      // Hide counts, show icons
+      if (followersEl) followersEl.innerHTML = `<i class="fa-solid fa-eye-low-vision"></i>`;
+      if (followingEl) followingEl.innerHTML = `<i class="fa-solid fa-eye-low-vision"></i>`;
+      if (favoritesEl) favoritesEl.innerHTML = `<i class="fa-solid fa-eye-low-vision"></i>`;
+      return; // Skip fetching counts
+    }
+
     // --- Followers count ---
     const { data: followersData, error: followersError } = await supabase
       .from('follows')
@@ -113,25 +137,12 @@ async function updateProfileStats(profileUserId) {
     const followingCount = followingData?.length || 0;
 
     // --- Favorites count ---
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('favorites')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (profileError) throw profileError;
-
     let favoritesCount = 0;
     if (Array.isArray(profileData?.favorites)) {
       favoritesCount = profileData.favorites.length;
     }
 
-    // --- Update DOM safely ---
-const followersEl = document.querySelector('.profile-stats-row .stat-item:nth-child(1) span');
-const followingEl = document.querySelector('.profile-stats-row .stat-item:nth-child(2) span');
-const favoritesEl = document.querySelector('.profile-stats-row .stat-item:nth-child(3) span');
-
-
+    // --- Update DOM ---
     if (followersEl) followersEl.textContent = followersCount;
     if (followingEl) followingEl.textContent = followingCount;
     if (favoritesEl) favoritesEl.textContent = favoritesCount;
@@ -293,26 +304,29 @@ canShowStatus = (() => {
     });
   }
 
-  // 🔒 Handle private profile
-  if (data.private && currentUserId !== data.id) {
-    profileIsPrivate = true;
-    console.log('🔒 Profile is private — hiding info');
+// 🔒 Handle private profile
+if (data.private && currentUserId !== data.id) {
+  profileIsPrivate = true;
+  console.log('🔒 Profile is private — hiding info');
 
-    profilePic.style.filter = 'blur(8px)';
-    bioEl.textContent = 'This profile is private.';
+  profilePic.style.filter = 'blur(8px)';
+  bioEl.textContent = 'This profile is private.';
 
-    followBtn.disabled = true;
-    followBtn.style.opacity = '0.5';
-    followBtn.style.cursor = 'not-allowed';
-    followBtn.innerHTML = '<i class="fas fa-lock"></i> Private Profile';
+  followBtn.disabled = true;
+  followBtn.style.opacity = '0.5';
+  followBtn.style.cursor = 'not-allowed';
+  followBtn.innerHTML = '<i class="fas fa-lock"></i> Private Profile';
 
-    document.getElementById('follower-count').textContent = '';
+  // Hide stats row completely
+  const statsRow = document.querySelector('.profile-stats-row');
+  if (statsRow) statsRow.style.display = 'none';
 
-    document.getElementById('online-indicator').style.display = 'none';
-    document.getElementById('current-game-card').style.display = 'none';
+  document.getElementById('online-indicator').style.display = 'none';
+  document.getElementById('current-game-card').style.display = 'none';
 
-    return;
-  }
+  return;
+}
+
 
   // ✅ Update follower count
 
