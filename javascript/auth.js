@@ -1196,3 +1196,63 @@ blurToggle.addEventListener('change', async () => {
   }
 });
 loadBlurSetting();
+const statsToggle = document.getElementById('stats-toggle');
+
+statsToggle.addEventListener('change', async () => {
+  console.log('🔄 Stats toggle changed');
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    alert('You need to be logged in.');
+    console.warn('⚠️ Stats toggle change aborted - user not logged in');
+    // revert toggle to previous value (default true)
+    statsToggle.checked = true;
+    return;
+  }
+
+  const newShowStats = statsToggle.checked;
+  console.log(`🎛️ Updating show_stats setting to: ${newShowStats}`);
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ show_stats: newShowStats })
+    .eq('id', user.id);
+
+  if (error) {
+    alert('Failed to update stats setting: ' + error.message);
+    console.error('❌ Failed to update stats setting:', error);
+    // revert toggle
+    statsToggle.checked = !newShowStats;
+  } else {
+    console.log(`✅ Stats setting updated successfully to ${newShowStats}`);
+    showNotification(
+      newShowStats
+        ? 'Stats are now visible'
+        : 'Stats are now hidden',
+      {
+        body: newShowStats
+          ? 'Your profile stats will now be shown to viewers.'
+          : 'Your profile stats will now be hidden.',
+        duration: 4000,
+      }
+    );
+
+  }
+});
+
+// Optional: Load the current setting on page load
+async function loadStatsSetting() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('show_stats')
+    .eq('id', user.id)
+    .single();
+
+  if (!error && data) {
+    statsToggle.checked = data.show_stats;
+  }
+}
+
+loadStatsSetting();
