@@ -103,38 +103,38 @@
   <!-- Make sure they are an admin -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
   <script>
-  const supabaseUrl = "https://jbekjmsruiadbhaydlbt.supabase.co";
-  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY"; // ⚠️ NOT the service_role key
-  const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+    const supabaseUrl = "https://jbekjmsruiadbhaydlbt.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY"; // ⚠️ NOT the service_role key
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-  async function checkIfAdmin() {
-    // Get logged in user from Supabase Auth
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    async function checkIfAdmin() {
+      // Get logged in user from Supabase Auth
+      const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
 
-    // If no user or auth error → redirect
-    if (authError || !user) {
-      window.location.href = "/errors/403";
-      return;
+      // If no user or auth error → redirect
+      if (authError || !user) {
+        window.location.href = "/errors/403";
+        return;
+      }
+
+      // Query adminpanel_access for the UUID
+      const { data, error } = await supabaseClient
+        .from("adminpanel_access")
+        .select("user_uid")
+        .eq("user_uid", user.id)
+        .limit(1);
+
+      // If error querying or not found → redirect
+      if (error || !data || data.length === 0) {
+        window.location.href = "/errors/403";
+        return;
+      }
+
+      console.log("User is an admin ✅");
     }
 
-    // Query adminpanel_access for the UUID
-    const { data, error } = await supabaseClient
-      .from("adminpanel_access")
-      .select("user_uid")
-      .eq("user_uid", user.id)
-      .limit(1);
-
-    // If error querying or not found → redirect
-    if (error || !data || data.length === 0) {
-      window.location.href = "/errors/403";
-      return;
-    }
-
-    console.log("User is an admin ✅");
-  }
-
-  checkIfAdmin();
-</script>
+    checkIfAdmin();
+  </script>
 
 
   <!-- Navigation Bar -->
@@ -512,13 +512,28 @@
                 return;
               }
             });
-            await supabase.from('profiles').select('username, avatar_url').eq('id', supabase.auth.user().id).single().then((profile) => {
-              if (!profile.data) {
-                alert("You must have a profile to create a blog post.");
-                return;
-              }
-              const author = profile.data.username || "Anonymous";
-            });
+            // Get the current user
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+            if (userError || !user) {
+              alert("You must be logged in to create a blog post.");
+              return;
+            }
+
+            // Fetch the profile
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('username, avatar_url')
+              .eq('id', user.id)
+              .single();
+
+            if (profileError || !profile) {
+              alert("You must have a profile to create a blog post.");
+              return;
+            }
+
+            const author = profile.username || "Anonymous";
+
 
             const { error } = await supabase.from("blog_menu").insert([
               {
