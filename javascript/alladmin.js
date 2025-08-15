@@ -7,7 +7,7 @@
 // |
 // | -TannerO (Co-Founder of starship)
 
-// #region Overlay Screens
+// #region Overlay Screen
 // Define Overlay Screens
 const overlayScreens = {
   viewblogpost: `
@@ -330,7 +330,7 @@ async function refreshAdminList() {
   admins.forEach(async (admin) => {
     const row = document.createElement('tr');
 
-    const { data, error } = await supabase.from('profiles').select('avatar_url').eq('id', admin.user_uid)
+    const { data, error } = await supabase.from('profiles').select('avatar_url, username').eq('id', admin.user_uid)
 
     if (error) {
       console.error('❌ Failed to fetch admin avatar:', error.message);
@@ -356,11 +356,11 @@ async function refreshAdminList() {
       <td>
         <img
           src="${data[0].avatar_url}"
-          alt="${admin.username}'s avatar"
+          alt="${data[0].username}'s avatar"
           style="width: 36px; height: 36px; border-radius: 999px; object-fit: cover;"
         />
       </td>
-      <td>${admin.username}</td>
+      <td>${data[0].username}</td>
       <td>${admin.email}</td>
       <td>${admin.role}</td>
       <td>
@@ -406,14 +406,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const reviewsection = document.querySelector('.reviews');
 
   async function checkRole() {
-    const { data, error } = await supabaseClient
+    const { data, error } = await supabase
       .from('adminpanel_access')
-      .select('username, role');
+      .select('user_uid, role');
 
     const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
     if (!loggedInUser || !data) return;
 
-    const matched = data.find(
+    const { data: data1, error: error1 } = await supabaseClient
+      .from('profiles')
+      .select('username')
+      .eq('id', loggedInUser.id);
+
+    if (error || error1) {
+      console.error('❌ Failed to fetch user roles:', error, error1);
+      return;
+    }
+
+    const matched = data1.find(
       (entry) => entry.username === loggedInUser.username
     );
     console.log('Matched user:', matched);
@@ -454,9 +464,18 @@ const reviewHr = document.getElementById('review-hr');
 
 async function loadReviews() {
   reviewList.innerHTML = ''; // Clear existing reviews
+  approvalSection.innerHTML = ''; // Clear approval section too
+
   const { data, error } = await supabase
     .from('reviews')
-    .select('title, content, author, stars, allowed, id')
+    .select(`
+      id,
+      title,
+      content,
+      stars,
+      allowed,
+      user_id
+    `)
     .order('id', { ascending: false });
 
   if (error) return console.error('Failed to load reviews', error);
@@ -466,19 +485,22 @@ async function loadReviews() {
     return;
   }
 
-  const hrshow = data.some((review) => !review.allowed);
-  reviewHr.style.display = hrshow ? 'block' : 'none';
+  reviewHr.style.display = data.some((r) => !r.allowed) ? 'block' : 'none';
 
-  data.forEach((review) => {
-    const { title, content, author, stars, allowed, id } = review;
-    const user = JSON.parse(author);
+  data.forEach(async (review) => {
+    const { data: profiles, error: profileError } = await supabase
+      .from('profiles')
+      .select('username, avatar_url')
+      .eq('id', review.user_id)
+      .single();
+
+    const { title, content, stars, allowed, id } = review;
     const filledStars = '★'.repeat(stars);
     const emptyStars = '☆'.repeat(5 - stars);
 
     const reviewEl = document.createElement('div');
     reviewEl.className = 'review';
 
-    // Build innerHTML without buttons first
     reviewEl.innerHTML = `
       <div class="review-header">
         <h3 class="review-title">${title}</h3>
@@ -486,30 +508,19 @@ async function loadReviews() {
       </div>
       <p>${content}</p>
       <div class="userdisplay">
-        <img src="${user.avatar}" alt="User avatar" />
-        <h4>${user.name}</h4>
+        <img src="${profiles?.avatar_url || '../uploads/branding/default-avatar.png'}" alt="User avatar" />
+        <h4>${profiles?.username || 'Unknown User'}</h4>
       </div>
     `;
 
-    // Add buttons conditionally
     if (!allowed) {
       const allowBtn = document.createElement('button');
       allowBtn.textContent = '✓';
       allowBtn.className = 'allowReview';
       allowBtn.addEventListener('click', async () => {
-        const { error } = await supabase
-          .from('reviews')
-          .update({ allowed: true })
-          .eq('id', id);
-
-        if (error) {
-          console.error('❌ Failed to allow review', error);
-          alert('Failed to allow review');
-          return;
-        }
-
-        console.log(`✅ Review ${id} allowed`);
-        loadReviews(); // Refresh the list
+        const { error } = await supabase.from('reviews').update({ allowed: true }).eq('id', id);
+        if (error) return console.error('❌ Failed to allow review', error);
+        loadReviews();
       });
 
       const denyBtn = document.createElement('button');
@@ -517,15 +528,8 @@ async function loadReviews() {
       denyBtn.className = 'denyReview';
       denyBtn.addEventListener('click', async () => {
         const { error } = await supabase.from('reviews').delete().eq('id', id);
-
-        if (error) {
-          console.error('❌ Failed to delete review', error);
-          alert('Failed to delete review');
-          return;
-        }
-
-        console.log(`🗑️ Review ${id} deleted`);
-        location.reload();
+        if (error) return console.error('❌ Failed to delete review', error);
+        loadReviews(); // refresh instead of full reload
       });
 
       reviewEl.appendChild(allowBtn);
@@ -536,5 +540,7 @@ async function loadReviews() {
     }
   });
 }
+
+
 
 loadReviews();
