@@ -1,4 +1,4 @@
-
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 (function () {
 
 
@@ -223,59 +223,67 @@
   }
 
   // --- SUPABASE REALTIME NOTIFICATIONS ---
-async function fetchSupabaseNotifications() {
-  if (!window.supabase) {
-    console.warn('❌ Supabase client not initialized');
-    return;
-  }
-
-  try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      console.warn('⚠️ No logged-in user found for notifications');
+  async function fetchSupabaseNotifications() {
+    const supabase = createClient(
+      'https://jbekjmsruiadbhaydlbt.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY'
+    );
+    if (!window.supabase) {
+      console.warn('❌ Supabase client not initialized');
       return;
     }
 
-    const { data: notifications, error } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('user_id', user.id);
+    try {
+      const { data: userData, error: authErr } = await supabase.auth.getUser();
+      const currentUser = userData?.user;
 
-    if (error) {
-      console.error('❌ Error fetching notifications:', error);
-      return;
-    }
+      if (authErr) {
+        console.error('Auth error:', authErr);
+      } else {
+        console.log('User:', currentUser);
+      }
 
-    if (!notifications || notifications.length === 0) return;
 
-    notifications.forEach((notif) => {
-      showNotification(notif.title, {
-        body: notif.body,
-        allowClose: notif.allow_close ?? true,
-        persistClose: notif.persist_close ?? false,
-        sticky: notif.sticky ?? false,
-        duration: notif.duration ?? 4000,
-        bgColor: notif.bg_color ?? '',
-        sound: notif.sound ?? true,
-        soundUrl: notif.sound_url,
-        vibrate: notif.vibrate ?? true,
-        onClose: async () => {
-          try {
-            await supabase.from('notifications').delete().eq('id', notif.id);
-            console.log('✅ Notification deleted:', notif.id);
-          } catch (err) {
-            console.error('❌ Failed to delete notification:', err);
-          }
-        },
+      const { data: notifications, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', currentUser.id);
+
+      if (error) {
+        console.error('❌ Error fetching notifications:', error);
+        return;
+      }
+
+      if (!notifications || notifications.length === 0) return;
+
+      notifications.forEach((notif) => {
+        showNotification(notif.title, {
+          body: notif.body,
+          allowClose: notif.allow_close ?? true,
+          persistClose: notif.persist_close ?? false,
+          sticky: notif.sticky ?? false,
+          duration: notif.duration ?? 4000,
+          bgColor: notif.bg_color ?? '',
+          sound: notif.sound ?? true,
+          soundUrl: notif.sound_url,
+          vibrate: notif.vibrate ?? true,
+          onClose: async () => {
+            try {
+              await supabase.from('notifications').delete().eq('id', notif.id);
+              console.log('✅ Notification deleted:', notif.id);
+            } catch (err) {
+              console.error('❌ Failed to delete notification:', err);
+            }
+          },
+        });
       });
-    });
-  } catch (err) {
-    console.error('❌ Failed to fetch notifications:', err);
+    } catch (err) {
+      console.error('❌ Failed to fetch notifications:', err);
+    }
   }
-}
 
-// Poll every 10 seconds
-fetchSupabaseNotifications();
+  // Poll every 10 seconds
+  fetchSupabaseNotifications();
 
 
 

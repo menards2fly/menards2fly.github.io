@@ -406,52 +406,65 @@ document.addEventListener('DOMContentLoaded', () => {
   const reviewsection = document.querySelector('.reviews');
 
   async function checkRole() {
-    const { data, error } = await supabase
-      .from('adminpanel_access')
-      .select('user_uid, role');
-
-    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-    if (!loggedInUser || !data) return;
-
-    const { data: data1, error: error1 } = await supabaseClient
-      .from('profiles')
-      .select('username')
-      .eq('id', loggedInUser.id);
-
-    if (error || error1) {
-      console.error('❌ Failed to fetch user roles:', error, error1);
-      return;
-    }
-
-    const matched = data1.find(
-      (entry) => entry.username === loggedInUser.username
-    );
-    console.log('Matched user:', matched);
-    console.log(games, admin, blog);
-
-    if (matched) {
-      if (matched.role === 'editor') {
-        console.log('User is an editor, hiding admin features');
-        // Remove elements from their parent
-        games.remove();
-        admin.remove();
-        reviewsection.remove();
-      } else if (matched.role === 'gameadd') {
-        console.log('User is a game adder, hiding admin features');
-        blog.remove();
-        admin.remove();
-        reviewsection.remove();
-      } else if (matched.role === 'admin') {
-        console.log('User is an admin, hiding admin features');
-        // Remove elements from their parent
-        admin.remove();
-      } else if (matched.role === 'super') {
-        console.log('User is a super admin, showing all features');
-      } else {
-        console.warn('Unknown role:', matched.role);
-      }
-    }
+  // Get the current logged-in user
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
+    console.error('❌ Failed to get logged-in user:', userError);
+    return;
   }
+
+  // Fetch user profile from profiles table
+  const { data: profileData, error: profileError } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !profileData) {
+    console.error('❌ Failed to fetch profile:', profileError);
+    return;
+  }
+
+  // Fetch admin roles
+  const { data: rolesData, error: rolesError } = await supabase
+    .from('adminpanel_access')
+    .select('user_uid, role')
+    .eq('user_uid', user.id);
+
+  if (rolesError || !rolesData || rolesData.length === 0) {
+    console.warn('No roles found for user or failed to fetch roles:', rolesError);
+    return;
+  }
+
+  const matched = rolesData[0]; // there should only be one role per user
+  console.log('Matched user role:', matched.role);
+
+  // Show/hide UI elements based on role
+  switch (matched.role) {
+    case 'editor':
+      console.log('User is an editor, hiding admin features');
+      games.remove();
+      admin.remove();
+      reviewsection.remove();
+      break;
+    case 'gameadd':
+      console.log('User is a game adder, hiding some admin features');
+      blog.remove();
+      admin.remove();
+      reviewsection.remove();
+      break;
+    case 'admin':
+      console.log('User is an admin, hiding admin-only features');
+      admin.remove();
+      break;
+    case 'super':
+      console.log('User is a super admin, showing all features');
+      break;
+    default:
+      console.warn('Unknown role:', matched.role);
+  }
+}
+
 
   checkRole();
 });
