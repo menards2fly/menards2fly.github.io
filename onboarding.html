@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starship Onboarding</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+body { background: #000; color: #fff; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+
+.onboarding-container {
+  position: relative;
+  width: 100%;
+  max-width: 700px;
+  min-height: 200px;
+  background: rgba(20,20,20,0.75);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 0 50px rgba(138,43,226,0.3);
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  transition: min-height 0.5s cubic-bezier(.4,0,.2,1);
+}
+
+.step {
+  opacity: 0;
+  transform: translateY(20px) scale(0.98);
+  pointer-events: none;
+  position: static;
+  width: 100%;
+  transition: opacity 0.5s, transform 0.5s;
+  will-change: opacity, transform;
+  margin: 0 auto;
+  display: none;
+  height: auto;
+}
+
+.step.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+  display: block;
+  position: static;
+}
+
+h2 { font-size: 1.8rem; margin: 15px 0; }
+p { font-size: 1rem; margin: 10px 0 25px; color: #ccc; }
+.toggle { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px 20px; margin: 12px 0; }
+.switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+.switch input { display:none; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 34px; }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: #8a2be2; }
+input:checked + .slider:before { transform: translateX(26px); }
+.btn { margin-top: 25px; padding: 12px 28px; border: none; border-radius: 30px; background: #8a2be2; color: #fff; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.3s; }
+.btn:hover { background: #7020b5; }
+.nav-buttons { display: flex; justify-content: space-between; margin-top: 30px; }
+.nav-buttons button { flex: 1; margin: 0 5px; }
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.7); opacity: 0; pointer-events: none; transition: all .4s ease; }
+.modal.active { opacity: 1; pointer-events: all; }
+.modal-content { width: 95%; max-width: 800px; height: 85%; background: rgba(20,20,20,0.9); border-radius: 20px; overflow: hidden; transform: scale(0.8); transition: transform .4s ease; position: relative; }
+.modal.active .modal-content { transform: scale(1); }
+.modal iframe { width: 100%; height: 100%; border: none; }
+.modal-close { position: absolute; top: 20px; right: 20px; font-size: 1.2rem; cursor: pointer; color: #fff; background: #8a2be2; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; border-radius: 50%; }
+#celebration { font-size: 1.5rem; font-weight: 600; margin-top: 20px; }
+.progress-bar { margin-top: 20px; height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; }
+.progress-bar-fill { height: 100%; width: 100%; background: #8a2be2; transition: width 5s linear; }
+.features {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 25px;
+  min-height: 200px;
+  width: 100%;
+  position: relative;
+}
+.feature-card {
+  background: rgba(40,40,60,0.85);
+  border-radius: 18px;
+  box-shadow: 0 4px 32px rgba(138,43,226,0.10);
+  padding: 32px 28px 24px 28px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-width: 320px;
+  max-width: 420px;
+  min-height: 120px;
+  margin: 0 auto;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(.4,0,.2,1), transform 0.5s cubic-bezier(.4,0,.2,1);
+}
+.feature-card.enter {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: all;
+  z-index: 2;
+}
+.feature-card.exit-left {
+  opacity: 0;
+  transform: translate(-150%, -50%) scale(0.95);
+  pointer-events: none;
+}
+.feature-card.exit-right {
+  opacity: 0;
+  transform: translate(50%, -50%) scale(0.95);
+  pointer-events: none;
+}
+.feature-card i {
+  font-size: 2.2rem;
+  margin-right: 22px;
+  color: #8a2be2;
+  flex-shrink: 0;
+}
+.feature-card-content {
+  text-align: left;
+}
+.feature-card-content strong {
+  font-size: 1.18rem;
+  color: #fff;
+  display: block;
+  margin-bottom: 6px;
+}
+.feature-card-content p {
+  color: #ccc;
+  font-size: 1rem;
+  margin: 0;
+}
+.feature-nav {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 22px;
+}
+.feature-nav button {
+  background: #222;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.feature-nav button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.feature-nav button:not(:disabled):hover {
+  background: #8a2be2;
+}
+@media (max-width: 500px) {
+  .feature-card { min-width: 0; width: 95vw; max-width: 98vw; padding: 18px 8px 16px 8px; }
+}
+</style>
+</head>
+<body>
+<div class="onboarding-container" id="onboarding">
+  <!-- Step 0: Welcome -->
+  <div class="step active" id="step0">
+    <i class="fas fa-rocket fa-2x"></i>
+    <h2>Welcome to Starship</h2>
+    <p>Your personalized experience begins here. Let's set things up!</p>
+    <div class="nav-buttons"><span></span><button class="btn" onclick="nextStep()">Get Started</button></div>
+  </div>
+  <!-- Step 1: Create Account -->
+  <div class="step" id="step1">
+    <i class="fas fa-user-plus fa-2x"></i>
+    <h2>Create an Account</h2>
+    <p>Sign up to unlock syncing, favorites, chat, AI features, and more.</p>
+    <button class="btn" id="openModal">Create / Sign In</button>
+    <div class="nav-buttons"><button class="btn" onclick="prevStep()">Back</button><button class="btn" onclick="nextStep()">Next</button></div>
+  </div>
+  <!-- Step 2: Tab Cloaking -->
+  <div class="step" id="step2">
+    <i class="fas fa-mask fa-2x"></i>
+    <h2>Tab Cloaking</h2>
+    <p>Stay discreet by masking Starship as a different website instantly.</p>
+    <div class="toggle"><span>Enable Cloak</span><label class="switch"><input type="checkbox" id="toggleCloak"><span class="slider"></span></label></div>
+    <div class="nav-buttons"><button class="btn" onclick="prevStep()">Back</button><button class="btn" onclick="nextStep()">Next</button></div>
+  </div>
+  <!-- Step 3: Accessibility -->
+  <div class="step" id="step3">
+    <i class="fas fa-universal-access fa-2x"></i>
+    <h2>Accessibility</h2>
+    <p>Customize Starship for your comfort with reduced transparency or motion.</p>
+    <div class="toggle"><span>Reduce Transparency</span><label class="switch"><input type="checkbox" id="toggleTransparency"><span class="slider"></span></label></div>
+    <div class="toggle"><span>Reduce Motion</span><label class="switch"><input type="checkbox" id="toggleMotion"><span class="slider"></span></label></div>
+    <div class="nav-buttons"><button class="btn" onclick="prevStep()">Back</button><button class="btn" onclick="nextStep()">Next</button></div>
+  </div>
+  <!-- Step 4: Anti Tab Close -->
+  <div class="step" id="step4">
+    <i class="fas fa-lock fa-2x"></i>
+    <h2>Anti Tab Close</h2>
+    <p>Prevent accidental tab closure by teachers or others.</p>
+    <div class="toggle"><span>Enable Protection</span><label class="switch"><input type="checkbox" id="toggleProtection"><span class="slider"></span></label></div>
+    <div class="nav-buttons"><button class="btn" onclick="prevStep()">Back</button><button class="btn" onclick="nextStep()">Next</button></div>
+  </div>
+  <!-- Step 5: Dynamic Island -->
+  <div class="step" id="step5">
+    <i class="fas fa-circle-notch fa-2x"></i>
+    <h2>Dynamic Island</h2>
+    <p>Enable a floating widget that provides helpful info on the page.</p>
+    <div class="toggle"><span>Enable Dynamic Island</span><label class="switch"><input type="checkbox" id="toggleIsland"><span class="slider"></span></label></div>
+    <div class="nav-buttons"><button class="btn" onclick="prevStep()">Back</button><button class="btn" onclick="finishOnboarding()">Finish</button></div>
+  </div>
+  <!-- Step 6: Celebration + Features -->
+  <div class="step" id="step6">
+    <i class="fas fa-star fa-2x"></i>
+    <h2 id="celebration">You're Ready!</h2>
+    <p>The website designed for YOU.</p>
+    <div class="features" id="featuresList">
+      <!-- Feature card will be injected here -->
+    </div>
+    <div class="feature-nav" id="featureNav" style="display:none;">
+      <button id="prevFeature" aria-label="Previous Feature"><i class="fas fa-chevron-left"></i></button>
+      <button id="nextFeature" aria-label="Next Feature"><i class="fas fa-chevron-right"></i></button>
+    </div>
+    <div class="progress-bar"><div class="progress-bar-fill"></div></div>
+  </div>
+</div>
+<canvas id="confetti"></canvas>
+<div class="modal" id="authModal">
+  <div class="modal-content">
+    <span class="modal-close" id="closeModal">&times;</span>
+    <iframe src="/auth.html"></iframe>
+  </div>
+</div>
+<script>
+let currentStep=0;
+const steps=document.querySelectorAll('.step');
+const container=document.getElementById('onboarding');
+function showStep(n){
+  steps.forEach((s,i)=>{
+    s.classList.remove('active');
+    s.style.pointerEvents='none';
+  });
+  steps[n].classList.add('active');
+  steps[n].style.pointerEvents='all';
+
+  // Animate container height to fit new content
+  const container = document.getElementById('onboarding');
+  // Temporarily set height to current for smooth transition
+  container.style.height = container.offsetHeight + 'px';
+  // Wait for next frame, then set to new content height
+  setTimeout(() => {
+    const activeStep = steps[n];
+    container.style.height = activeStep.offsetHeight + 80 + 'px'; // 80 = padding
+  }, 30);
+
+  currentStep=n;
+  if(n===6) showFeatures();
+}
+function nextStep(){ if(currentStep<steps.length-1) showStep(currentStep+1); }
+function prevStep(){ if(currentStep>0) showStep(currentStep-1); }
+function finishOnboarding(){
+  showStep(6);
+  startConfetti();
+  let progressFill=document.querySelector('.progress-bar-fill');
+  progressFill.style.transition='width 5s linear';
+  progressFill.style.width='0%';
+  setTimeout(()=>{ window.location.href='/'; },5000);
+}
+// Modal logic
+const modal=document.getElementById('authModal');
+document.getElementById('openModal').addEventListener('click',()=>modal.classList.add('active'));
+document.getElementById('closeModal').addEventListener('click',()=>modal.classList.remove('active'));
+// Confetti
+function startConfetti(){
+  const canvas=document.getElementById('confetti');
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  let confetti=[];
+  for(let i=0;i<150;i++){ confetti.push({x:Math.random()*canvas.width,y:Math.random()*-canvas.height,w:8,h:16,c:`hsl(${Math.random()*360},70%,60%)`,s:Math.random()*3+2});}
+  function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); confetti.forEach(r=>{ ctx.fillStyle=r.c; ctx.fillRect(r.x,r.y,r.w,r.h); r.y+=r.s; if(r.y>canvas.height) r.y=-10; }); requestAnimationFrame(draw); }
+  draw();
+}
+// Animate features
+const featureData=[
+  {icon:'fa-gamepad',title:'100+ Games and Counting',desc:'Discover an ever-growing library of unblocked games.'},
+  {icon:'fa-desktop',title:'Sleek & Modern Design',desc:'Seamless interface crafted for effortless navigation.'},
+  {icon:'fa-film',title:'Unblocked Apps',desc:'Access apps like Netflix, Spotify, and more.'},
+  {icon:'fa-robot',title:'AI-Powered Experience',desc:'Discover games, get instant support, and more with AI.'},
+  {icon:'fa-play-circle',title:'startv',desc:'Watch YouTube in a sleek, space-themed experience.'},
+  {icon:'fa-comment',title:'Site-Wide Chat',desc:'Connect with other players in real time.'},
+  {icon:'fa-user-shield',title:'Privacy First',desc:'Your data stays private; control what is stored and delete anytime.'}
+];
+
+let currentFeature = 0;
+let animatingFeature = false;
+
+function showFeatures(){
+  renderFeatureCard(currentFeature, null);
+}
+
+function renderFeatureCard(idx, dir) {
+  if (animatingFeature) return;
+  animatingFeature = true;
+  const list = document.getElementById('featuresList');
+  const nav = document.getElementById('featureNav');
+  const oldCard = list.querySelector('.feature-card');
+  // Animate out old card if exists
+  if (oldCard) {
+    oldCard.classList.remove('enter');
+    if (dir === -1) oldCard.classList.add('exit-left');
+    else if (dir === 1) oldCard.classList.add('exit-right');
+    else oldCard.classList.add('exit-right');
+    setTimeout(() => {
+      if (oldCard.parentNode) oldCard.parentNode.removeChild(oldCard);
+      insertCard();
+    }, 500);
+  } else {
+    insertCard();
+  }
+  function insertCard() {
+    const f = featureData[idx];
+    const card = document.createElement('div');
+    card.className = 'feature-card';
+    card.innerHTML = `<i class="fas ${f.icon}"></i>
+      <div class="feature-card-content">
+        <strong>${f.title}</strong>
+        <p>${f.desc}</p>
+      </div>`;
+    // Start off-screen for animation
+    if (dir === -1) {
+      card.style.transform = 'translate(-150%, -50%) scale(0.95)';
+    } else if (dir === 1) {
+      card.style.transform = 'translate(50%, -50%) scale(0.95)';
+    } else {
+      card.style.transform = 'translate(-50%, -50%) scale(1)';
+    }
+    card.style.opacity = '0';
+    list.appendChild(card);
+    setTimeout(() => {
+      card.classList.add('enter');
+      card.style.transform = '';
+      card.style.opacity = '';
+      animatingFeature = false;
+    }, 10);
+    nav.style.display = 'flex';
+    document.getElementById('prevFeature').disabled = idx === 0;
+    document.getElementById('nextFeature').disabled = idx === featureData.length-1;
+    currentFeature = idx;
+  }
+}
+
+// Feature nav handlers
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('prevFeature').onclick = ()=>{
+    if(currentFeature>0 && !animatingFeature) renderFeatureCard(currentFeature-1, -1);
+  };
+  document.getElementById('nextFeature').onclick = ()=>{
+    if(currentFeature<featureData.length-1 && !animatingFeature) renderFeatureCard(currentFeature+1, 1);
+  };
+  // --- Settings logic for toggles (localStorage, like settings.html) ---
+  // Anti Tab Close
+  const antiTabCloseToggle = document.getElementById('toggleProtection');
+  if (antiTabCloseToggle) {
+    antiTabCloseToggle.checked = JSON.parse(localStorage.getItem('antiTabCloseEnabled') || 'false');
+    antiTabCloseToggle.addEventListener('change', () => {
+      localStorage.setItem('antiTabCloseEnabled', antiTabCloseToggle.checked ? 'true' : 'false');
+    });
+  }
+  // Reduce Motion
+  const reduceMotionToggle = document.getElementById('toggleMotion');
+  if (reduceMotionToggle) {
+    reduceMotionToggle.checked = JSON.parse(localStorage.getItem('performanceMode') || 'false');
+    reduceMotionToggle.addEventListener('change', () => {
+      localStorage.setItem('performanceMode', reduceMotionToggle.checked ? 'true' : 'false');
+      window.location.reload();
+    });
+  }
+  // Reduce Transparency
+  const reduceTransparencyToggle = document.getElementById('toggleTransparency');
+  if (reduceTransparencyToggle) {
+    reduceTransparencyToggle.checked = JSON.parse(localStorage.getItem('forceOpaqueBackgrounds') || 'false');
+    reduceTransparencyToggle.addEventListener('change', () => {
+      localStorage.setItem('forceOpaqueBackgrounds', reduceTransparencyToggle.checked ? 'true' : 'false');
+      window.location.reload();
+    });
+  }
+  // Dynamic Island
+  const dynamicIslandToggle = document.getElementById('toggleIsland');
+  if (dynamicIslandToggle) {
+    const saved = localStorage.getItem('dynamicIslandShow');
+    const defaultVal = saved === null ? true : JSON.parse(saved);
+    dynamicIslandToggle.checked = defaultVal;
+    dynamicIslandToggle.addEventListener('change', () => {
+      localStorage.setItem('dynamicIslandShow', dynamicIslandToggle.checked ? 'true' : 'false');
+      window.location.reload();
+    });
+  }
+  // Cloak
+  const cloakToggle = document.getElementById('toggleCloak');
+  if (cloakToggle) {
+    cloakToggle.checked = JSON.parse(localStorage.getItem('cloak') || 'false');
+    cloakToggle.addEventListener('change', () => {
+      localStorage.setItem('cloak', cloakToggle.checked ? 'true' : 'false');
+    });
+  }
+});
+</script>
+</body>
+</html>

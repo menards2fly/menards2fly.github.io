@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-
+<script>
+// Remove sidebar if page is embedded (iframe or not top window)
+// Keeps trying until the sidebar is gone or max attempts reached
+(function tryRemoveSidebar(attempt = 0) {
+  if (window.self !== window.top) {
+    const sidebar = document.querySelector('.starship-sidebar');
+    if (sidebar) {
+      sidebar.remove();
+      console.warn('Sidebar removed because page is embedded in an iframe or not the top window.');
+    } else if (attempt < 20) {
+      setTimeout(() => tryRemoveSidebar(attempt + 1), 200); // Try again after 200ms, up to 20 times
+    }
+  }
+})();
+</script>
 <head>
   <meta charset="UTF-8" />
   <title>starship - authentication</title>
