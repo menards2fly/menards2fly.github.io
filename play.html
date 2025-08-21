@@ -281,7 +281,10 @@
     <!-- Supabase UMD -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
 
-<script type="module">
+<script>
+// filepath: c:\Users\ryanl\Desktop\starship.assets\starship-site.github.io\play.html
+// Fix: Use window.supabase.createClient for UMD, and DO NOT use type="module" for this script!
+
 const { createClient } = window.supabase;
 
 const supabase = createClient(
