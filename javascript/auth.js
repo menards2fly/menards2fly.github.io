@@ -38,6 +38,7 @@ function setStatus(msg, los) {
   } else if (los === 'signup') {
     console.log(`💬 [Status - Signup]: ${msg}`);
     statusEl.innerHTML = msg;
+    
   } else {
     console.log(`💬 [Status]: ${msg}`);
   }
@@ -227,11 +228,46 @@ async function signIn() {
     console.error('❌ Unexpected error during signIn:', e);
     return setStatus('Unexpected error. Please try again later.', 'login');
   }
+
+
 }
 
 
 
+async function sendResetLink() {
+  const email = emailInput.value.trim();
+  const token = window.turnstileLoginToken; // grab the same Turnstile token
 
+  if (!email) {
+    return setStatus('Please enter your email address.', 'reset');
+  }
+  if (!token) {
+    return setStatus('Please complete the bot check.', 'reset');
+  }
+
+  console.log(`🔑 Password reset requested for email: ${email}`);
+
+  try {
+    const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/reset-password.html',
+      captchaToken: token // 👈 required if CAPTCHA enforcement is on
+    });
+
+    if (error) {
+      console.error('❌ Error sending reset link:', error);
+      return setStatus('Error: ' + error.message, 'reset');
+    }
+
+    console.log('✅ Reset link sent:', data);
+    setStatus('Password reset link sent! Check your inbox.', 'login');
+  } catch (e) {
+    console.error('❌ Unexpected error during reset link send:', e);
+    return setStatus('Unexpected error. Please try again later.', 'login');
+  }
+}
+
+// 👇 expose globally so inline HTML onclick works
+window.sendResetLink = sendResetLink;
 
 
 
