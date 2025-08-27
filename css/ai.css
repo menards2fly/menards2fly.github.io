@@ -448,3 +448,106 @@ body {
   vertical-align: middle;
   margin-bottom:3px;
 }
+.image-loader-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(20, 20, 40, 0.2); /* more transparent */
+  border-radius: 1.2rem;
+  padding: 1.2rem 1.8rem;
+  margin: 0.5rem 0;
+  box-shadow: 0 0 25px rgba(138, 43, 226, 0.35);
+  backdrop-filter: blur(6px);
+  transition: all 0.3s ease;
+  width: 100% !important;
+  max-width: 400px !important;
+  height: 120px;
+}
+
+.loader-texts {
+  display: flex;
+  flex-direction: column;
+
+  font-family: 'Inter', sans-serif !important;
+}
+
+.loader-title {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 1.3rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #8a2be2, #00e5ff, #ff4dff);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 2s linear infinite;
+
+}
+
+.loader-sub {
+  font-size: 1rem;
+  color: #ccc;
+  margin-bottom:20px;
+  font-style: italic;
+  opacity: 0.85;
+  
+}
+
+.loader-preview {
+  width: 80px; /* bigger */
+  height: 80px; /* bigger */
+  border-radius: 16px;
+  background: linear-gradient(
+    90deg,
+    #2a2a4d 20%,
+    #8a2be2 50%,
+    #2a2a4d 80%
+  );
+  background-size: 200% 100%;
+  animation: skeletonWave 1.6s infinite linear;
+  flex-shrink: 0;
+}
+
+@keyframes skeletonWave {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.loader-wrapper {
+  justify-content: flex-start !important;
+  max-width: 100% !important;
+}
+
+.loader-message {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  max-width: 100% !important;
+}
+.loader-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* sets a 5px gap between title and subtext */
+}
+
+.loader-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0; /* keep margins 0 */
+}
+
+.loader-sub {
+  font-size: 0.95rem;
+  color: #bbb;
+  font-style: italic;
+  line-height: 1.2;
+  margin: 0;
+}
+

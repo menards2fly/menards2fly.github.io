@@ -241,7 +241,44 @@ async function appendMessage(sender, content, options = {}) {
 
 
 
-function appendLoading() {
+function appendLoading(useImageLoader = false) {
+  if (useImageLoader) {
+    // Inject the fancy card directly, no message bubble
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('loader-wrapper'); // optional class for styling
+    wrapper.innerHTML = `
+      <div class="image-loader-card">
+        <div class="loader-texts">
+          <h3 class="loader-title">Generating image...</h3>
+          <p class="loader-sub">Working on it...</p>
+        </div>
+        <div class="loader-preview"></div>
+      </div>
+    `;
+    chatBox.appendChild(wrapper);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+// cycle subtext phrases
+const subtextPhrases = [
+  "Mixing colors…",
+  "Rendering textures…",
+  "Shaping forms…",
+  "Adding depth…",
+  "Finalizing details…"
+];
+
+    let subIndex = 0;
+    const subTextElem = wrapper.querySelector('.loader-sub');
+    const interval = setInterval(() => {
+      subTextElem.textContent = subtextPhrases[subIndex];
+      subIndex = (subIndex + 1) % subtextPhrases.length;
+    }, 3000);
+    wrapper._interval = interval;
+
+    return wrapper;
+  }
+
+  // default loader-dots behavior
   const wrapper = document.createElement('div');
   wrapper.classList.add('message-wrapper', 'orbit');
   const loadingDiv = document.createElement('div');
@@ -253,6 +290,7 @@ function appendLoading() {
   chatBox.scrollTop = chatBox.scrollHeight;
   return wrapper;
 }
+
 
 function removeLoading(elem) {
   if (elem) elem.remove();
@@ -391,53 +429,93 @@ async function sendChat(text) {
 
   try {
     // ---------- IMAGE GENERATION ----------
-    if (text.toLowerCase().startsWith('generate:')) {
-      const desc = text.replace(/^generate:/i, '').trim();
+   // ==== Loader function using appendLoading(true) ====
+function createImageLoader() {
+  const loaderElem = appendLoading(true); // use the fancy image loader
+  return loaderElem;
+}
+  
+// ==== Main generate handler ====
+if (text.toLowerCase().startsWith('generate:')) {
+  const desc = text.replace(/^generate:/i, '').trim();
 
-      if (!isAdmin && !isSuperAdmin && usage.imgGenCount >= imgGenLimit) {
-        removeLoading(loadingElem);
-        appendMessage('orbit',
-          `🌌✨ Yo, you've hit your daily image creation limit of ${imgGenLimit} ${imgGenLimit === 1 ? 'image' : 'images'}! ` +
-          `Come back tomorrow to create more cosmic art! 🌠🚀`);
-        isProcessing = false;
-        setSendButtonState(true);
-        return;
+  // 👇 Usage limit check
+  if (!isAdmin && !isSuperAdmin && usage.imgGenCount >= imgGenLimit) {
+    removeLoading(loadingElem);
+    appendMessage(
+      'orbit',
+      `🌌✨ Yo, you've hit your daily image creation limit of ${imgGenLimit} ${imgGenLimit === 1 ? 'image' : 'images'}! ` +
+      `Come back tomorrow to create more cosmic art! 🌠🚀`
+    );
+    isProcessing = false;
+    setSendButtonState(true);
+    return;
+  }
+
+  console.log(`🎨 Generating image for prompt: "${desc}"`);
+
+  // 👇 Kill any old loader
+  removeLoading(loadingElem);
+
+  // 👇 Inject the new loader card with cycling subtext
+  const loaderElem = createImageLoader();
+
+  try {
+    // ✅ Only call txt2img directly, no chat message sent
+    const imgRes = await puter.ai.txt2img(desc);
+    console.log('🛸 Raw image generation response:', imgRes);
+
+    // 👇 remove loader & stop cycling
+    clearInterval(loaderElem._interval);
+    removeLoading(loaderElem);
+
+    if (imgRes?.error) {
+      const errMsg = String(imgRes.error || '').toLowerCase();
+      if (errMsg.includes('insufficient funds') || errMsg.includes('insufficient balance')) {
+        appendMessage('orbit', `🚀 Whoa, your energy’s too low to finish this mission right now. Try again soon! 🌌`);
+      } else {
+        appendMessage('orbit', `⚠️ Uh oh, something went wrong with the image launch. Try again? 🌠`);
       }
-
-      console.log(`🎨 Generating image for prompt: "${desc}"`);
-      const imgRes = await puter.ai.txt2img(desc);
-      console.log('🛸 Raw image generation response:', imgRes);
-
-      removeLoading(loadingElem);
-
-      if (imgRes?.error) {
-        const errMsg = String(imgRes.error || '').toLowerCase();
-        if (errMsg.includes('insufficient funds') || errMsg.includes('insufficient balance')) {
-          appendMessage('orbit', `🚀 Whoa, your energy’s too low to finish this mission right now. Try again soon! 🌌`);
-        } else {
-          appendMessage('orbit', `⚠️ Uh oh, something went wrong with the image launch. Try again? 🌠`);
-        }
-        isProcessing = false;
-        setSendButtonState(true);
-        return;
-      }
-
-      if (!imgRes) {
-        appendMessage('orbit', '⚠️ Hmmm, the stars didn’t align and I got no image back. Try again? 🌌');
-        isProcessing = false;
-        setSendButtonState(true);
-        return;
-      }
-
-      // Expecting Puter returns an element or HTML — keep your current usage
-      appendMessage('orbit', `Here’s your generated image of "${desc}".`);
-      appendMessage('orbit', imgRes.outerHTML || imgRes.html || (Array.isArray(imgRes) ? imgRes.join('') : String(imgRes)), { isHtml: true });
-
-      incrementImgGenCount();
       isProcessing = false;
       setSendButtonState(true);
       return;
     }
+
+    if (!imgRes) {
+      appendMessage('orbit', '⚠️ Hmmm, the stars didn’t align and I got no image back. Try again? 🌌');
+      isProcessing = false;
+      setSendButtonState(true);
+      return;
+    }
+
+    // 👇 Append only the generated image, never the "generate:" input
+
+    appendMessage(
+      'orbit',
+      imgRes.outerHTML || imgRes.html || (Array.isArray(imgRes) ? imgRes.join('') : String(imgRes)),
+      { isHtml: true }
+    );
+
+    incrementImgGenCount();
+    isProcessing = false;
+    setSendButtonState(true);
+
+  } catch (err) {
+    clearInterval(loaderElem._interval);
+    removeLoading(loaderElem);
+    appendMessage('orbit', `⚠️ Error launching request: ${err.message}`);
+    isProcessing = false;
+    setSendButtonState(true);
+  }
+
+  // 👇 ADD THIS LINE to prevent further processing
+  return;
+}
+
+
+
+
+
 
     // ---------- NORMAL CHAT or IMAGE ANALYSIS ----------
     if (!isAdmin && !isSuperAdmin && usage.chatCount >= chatLimit) {
