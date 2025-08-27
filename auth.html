@@ -51,6 +51,34 @@
  
     <div id="navbar"></div>
     <script type="module" src="/javascript/navbar.js"></script>
+
+<!-- Email Confirm Modal (Apple Glass style) -->
+<div id="email-confirm-overlay" class="ec-overlay" aria-hidden="true">
+  <div
+    class="ec-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="ec-title"
+    aria-describedby="ec-desc"
+  >
+    <div class="ec-icon" aria-hidden="true"><i class="fa fa-envelope"></i></div>
+    <h2 id="ec-title">Confirm your email</h2>
+    <p id="ec-desc">
+      We sent a verification link to <span id="ec-email">your inbox</span>.
+      Click the link to finish setting up your account.
+    </p>
+
+    <button id="ec-primary" class="ec-btn">I confirmed my email</button>
+
+  </div>
+</div>
+
+
+
+<script>
+
+</script>
+
 <div id="avatar-upload-popup"
   style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.2); backdrop-filter:blur(12px); z-index: 9999;
          display: none; align-items: center; justify-content: center;">

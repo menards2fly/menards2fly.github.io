@@ -169,13 +169,13 @@ async function signUp() {
     }
 
     console.log('✅ SignUp successful:', data);
-    // right before location.reload() in signUp
+// showEmailConfirmModal();
 localStorage.setItem('pendingUsername', username);
-location.reload();
 
-    location.reload();
+
+
     setStatus(
-      'Signed up! Now you can, <a onclick="showLogin()" style="text-decoration: underline; cursor: pointer">log in</a>.',
+      'Signed up! Confirm your email, then sign in.',
       'signup'
     );
 
@@ -1256,3 +1256,47 @@ async function loadStatsSetting() {
 }
 
 loadStatsSetting();
+
+  (function () {
+    const overlay = document.getElementById('email-confirm-overlay');
+    const emailSpan = document.getElementById('ec-email');
+    const primary = document.getElementById('ec-primary');
+    const closeBtn = document.getElementById('ec-close');
+
+    function showEmailConfirmModal(email) {
+      if (email) emailSpan.textContent = email;
+      overlay.setAttribute('aria-hidden', 'false');
+      setTimeout(() => primary.focus(), 0);
+      document.documentElement.style.overflow = 'hidden';
+    }
+
+    function hideEmailConfirmModal() {
+      overlay.setAttribute('aria-hidden', 'true');
+      document.documentElement.style.overflow = '';
+    }
+
+    // Close handlers
+    document.addEventListener('keydown', (e) => {
+      if (overlay.getAttribute('aria-hidden') === 'false' && e.key === 'Escape') hideEmailConfirmModal();
+    });
+    if (closeBtn) closeBtn.addEventListener('click', hideEmailConfirmModal);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) hideEmailConfirmModal();
+    });
+
+    primary.addEventListener('click', () => {
+      showLogin();
+      hideEmailConfirmModal();
+    });
+
+    // expose globally
+    window.showEmailConfirmModal = showEmailConfirmModal;
+    window.hideEmailConfirmModal = hideEmailConfirmModal;
+
+    // Auto-show on query string (?verify=1&email=...)
+    const params = new URLSearchParams(location.search);
+    if (params.get('verify') === '1') {
+      showEmailConfirmModal(params.get('email') || undefined);
+    }
+
+  })();
