@@ -5,26 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>starship - play, and explore.</title>
     <link rel="icon" href="/uploads/branding/favicon.png" type="image/x-icon" />
-    <meta
-      name="description"
-      content="Play games, level up, and explore Starship - your new favorite gaming site."
-    />
+    <meta name="description" content="Play games, level up, and explore Starship - your new favorite gaming site." />
     <link rel="canonical" href="https://starship-app.com/" />
     <!-- Styles -->
     <link rel="stylesheet" href="/css/navbar.css" />
     <link rel="stylesheet" href="/css/main.css" />
     <link rel="stylesheet" href="/css/home.css" />
     <!-- Analytics & Ads -->
-
-    <script
-      async
-      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4851718454212779"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-ZZH4JE7RJF"
-    ></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4851718454212779" crossorigin="anonymous"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZZH4JE7RJF"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag() {
@@ -34,389 +23,779 @@
       gtag('config', 'G-ZZH4JE7RJF');
     </script>
   </head>
-  <body>
-    <!-- Navbar -->
-    <script type="module" src="/javascript/navbar.js"></script>
-    <!-- Hero Section -->
-    <center>
-      <div class="hero-content">
-        <div class="hero-title">starship</div>
-      </div>
-    </center>
-    <div class="hero-desc">
-      the <span class="gradient">best</span> gaming website
+<body>
+  <!-- keep your existing navbar / sidebar — this does NOT add one -->
+  <script type="module" src="/javascript/navbar.js"></script>
+
+  <!-- load Inter & FontAwesome for this dashboard only -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root { --accent: #8a2be2; --muted: rgba(200,210,255,0.82); }
+
+    /* keep everything scoped to avoid touching body background */
+    .sd-wrap { padding:22px; box-sizing:border-box; color:inherit; font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+
+    /* Title */
+    .sd-title {
+      text-align:center;
+      font-weight:900;
+      font-size:90px; /* bigger */
+      margin-bottom:6px;
+      color:var(--accent);
+      letter-spacing:1px;
+      text-transform: lowercase;
+    }
+
+    /* USER chip top-right */
+    .sd-user {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 1400;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      padding:8px 12px;
+      border-radius:12px;
+      background: rgba(6,6,18,0.55);
+      border:1px solid rgba(255,255,255,0.04);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+    }
+    .sd-avatar {
+      width:46px; height:46px; border-radius:10px; background-size:cover; background-position:center;
+      box-shadow: inset 0 -4px 8px rgba(0,0,0,0.25);
+      border:1px solid rgba(255,255,255,0.03);
+      flex-shrink:0;
+    }
+    .sd-username { font-weight:800; color:#fff; font-size:15px; }
+
+    /* center date/time card - make it a full card like others */
+    .sd-header { display:flex; justify-content:center; margin:8px 0 18px 0; }
+    .sd-datetime-card {
+      padding:14px 18px; border-radius:14px; display:flex; gap:16px; align-items:center;
+      border:1px solid rgba(255,255,255,0.03);
+      background: linear-gradient(180deg, rgba(8,8,20,0.45), rgba(12,12,30,0.18));
+      backdrop-filter: blur(6px);
+      box-shadow: 0 14px 38px rgba(2,6,24,0.45);
+      min-width:280px;
+
+    }
+    .dt-date { font-size:14px; color:var(--muted); font-weight:700; }
+    .dt-time { font-size:20px; font-weight:900; color:#fff; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto; }
+
+    /* main grid: left games + right widgets */
+    .sd-grid { display:grid; grid-template-columns: 1fr 380px; gap:18px; align-items:start; }
+    @media (max-width:980px){ .sd-grid{grid-template-columns:1fr;} .sd-user{ right:10px; top:10px } }
+
+    /* card base */
+    .sd-panel {
+      border-radius:12px;
+      padding:14px;
+      border:1px solid rgba(255,255,255,0.02);
+      background: linear-gradient(180deg, rgba(8,8,20,0.35), rgba(10,10,30,0.14));
+      backdrop-filter: blur(6px);
+      box-shadow: 0 10px 30px rgba(2,6,24,0.28);
+    }
+
+    /* Stats cards row */
+    .stats-row { display:flex; gap:12px; margin-bottom:12px; }
+    .stat-card {
+      flex:1 1 0;
+      padding:12px;
+      border-radius:10px;
+      background: rgba(255,255,255,0.02);
+      border:1px solid rgba(255,255,255,0.02);
+      display:flex; align-items:center; gap:12px;
+    }
+    .stat-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; color:var(--accent); background:linear-gradient(90deg, rgba(138,43,226,0.05), rgba(138,43,226,0.02)); }
+    .stat-meta { display:flex; flex-direction:column; }
+    .stat-value { font-weight:800; color:#fff; font-size:16px; }
+    .stat-label { font-size:12px; color:var(--muted); }
+
+    /* Newest games */
+    .games-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:14px; }
+    .game-card {
+      display:flex; gap:12px; align-items:flex-start; padding:12px; border-radius:12px;
+      background: rgba(255,255,255,0.02);
+      border:1px solid rgba(255,255,255,0.02);
+      transition: transform .12s ease, box-shadow .12s ease;
+      cursor:default;
+      user-select:none;
+    }
+    .game-card:hover { transform: translateY(-6px); box-shadow: 0 20px 48px rgba(2,6,24,0.45); }
+    .game-thumb-wrap { position:relative; width:88px; height:88px; }
+    .game-thumb {
+      width:88px; height:88px; border-radius:12px; background:#111; background-size:cover; background-position:center; flex-shrink:0;
+      aspect-ratio:1/1; border:1px solid rgba(255,255,255,0.03); display:block;
+      transition: filter .12s ease;
+    }
+    .game-blur-overlay {
+      position:absolute; inset:0; border-radius:12px; display:flex; align-items:center; justify-content:center; pointer-events:none;
+      background: linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.28));
+      color:#fff; font-size:14px;
+    }
+    .game-meta { display:flex; flex-direction:column; gap:8px; min-width:0; }
+    .game-title { font-weight:800; color:#fff; font-size:15px; display:flex; gap:8px; align-items:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .game-desc { font-size:13px; color:var(--muted); line-height:1.18; /* let JS trim, so no CSS truncation weirdness */ }
+
+    /* Blog section */
+    .blog-grid { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; margin-top:12px; }
+    @media (max-width:980px){ .blog-grid { grid-template-columns: 1fr; } }
+    .blog-card { border-radius:10px; overflow:hidden; display:flex; flex-direction:column; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.02); }
+    .blog-banner { width:100%; height:120px; background-size:cover; background-position:center; flex-shrink:0; }
+    .blog-body { padding:12px; display:flex; gap:8px; flex-direction:column; }
+    .blog-title { font-weight:800; color:#fff; font-size:15px; }
+    .blog-desc { color:var(--muted); font-size:13px; line-height:1.3; }
+
+    /* Weather on right */
+    .weather-stack { display:flex; flex-direction:column; gap:12px; }
+    .weather-top { display:flex; gap:12px; align-items:center; }
+    .weather-icon {
+      width:72px; height:72px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:32px;
+      color:var(--accent); background: linear-gradient(90deg, rgba(138,43,226,0.06), rgba(138,43,226,0.04)); border:1px solid rgba(255,255,255,0.03);
+    }
+    .weather-info { display:flex; flex-direction:column; gap:6px; }
+    .weather-temp { font-family:Inter, sans-serif; font-size:22px; font-weight:900; color:#fff; }
+    .weather-desc { font-size:13px; color:var(--muted); }
+
+    .hourly-row { display:flex; gap:8px; justify-content:space-between; margin-top:8px; }
+    .hour-card { flex:1 1 0; text-align:center; background: rgba(255,255,255,0.02); padding:10px; border-radius:10px; font-size:13px; }
+    .h-time { font-size:12px; color:var(--muted); }
+    .h-icon { margin:8px 0; font-size:16px; color:var(--accent); }
+    .h-temp { font-weight:800; color:#fff; }
+
+    /* quick actions & socials */
+    .action-btn { padding:8px 10px; border-radius:8px; background:rgba(255,255,255,0.02); font-weight:700; color:#fff; display:flex; gap:8px; align-items:center; cursor:pointer; user-select:none; border:1px solid rgba(255,255,255,0.02); transition: transform .08s ease, box-shadow .08s ease; }
+    .action-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(2,6,24,0.28); }
+    .social-row { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+    .social-btn {  padding:8px 10px; border-radius:8px; background:rgba(255,255,255,0.02); font-weight:700; color:#fff; display:flex; gap:8px; align-items:center; cursor:pointer; user-select:none; border:1px solid rgba(255,255,255,0.02); transition: transform .08s ease, box-shadow .08s ease; }
+    .social-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(2,6,24,0.28); }
+
+    /* note */
+    .sd-note { margin-top:10px; font-size:13px; color:var(--muted); }
+  </style>
+
+  <div class="sd-wrap">
+    <!-- starship text (bigger) -->
+    <div class="sd-title">starship</div>
+
+    <!-- user chip (top-right) -->
+    <div class="sd-user" id="sd-user" aria-live="polite">
+      <div class="sd-avatar" id="sd-avatar" style="background-image:url('/uploads/branding/favicon.png')"></div>
+      <div class="sd-username" id="sd-username">Guest</div>
     </div>
-    <button class="cta-button" onclick="window.location.href='/games'">
-      start now</button
-    ><br />
-    <div class="section-divider"></div>
-    <p style="font-size: 30px">
-      Just look at our <span class="gradient">stats.</span>
-    </p>
-    <!-- ShowOff Cards Row -->
-    <div class="showoff-row">
-      <div class="outer">
-        <div class="dot"></div>
-        <div class="card">
-          <div class="ray"></div>
-          <div class="text">1.47m</div>
-          <div>requests</div>
-          <div class="line topl"></div>
-          <div class="line leftl"></div>
-          <div class="line bottoml"></div>
-          <div class="line rightl"></div>
-        </div>
-      </div>
-      <div class="outer">
-        <div class="dot"></div>
-        <div class="card">
-          <div class="ray"></div>
-          <div class="text">2.1k</div>
-          <div>Users</div>
-          <div class="line topl"></div>
-          <div class="line leftl"></div>
-          <div class="line bottoml"></div>
-          <div class="line rightl"></div>
-        </div>
-      </div>
-      <div class="outer">
-        <div class="dot"></div>
-        <div class="card">
-          <div class="ray"></div>
-          <div class="text">145+</div>
-          <div>Games</div>
-          <div class="line topl"></div>
-          <div class="line leftl"></div>
-          <div class="line bottoml"></div>
-          <div class="line rightl"></div>
-        </div>
-      </div>
-    </div>
-    <div class="section-divider"></div>
-    <p style="font-size: 30px">
-      Our <span class="gradient">features</span> are even better.
-    </p>
-    <!-- Features Section -->
-    <div class="section" id="features">
-      <div class="features-grid">
-        <div class="feature-card">
-          <img
-            class="feature-icon"
-            src="/uploads/images/unblockedgames.png"
-            alt="Unblocked Games Icon"
-          />
-          <div class="feature-title">100+ Games and Counting</div>
-          <div class="feature-desc">
-            Discover an ever-growing library of unblocked games. New additions
-            regularly—there's always something exciting to explore!
-          </div>
-        </div>
-        <div class="feature-card">
-          <img
-            class="feature-icon"
-            src="/uploads/images/design.png"
-            alt="Sleek Design Icon"
-          />
-          <div class="feature-title">Sleek & Modern Design</div>
-          <div class="feature-desc">
-            Experience a seamless, user-friendly interface crafted for
-            effortless navigation and visual delight.
-          </div>
-        </div>
-        <div class="feature-card">
-          <img
-            class="feature-icon"
-            src="/uploads/images/tabcloaking.png"
-            alt="Tab Cloaking Icon"
-          />
-          <div class="feature-title">Advanced Tab Cloaking</div>
-          <div class="feature-desc">
-            Stay discreet and secure with tab cloaking. Instantly mask starship
-            as an innocent website with a click.
-          </div>
-        </div>
-        <div class="feature-card">
-          <img
-            class="feature-icon"
-            src="/uploads/images/customization.png"
-            alt="Customization Icon"
-          />
-          <div class="feature-title">Customization & Updates</div>
-          <div class="feature-desc">
-            Express yourself with themes, profiles, and particle effects.
-            starship evolves constantly with exciting new updates!
-          </div>
-        </div>
-        <div class="feature-card">
-          <img
-            class="feature-icon"
-            src="/uploads/images/apps.png"
-            alt="Unblocked Apps Icon"
-          />
-          <div class="feature-title">Unblocked Apps</div>
-          <div class="feature-desc">
-            Access popular entertainment apps—unblocked and ready to use. Enjoy
-            apps like Netflix, Spotify, and more, all within starship.
-          </div>
-        </div>
-        <div class="feature-card">
-          <img
-            class="feature-icon"
-            src="/uploads/images/ai-icon.png"
-            alt="AI Icon"
-          />
-          <div class="feature-title">AI-Powered Experience</div>
-          <div class="feature-desc">
-            Our built-in AI helps you discover games, get instant support, and
-            level up your experience — all personalized and ready to assist
-            whenever you need it.
-          </div>
-        </div>
-        <div class="feature-card">
-          <a href="https://youtube.com"
-            ><img
-              class="feature-icon"
-              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA9QAAAPUCAYAAABM1HGEAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAvMUlEQVR42uzBgQAAAACAoP2pF6kCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABmDw4EAAAAAID8XxtBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVWFPTgQAAAAAADyf20EVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV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qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgp7cCAAAAAAAOT/2giqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqirtwSEBAAAAgKD/rz1hBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAR782akUrGgajAAAAAElFTkSuQmCC"
-              alt="Startv Icon"
-          /></a>
-          <div class="feature-title">startv</div>
-          <div class="feature-desc">
-            Watch YouTube videos in a sleek, space-themed experience.
-            Simplified, chill, and built to keep you connected without
-            distractions.
-          </div>
-        </div>
-        <div class="feature-card">
-          <img
-            class="feature-icon"
-            src="/uploads/images/chat-icon.png"
-            alt="Chat Icon"
-          />
-          <div class="feature-title">Site-Wide Chat</div>
-          <div class="feature-desc">
-            Connect with other players anytime using our site-wide chat. Share
-            tips, find teammates, or just vibe — all in real time.
-          </div>
-        </div>
-        <div class="feature-card">
-          <img
-            class="feature-icon"
-            src="/uploads/images/privacy.png"
-            alt="Privacy Icon"
-          />
-          <div class="feature-title">Privacy First</div>
-          <div class="feature-desc">
-            We use Starbase to store your profile, favorites, chat messages, and
-            more — but your data is never shared. You stay in control, and you
-            can request deletion anytime from your account page.
-          </div>
-        </div>
+
+    <!-- date/time card centered (now a proper card & shows seconds) -->
+    <div class="sd-header">
+      <div class="sd-datetime-card sd-panel" role="status" aria-live="polite">
+        <div class="dt-date" id="sd-date">—</div>
+        <div class="dt-time" id="sd-time">—:--:--</div>
       </div>
     </div>
-    <div class="section-divider"></div>
-    <p style="font-size: 30px">
-      Don't hear it from us, hear it from our
-      <span class="gradient">users.</span>
-    </p>
-    <!-- User Review Carousel -->
-    <div class="carousel-container">
-      <div class="carousel-title">What Our Users Say</div>
-      <div class="carousel">
-        <div class="carousel-review" id="carouselReview"></div>
+
+    <!-- Main grid -->
+    <div class="sd-grid">
+      <!-- LEFT: stats + newest games + blog -->
+      <div>
+        <!-- stats row -->
+        <div class="stats-row" style="margin-bottom:14px;">
+          <div class="stat-card sd-panel">
+            <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
+            <div class="stat-meta">
+              <div class="stat-value" id="stat-requests">1.47m+</div>
+              <div class="stat-label">Requests</div>
+            </div>
+          </div>
+          <div class="stat-card sd-panel">
+            <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+            <div class="stat-meta">
+              <div class="stat-value" id="stat-users">7.2k+</div>
+              <div class="stat-label">Users</div>
+            </div>
+          </div>
+          <div class="stat-card sd-panel">
+            <div class="stat-icon"><i class="fa-solid fa-dice"></i></div>
+            <div class="stat-meta">
+              <div class="stat-value" id="stat-games">150+</div>
+              <div class="stat-label">Games</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- newest 5 games -->
+        <div class="sd-panel" id="games-panel">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-weight:800; color:#fff; display:flex; gap:8px; align-items:center;"><i class="fa-solid fa-gamepad" style="color:var(--accent)"></i> Newest games</div>
+            <div style="font-size:12px; color:var(--muted);"></div>
+          </div>
+
+          <div id="games-container" class="games-grid" aria-live="polite">
+            <div style="grid-column:1/-1; color:var(--muted);">Loading newest games…</div>
+          </div>
+        </div>
+
+        <!-- blog: latest 3 posts -->
+        <div class="sd-panel" id="blog-panel" style="margin-top:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-weight:800; color:#fff; display:flex; gap:8px; align-items:center;"><i class="fa-solid fa-newspaper" style="color:var(--accent)"></i> Latest posts</div>
+          </div>
+
+          <div id="blog-container" class="blog-grid" aria-live="polite">
+            <div style="grid-column:1/-1; color:var(--muted);">Loading posts…</div>
+          </div>
+        </div>
+
+
       </div>
+
+      <!-- RIGHT: weather + extras -->
+      <aside>
+        <div class="sd-panel weather-stack" aria-label="Weather widget">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-weight:800; color:#fff; display:flex; gap:8px; align-items:center;"><i class="fa-solid fa-cloud-sun" style="color:var(--accent)"></i> Weather</div>
+            <div id="weather-location" style="font-size:13px; color:var(--muted)">Orem, UT</div>
+          </div>
+
+          <div class="weather-top">
+            <div class="weather-icon" id="weather-icon"><i class="fa-solid fa-sun"></i></div>
+            <div class="weather-info">
+              <div class="weather-temp" id="weather-temp">--°F</div>
+              <div class="weather-desc" id="weather-desc">Loading…</div>
+              <div style="font-size:12px; color:var(--muted);" id="weather-updated">Updated: --</div>
+            </div>
+          </div>
+
+          <div style="font-weight:700; color:var(--muted);">Next 3 hours</div>
+          <div class="hourly-row" id="hourly-row">
+            <div class="hour-card">--</div>
+            <div class="hour-card">--</div>
+            <div class="hour-card">--</div>
+          </div>
+        </div>
+
+        <!-- Extra useful card: quick actions (clickable) -->
+        <div class="sd-panel" style="margin-top:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-weight:800; color:#fff; display:flex; gap:8px; align-items:center;"><i class="fa-solid fa-bolt" style="color:var(--accent)"></i> Quick actions</div>
+          </div>
+          <div id="quick-actions" style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div class="action-btn" data-action="start-playing"><i class="fa-solid fa-circle-play" style="color:var(--accent)"></i> Start playing</div>
+            <div class="action-btn" data-action="bypass-filters"><i class="fa-solid fa-globe" style="color:var(--accent)"></i> Bypass filters</div>
+            <div class="action-btn" data-action="chat-users"><i class="fa-solid fa-comments" style="color:var(--accent)"></i> Chat with users</div>
+            <div class="action-btn" data-action="talk-orbit"><i class="fa-solid fa-robot" style="color:var(--accent)"></i> Talk to Orbit</div>
+          </div>
+
+          <!-- social links -->
+          <div style="margin-top:12px;">
+
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-weight:800; color:#fff; display:flex; gap:8px; align-items:center;"><i class="fa-solid fa-hashtag" style="color:var(--accent)"></i> Socials</div>
+          </div>
+            <div class="social-row" id="social-row">
+              <div class="social-btn" data-social="discord" ><i class="fa-brands fa-discord"  style="color:var(--accent)"></i> Discord</div>
+              <div class="social-btn" data-social="youtube"><i class="fa-brands fa-youtube"  style="color:var(--accent)"></i> YouTube</div>
+              <div class="social-btn" data-social="instagram"><i class="fa-brands fa-instagram"  style="color:var(--accent)"></i> Instagram</div>
+            </div>
+          </div>
+        </div>
+      </aside>
     </div>
-    <div class="section-divider"></div>
-    <p style="font-size: 30px">
-      Here's some more <span class="gradient">stuff</span> about us.
-    </p>
-    <div class="section" id="features">
-      <!-- Features Beyond the Grid -->
-      <div class="features-grid">
-        <!-- Mind Loader Section Removed Loader -->
-        <div class="feature-card">
-          <div class="feature-title1">
-            Built by dreamers, made for
-            <span class="gradient">explorers.</span> psst...that's you.
-          </div>
-          <div class="feature-desc">
-            Use a website that is actually designed with
-            <span class="gradient">YOU</span> in mind.
-          </div>
-        </div>
-        <!-- Fast Loader Section Removed Loader -->
-        <div class="feature-card">
-          <div class="feature-title1">
-            Start playing in <span class="gradient">seconds.</span> We timed it.
-          </div>
-          <div class="feature-desc">
-            <span class="gradient">No one</span> likes slow websites.
-          </div>
-        </div>
-        <!-- Unblock Loader Section Removed Loader -->
-        <div class="feature-card">
-          <div class="feature-title1">
-            Made with <span class="gradient">unblocking</span> in mind.
-          </div>
-          <div class="feature-desc">
-            Yeah. We <span class="gradient">hate</span> web filters too.
-          </div>
-        </div>
-        <!-- Privacy Toggle Section (kept toggle) -->
-        <div class="feature-card">
-          <div class="feature-title1">
-            Giving you <span class="gradient">privacy</span> by default.
-          </div>
-          <div class="feature-desc">
-            Supplying <span class="gradient">robust</span> privacy settings.
-            Always.
-          </div>
-        </div>
-        <!-- Awesome Loader Section Removed Loader -->
-        <div class="feature-card">
-          <div class="feature-title1">
-            Making the experience <span class="gradient">worthwhile.</span>
-          </div>
-          <div class="feature-desc">
-            Creating a <span class="gradient">smooth</span> user experience.
-            Forever.
-          </div>
-        </div>
-        <!-- Heart Loader Section Removed Loader -->
-        <div class="feature-card">
-          <div class="feature-title1">
-            Taking care of our <span class="gradient">users.</span>
-          </div>
-          <div class="feature-desc">
-            We <span class="gradient">love</span> our users. We went through 5
-            navbars to find one that looked nice. Just for you guys.
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="section-divider"></div>
-    <h1 class="gradient" style="font-family: Inter">And that's us.</h1>
-    <br />
+  </div>
 
-    <!-- Supabase + Reviews + Carousel JS -->
+  <!-- JS: Supabase user + Open-Meteo weather + newest 5 games + date/time (with seconds) + clickable actions + blogs -->
+  <script>
+    console.log('[dash] enhanced init');
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    // ---------- Config (edit social links here) ----------
+    const SOCIAL_LINKS = {
+      discord: 'https://discord.gg/MgeVsEKDrt', // <- change to your Discord invite
+      youtube: 'https://youtube.com/@starship_site',   // <- change to your channel
+      instagram: 'https://instagram.com/starship.site'  // <- change to your insta
+    };
 
-    <script>
-      const supabaseUrl = 'https://jbekjmsruiadbhaydlbt.supabase.co';
-      const supabaseKey =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY';
-      const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    // ---------- Utilities ----------
+    const SUPABASE_URL = 'https://jbekjmsruiadbhaydlbt.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY';
 
-      const reviews = [
-        {
-          text: "These people know how to code for a very good gaming experience. I don't know why anyone would want to sabotage it other than to stoke their ego and make themselves look good.",
-          reviewer: 'Keegan B.',
-          stars: 5,
-          avatar: '/uploads/avatars/user1.png',
-        },
-        {
-          text: 'I like the block blast.',
-          reviewer: 'Austin Z.',
-          stars: 5,
-          avatar: '/uploads/avatars/user2.png',
-        },
-        {
-          text: 'You guys are cool.',
-          reviewer: 'jj g.',
-          stars: 4,
-          avatar: '/uploads/avatars/user3.png',
-        },
-        {
-          text: 'It is fun. It is fun. It is fun. It is fun. It is fun. It is fun. It is fun. It is fun. It is fun. It is fun.',
-          reviewer: 'Mason W.',
-          stars: 5,
-          avatar: '/uploads/avatars/user4.png',
-        },
-      ];
-
-      async function loadReviews() {
-        const { data, error } = await supabase
-          .from('reviews')
-          .select('title, content, author, stars, allowed')
-          .order('id', { ascending: false });
-        data.forEach((review) => {
-          if (!review.allowed) return;
-          const parsed = JSON.parse(review.author);
-          const newReview = {
-            text: review.content || 'No review text provided.',
-            reviewer: parsed.name || 'Anonymous',
-            stars: review.stars || 5,
-            avatar: parsed.avatar || '/uploads/branding/favicon.png',
-          };
-          reviews.push(newReview);
+    async function ensureSupabaseClient() {
+      console.log('[dash] ensureSupabaseClient start');
+      if (window.supabase && window.supabase.auth && typeof window.supabase.auth.getUser === 'function') {
+        console.log('[dash] using existing supabase client');
+        return window.supabase;
+      }
+      if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+        console.log('[dash] loading supabase lib');
+        await new Promise((res, rej) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js';
+          s.onload = () => { console.log('[dash] supabase lib loaded'); res(); };
+          s.onerror = (e) => { console.error('[dash] supabase lib failed', e); rej(e); };
+          document.head.appendChild(s);
         });
       }
-
-      let currentReview = 0;
-      const reviewDiv = document.getElementById('carouselReview');
-      let carouselInterval;
-      let isPaused = false;
-
-      function showReview(index) {
-        const review = reviews[index];
-        const stars = '★'.repeat(review.stars) + '☆'.repeat(5 - review.stars);
-        reviewDiv.innerHTML = `
-          <div class="stars">${stars}</div>
-          <p>"${review.text}"</p>
-          <div class="reviewer">- ${review.reviewer}</div>
-        `;
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        console.log('[dash] supabase client created');
+        return window.supabase;
       }
+      throw new Error('Could not initialize Supabase client');
+    }
 
-      function nextReview() {
-        currentReview = (currentReview + 1) % reviews.length;
-        showReview(currentReview);
+    // ---------- setWelcome (pulls username + avatar_url from profiles) ----------
+    async function setWelcomeAndUserChip() {
+      try {
+        console.log('[dash] setWelcomeAndUserChip start');
+        const supa = await ensureSupabaseClient();
+        const { data: { user } } = await supa.auth.getUser();
+        let username = 'Guest';
+        let avatarUrl = '/uploads/branding/favicon.png';
+        console.log('[dash] supabase auth user:', user);
+        if (user) {
+          const { data: profile, error } = await supa
+            .from('profiles')
+            .select('username, avatar_url')
+            .eq('id', user.id)
+            .maybeSingle();
+          if (error) console.warn('[dash] profile fetch error', error);
+          console.log('[dash] profile fetch result', profile);
+          if (profile && profile.username) {
+            username = profile.username;
+            if (profile.avatar_url) avatarUrl = profile.avatar_url;
+            localStorage.setItem('loggedInUser', JSON.stringify(profile));
+          }
+        }
+        document.getElementById('sd-username').textContent = username;
+        document.getElementById('sd-avatar').style.backgroundImage = `url('${avatarUrl}')`;
+        console.log('[dash] user chip set:', { username, avatarUrl });
+      } catch (err) {
+        console.error('[dash] setWelcomeAndUserChip error', err);
       }
+    }
+    setWelcomeAndUserChip();
 
-      function startCarousel() {
-        carouselInterval = setInterval(() => {
-          if (!isPaused) nextReview();
-        }, 4000);
+    // ---------- Date/time with seconds ----------
+    function updateDateTimeCard() {
+      const now = new Date();
+      document.getElementById('sd-date').textContent = now.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+      // show seconds
+      document.getElementById('sd-time').textContent = now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    }
+    updateDateTimeCard();
+    setInterval(updateDateTimeCard, 1000);
+
+    // ---------- Weather via Open-Meteo (no key) ----------
+    let CURRENT_LAT = 40.2969, CURRENT_LON = -111.6946; // default
+    function cToF(c) { return Math.round((parseFloat(c) * 9/5) + 32); }
+    function weatherCodeToFa(code) {
+      if (code === 0) return 'fa-sun';
+      if (code === 1 || code === 2) return 'fa-cloud-sun';
+      if (code === 3) return 'fa-cloud';
+      if (code === 45 || code === 48) return 'fa-smog';
+      if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return 'fa-cloud-rain';
+      if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return 'fa-snowflake';
+      if (code >= 95) return 'fa-bolt';
+      return 'fa-cloud';
+    }
+    function weatherTextFromCode(code) {
+      const map = { 0:'Clear',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Rime fog',51:'Light drizzle',53:'Moderate drizzle',55:'Dense drizzle',61:'Slight rain',63:'Moderate rain',65:'Heavy rain',71:'Slight snow',73:'Moderate snow',75:'Heavy snow',80:'Rain showers',81:'Moderate showers',82:'Violent showers',95:'Thunderstorm',96:'Thunder + hail' };
+      return map[code] || `Code ${code}`;
+    }
+
+    // reverse geocode (OpenStreetMap Nominatim)
+    async function reverseGeocode(lat, lon) {
+      try {
+        console.log('[dash] reverseGeocode', lat, lon);
+        const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`;
+        const res = await fetch(url, { headers: { 'Accept': 'application/json' }});
+        if (!res.ok) throw new Error('reverse geocode failed');
+        const j = await res.json();
+        console.log('[dash] reverseGeocode result', j);
+        const name = j.address && (j.address.city || j.address.town || j.address.village || j.address.hamlet) || j.display_name || '';
+        return name;
+      } catch (err) {
+        console.warn('[dash] reverseGeocode error', err);
+        return '';
       }
+    }
 
-      reviewDiv.addEventListener('mouseenter', () => {
-        isPaused = true;
-      });
-      reviewDiv.addEventListener('mouseleave', () => {
-        isPaused = false;
-      });
+    async function loadWeatherForCoords(lat, lon) {
+      try {
+        console.log('[dash] loadWeatherForCoords', { lat, lon });
+        CURRENT_LAT = lat; CURRENT_LON = lon;
+        const place = await reverseGeocode(lat, lon);
+        document.getElementById('weather-location').textContent = place || 'Your location';
 
-      async function start() {
-        await loadReviews();
-        showReview(currentReview);
-        startCarousel();
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode&current_weather=true&timezone=auto`;
+        console.log('[dash] fetching open-meteo', url);
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('open-meteo failed');
+        const j = await res.json();
+        console.log('[dash] open-meteo result', j);
+
+        const cur = j.current_weather || {};
+        const tempC = cur.temperature ?? null;
+        const code = cur.weathercode ?? null;
+        document.getElementById('weather-temp').textContent = (tempC !== null) ? `${cToF(tempC)}°F` : '--°F';
+        document.getElementById('weather-desc').textContent = (code !== null) ? weatherTextFromCode(code) : 'N/A';
+        document.getElementById('weather-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+
+        const fa = weatherCodeToFa(code);
+        document.getElementById('weather-icon').innerHTML = `<i class="fa-solid ${fa}"></i>`;
+
+        const times = (j.hourly && j.hourly.time) || [];
+        const temps = (j.hourly && j.hourly.temperature_2m) || [];
+        const codes = (j.hourly && j.hourly.weathercode) || [];
+
+        if (!times.length) throw new Error('no hourly data');
+
+        const now = new Date();
+        let idx = times.findIndex(t => {
+          const dt = new Date(t);
+          return dt.getFullYear() === now.getFullYear() && dt.getMonth() === now.getMonth() && dt.getDate() === now.getDate() && dt.getHours() === now.getHours();
+        });
+        if (idx === -1) {
+          idx = times.findIndex(t => new Date(t) > now);
+          if (idx === -1) idx = 0;
+        }
+
+        const picks = [];
+        for (let i=1;i<=3;i++){
+          const pos = (idx + i) % times.length;
+          picks.push({ time: times[pos], tempC: temps[pos], code: codes[pos] });
+        }
+
+        const hr = document.getElementById('hourly-row'); hr.innerHTML = '';
+        for (const p of picks) {
+          const dt = new Date(p.time);
+          const h = dt.getHours();
+          const display = (h === 0) ? '12 AM' : (h < 12 ? `${h} AM` : (h === 12 ? '12 PM' : `${h - 12} PM`));
+          const tempF = cToF(p.tempC);
+          const pfa = weatherCodeToFa(p.code);
+          const div = document.createElement('div');
+          div.className = 'hour-card';
+          div.innerHTML = `<div class="h-time">${display}</div><div class="h-icon"><i class="fa-solid ${pfa}"></i></div><div class="h-temp">${tempF}°F</div>`;
+          hr.appendChild(div);
+        }
+
+        console.log('[dash] weather rendered');
+      } catch (err) {
+        console.error('[dash] loadWeatherForCoords error', err);
+        document.getElementById('weather-temp').textContent = '--°F';
+        document.getElementById('weather-desc').textContent = 'N/A';
+        document.getElementById('hourly-row').innerHTML = '<div class="hour-card">N/A</div><div class="hour-card">N/A</div><div class="hour-card">N/A</div>';
       }
+    }
 
-      start();
-    </script>
-    <!-- Reveal on Scroll -->
-
-    <script>
-      const rows = document.querySelectorAll('.feature-card');
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('visible');
-            }
+    // try geolocation, fallback to IP geolocation, fallback to default
+    async function detectLocationAndLoadWeather() {
+      console.log('[dash] detecting location');
+      if (navigator.geolocation) {
+        try {
+          await new Promise((res, rej) => {
+            const opts = { enableHighAccuracy: true, timeout: 10000 };
+            navigator.geolocation.getCurrentPosition(
+              (pos) => { console.log('[dash] geolocation success', pos.coords); CURRENT_LAT = pos.coords.latitude; CURRENT_LON = pos.coords.longitude; res(); },
+              (err) => { console.warn('[dash] geolocation error', err); rej(err); },
+              opts
+            );
           });
-        },
-        { threshold: 0.3 }
-      );
-      rows.forEach((row) => observer.observe(row));
-    </script>
-    <!-- Additional Scripts -->
+          await loadWeatherForCoords(CURRENT_LAT, CURRENT_LON);
+          return;
+        } catch (e) {
+          console.warn('[dash] geolocation failed, falling back to IP', e);
+        }
+      } else {
+        console.log('[dash] navigator.geolocation not available');
+      }
 
-    <script src="/javascript/panic.js" type="module"></script>
-    <script src="/javascript/cloaking.js" type="module"></script>
-    <script src="/javascript/antitabclose.js" ></script>
-    <script type="module" src="/javascript/notifications.js"></script>
-    
-    <script src="/javascript/screentimetracking.js" type="module"></script>
-    <script src="/javascript/schedule.js"></script>
-  </body>
+      // IP fallback (ipapi.co)
+      try {
+        console.log('[dash] trying IP geolocation via ipapi.co');
+        const r = await fetch('https://ipapi.co/json/');
+        if (r.ok) {
+          const j = await r.json();
+          console.log('[dash] ipapi result', j);
+          if (j && j.latitude && j.longitude) {
+            CURRENT_LAT = j.latitude; CURRENT_LON = j.longitude;
+            await loadWeatherForCoords(CURRENT_LAT, CURRENT_LON);
+            return;
+          }
+        } else {
+          console.warn('[dash] ipapi not ok', r.status);
+        }
+      } catch (err) {
+        console.warn('[dash] IP geolocation failed', err);
+      }
+
+      // final fallback
+      console.log('[dash] using default coords', { lat: CURRENT_LAT, lon: CURRENT_LON });
+      await loadWeatherForCoords(CURRENT_LAT, CURRENT_LON);
+    }
+
+    // ---------- Newest 5 games (non-clickable) with JS truncation (clean) ----------
+    function truncateWithDots(text, maxChars=80) {
+      if (!text) return '';
+      if (text.length <= maxChars) return text;
+      return text.slice(0, maxChars).trimEnd() + '...';
+    }
+
+    async function loadNewestFiveGames() {
+      try {
+        console.log('[dash] loadNewestFiveGames start');
+        const supa = await ensureSupabaseClient();
+        // include blur boolean in select
+        const { data, error } = await supa
+          .from('games_menu')
+          .select('id, name, img_url, description, blur')
+          .order('id', { ascending: false })
+          .limit(5);
+        console.log('[dash] games fetch done', { data, error });
+        const container = document.getElementById('games-container');
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          container.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);">No games found.</div>';
+          return;
+        }
+        container.innerHTML = '';
+        for (const g of data) {
+          const card = document.createElement('div');
+          card.className = 'game-card';
+
+          const img = (g.img_url && g.img_url.length) ? g.img_url : '/uploads/branding/favicon.png';
+          const title = g.name || 'Untitled';
+          const desc = truncateWithDots(g.description || '', 80);
+          const blur = Boolean(g.blur);
+
+          const thumbWrap = document.createElement('div');
+          thumbWrap.className = 'game-thumb-wrap';
+
+          const thumb = document.createElement('div');
+          thumb.className = 'game-thumb';
+          thumb.style.backgroundImage = `url('${escapeHtml(img)}')`;
+          if (blur) {
+            thumb.style.filter = 'blur(5px) saturate(.85)';
+            // overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'game-blur-overlay';
+            overlay.innerHTML = `<i class="fa-solid fa-eye-low-vision fa-2x" style="margin-right:0px;color:var(--accent)"></i> `;
+            thumbWrap.appendChild(thumb);
+            thumbWrap.appendChild(overlay);
+          } else {
+            thumbWrap.appendChild(thumb);
+          }
+
+          const meta = document.createElement('div');
+          meta.className = 'game-meta';
+          meta.innerHTML = `<div class="game-title"><i class="fa-solid fa-circle-play" style="color:var(--accent); font-size:12px;"></i> ${escapeHtml(title)}</div>
+                            <div class="game-desc">${escapeHtml(desc)}</div>`;
+
+          card.appendChild(thumbWrap);
+          card.appendChild(meta);
+          container.appendChild(card);
+        }
+        console.log('[dash] games rendered');
+      } catch (err) {
+        console.error('[dash] loadNewestFiveGames error', err);
+        const container = document.getElementById('games-container');
+        container.innerHTML = '';
+        const fallback = [
+          { name:'Block Blast', img:'/uploads/images/blockblast.png', description:'Fast-paced puzzler with satisfying combos.' },
+          { name:'Galaxy Runner', img:'/uploads/images/galaxyrunner.png', description:'Endless runner through neon galaxies.' },
+          { name:'Puzzle Portal', img:'/uploads/images/puzzleportal.png', description:'Logic puzzles and portals.' },
+          { name:'Robo Rally', img:'/uploads/images/roborally.png', description:'Multiplayer chaos with tiny robots.' },
+          { name:'Sky Defender', img:'/uploads/images/skydefender.png', description:'Defend the sky in this arcade shooter.' },
+        ];
+        for (const g of fallback) {
+          const card = document.createElement('div');
+          card.className = 'game-card';
+          card.innerHTML = `<div class="game-thumb" style="background-image:url('${escapeHtml(g.img)}')"></div>
+                            <div class="game-meta">
+                              <div class="game-title"><i class="fa-solid fa-circle-play" style="color:var(--accent); font-size:12px;"></i> ${escapeHtml(g.name)}</div>
+                              <div class="game-desc">${escapeHtml(truncateWithDots(g.description,80))}</div>
+                            </div>`;
+          container.appendChild(card);
+        }
+      }
+    }
+
+    // ---------- Blog: latest 3 posts ----------
+    async function loadLatestBlogPosts() {
+      try {
+        console.log('[dash] loadLatestBlogPosts start');
+        const supa = await ensureSupabaseClient();
+        const { data, error } = await supa
+          .from('blog_menu')
+          .select('id, title, image, content')
+          .order('id', { ascending: false })
+          .limit(3);
+        console.log('[dash] blog fetch done', { data, error });
+        const container = document.getElementById('blog-container');
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          container.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);">No posts found.</div>';
+          return;
+        }
+        container.innerHTML = '';
+        for (const post of data) {
+          const banner = (post.image && post.image.length) ? post.image : '/uploads/branding/favicon.png';
+          const title = post.title || 'Untitled';
+          // truncate content (cleanly)
+          const excerpt = truncateWithDots((post.content || '').replace(/\s+/g,' ').trim(), 140);
+          const card = document.createElement('div');
+          card.className = 'blog-card';
+          card.innerHTML = `<div class="blog-banner" style="background-image:url('${escapeHtml(banner)}')"></div>
+                            <div class="blog-body">
+                              <div class="blog-title">${escapeHtml(title)}</div>
+                              <div class="blog-desc">${escapeHtml(excerpt)}</div>
+                            </div>`;
+          container.appendChild(card);
+        }
+        console.log('[dash] blog rendered');
+      } catch (err) {
+        console.error('[dash] loadLatestBlogPosts error', err);
+        const container = document.getElementById('blog-container');
+        container.innerHTML = '';
+        const fallback = [
+          { title:'Welcome to Starship', image:'/uploads/images/blog1.jpg', content:'We launched Starship — play, customize, and vibe with us.' },
+          { title:'New Games This Month', image:'/uploads/images/blog2.jpg', content:'We added 10 new games — retro, puzzle, and co-op.' },
+          { title:'Privacy & You', image:'/uploads/images/blog3.jpg', content:'How we protect your data and what you can do.' },
+        ];
+        for (const p of fallback) {
+          const card = document.createElement('div');
+          card.className = 'blog-card';
+          card.innerHTML = `<div class="blog-banner" style="background-image:url('${escapeHtml(p.image)}')"></div>
+                            <div class="blog-body">
+                              <div class="blog-title">${escapeHtml(p.title)}</div>
+                              <div class="blog-desc">${escapeHtml(truncateWithDots(p.content,140))}</div>
+                            </div>`;
+          container.appendChild(card);
+        }
+      }
+    }
+
+    // escape helper
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    // ---------- Quick actions wiring ----------
+    function setupQuickActions() {
+      const container = document.getElementById('quick-actions');
+      container.addEventListener('click', (e) => {
+        const btn = e.target.closest('.action-btn');
+        if (!btn) return;
+        const action = btn.dataset.action;
+        console.log('[dash] quick action clicked', action);
+        if (action === 'start-playing') {
+          // navigate user to games
+          window.location.href = '/games';
+        } else if (action === 'bypass-filters') {
+          // try a few ways: call existing cloaking functions if present, otherwise emit an event and fallback to /cloak
+          try {
+            if (window.toggleCloak && typeof window.toggleCloak === 'function') {
+              window.toggleCloak();
+              console.log('[dash] called window.toggleCloak()');
+              return;
+            }
+            if (window.cloaking && typeof window.cloaking.toggle === 'function') {
+              window.cloaking.toggle();
+              console.log('[dash] called window.cloaking.toggle()');
+              return;
+            }
+            // emit custom event
+            window.dispatchEvent(new CustomEvent('starship:toggleCloak'));
+            console.log('[dash] emitted starship:toggleCloak event');
+            // fallback navigation
+            if (location.pathname !== '/route') {
+              window.location.href = '/route';
+            }
+          } catch (err) {
+            console.warn('[dash] bypass-filters error', err);
+          }
+        } else if (action === 'chat-users') {
+          // try to open chat route or emit event
+          if (location.pathname !== '/chat') {
+            window.open('/chat', '_self');
+          } else {
+            window.dispatchEvent(new CustomEvent('starship:openChat'));
+          }
+        } else if (action === 'talk-orbit') {
+          // try to call orbit if available, else go to /orbit
+          try {
+            if (window.orbit && typeof window.orbit.open === 'function') {
+              window.orbit.open();
+              console.log('[dash] called window.orbit.open()');
+            } else {
+              window.open('/ai', '_self');
+            }
+          } catch (err) {
+            console.warn('[dash] talk-orbit error', err);
+            window.open('/ai', '_self');
+          }
+        }
+      });
+    }
+
+    // ---------- Social buttons wiring ----------
+    function setupSocialButtons() {
+      document.getElementById('social-row').addEventListener('click', (e) => {
+        const btn = e.target.closest('.social-btn');
+        if (!btn) return;
+        const which = btn.dataset.social;
+        console.log('[dash] social clicked', which);
+        const url = SOCIAL_LINKS[which];
+        if (url) {
+          window.open(url, '_blank', 'noopener');
+        } else {
+          console.warn('[dash] no social url configured for', which);
+        }
+      });
+    }
+
+    // orchestrator
+    async function initDashboard() {
+      console.log('[dash] initDashboard start');
+      try {
+        setupQuickActions();
+        setupSocialButtons();
+        await setWelcomeAndUserChip();
+        await detectLocationAndLoadWeather();
+        await loadNewestFiveGames();
+        await loadLatestBlogPosts();
+        console.log('[dash] initDashboard done');
+      } catch (err) {
+        console.error('[dash] initDashboard error', err);
+      }
+    }
+
+    // run it
+    initDashboard();
+
+    // refresh intervals
+    setInterval(loadNewestFiveGames, 3 * 60 * 1000);
+    setInterval(() => detectLocationAndLoadWeather().catch(e => console.warn('[dash] periodic weather error', e)), 10 * 60 * 1000);
+    setInterval(loadLatestBlogPosts, 15 * 60 * 1000);
+  </script>
+
+  <!-- keep your original Supabase script & keys (preserved) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+  <script>
+    const supabaseUrl = 'https://jbekjmsruiadbhaydlbt.supabase.co';
+    const supabaseKey =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+  </script>
+
+  <!-- preserve your other core scripts exactly -->
+  <script src="/javascript/panic.js" type="module"></script>
+  <script src="/javascript/cloaking.js" type="module"></script>
+  <script src="/javascript/antitabclose.js" ></script>
+  <script type="module" src="/javascript/notifications.js"></script>
+  <script src="/javascript/screentimetracking.js" type="module"></script>
+  <script src="/javascript/schedule.js"></script>
+</body>
 </html>
