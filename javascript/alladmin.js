@@ -640,6 +640,7 @@ async function refreshReports() {
             <button id="__resetBioBtn" style="background:#dc2626;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer;">Reset Bio</button>
             <button id="__resetPicBtn" style="background:#2563eb;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer;">Reset Picture</button>
             <button id="__deleteReportBtn" style="background:#111;color:#fff;border:1px solid #444;padding:8px 12px;border-radius:6px;cursor:pointer;">Delete Report</button>
+            <button id="__banUserBtn" style="background:#7c3aed;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer;">Ban User</button>
             <button id="__closeReportBtn" style="margin-left:auto;background:#666;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer;">Close</button>
           </div>
         </div>
@@ -762,9 +763,280 @@ async function refreshReports() {
       });
 
       document.getElementById('__closeReportBtn').addEventListener('click', (e) => { closeOverlay(); });
+
+      // Ban User button: prefill create-ban overlay and open it
+      const banBtnEl = document.getElementById('__banUserBtn');
+      if (banBtnEl) {
+        banBtnEl.addEventListener('click', (e) => {
+          e.preventDefault();
+          // Save prefill details to a global temporary var that the create-ban overlay will read
+          window._ban_prefill = { id: report.reported_id, username: reported.username };
+          // Close current overlay then open the create-ban overlay via the trigger
+          closeOverlay();
+          setTimeout(() => {
+            const trigger = document.getElementById('createBanTrigger');
+            if (trigger) trigger.click();
+            else console.warn('createBanTrigger not found to open ban overlay');
+          }, 60);
+        });
+      }
     });
 
     container.appendChild(row);
   });
 }
+
+// === Bans Management ===
+async function refreshBans() {
+  const container = document.querySelector('.bans-list');
+  if (!container) return;
+  console.log('refreshBans: starting');
+  container.innerHTML = '<p>Loading bans...</p>';
+
+  const { data: bans, error } = await supabase
+    .from('bans')
+    .select('user_id, ban_type, reason, created_at, expires_at, show_appeal, offensive_items, mod_notes')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('❌ Failed to load bans:', error.message);
+    container.innerHTML = '<p>Error loading bans.</p>';
+    return;
+  }
+
+  if (!bans || bans.length === 0) {
+    container.innerHTML = '<p>No bans found.</p>';
+    return;
+  }
+
+  // Fetch profiles for all banned user ids
+  const ids = Array.from(new Set(bans.map(b => b.user_id)));
+  const { data: profiles, error: profilesError } = await supabase.from('profiles').select('id, username, bio, avatar_url').in('id', ids || []);
+  if (profilesError) console.error('refreshBans: failed to fetch profiles', profilesError);
+  const profilesMap = (profiles || []).reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
+
+  container.innerHTML = '';
+  bans.forEach(ban => {
+    const prof = profilesMap[ban.user_id] || { username: 'Unknown', bio: '', avatar_url: '' };
+
+    const row = document.createElement('div');
+    row.className = 'ban-row';
+    row.style = 'border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;display:flex;gap:12px;align-items:center;cursor:pointer;background:#0b0b0b;color:#fff;';
+    row.dataset.userId = ban.user_id;
+
+    const avatar = document.createElement('img');
+    const avatarPlaceholder = `https://placehold.co/60x60/8a2be2/ffffff?text=${(prof.username||'U').charAt(0).toUpperCase()}`;
+    avatar.src = prof.avatar_url || avatarPlaceholder;
+    avatar.style = 'width:48px;height:48px;border-radius:999px;object-fit:cover;';
+
+    const content = document.createElement('div');
+    content.style = 'flex:1;';
+    content.innerHTML = `<strong style="color:#fff">${prof.username}</strong><br/><small style="color:#bbb">${ban.ban_type} · ${new Date(ban.created_at).toLocaleString()}</small>`;
+
+    row.appendChild(avatar);
+    row.appendChild(content);
+
+    row.addEventListener('click', async () => {
+      // Build modal HTML using the ban.html card structure
+      const avatarUrl = prof.avatar_url || `https://placehold.co/100x100/8a2be2/ffffff?text=${(prof.username||'U').charAt(0).toUpperCase()}`;
+      const html = `
+        <div style="color:#fff;max-width:700px;padding:18px;">
+          <div style="display:flex;gap:12px;align-items:center;">
+            <img src="${avatarUrl}" style="width:96px;height:96px;border-radius:12px;object-fit:cover;" />
+            <div>
+              <h2 style="margin:0">${prof.username}</h2>
+              <p style="margin:0;color:#ddd">${prof.bio || '<i>No bio</i>'}</p>
+              <p style="margin:6px 0 0 0;color:#aaa;font-size:13px">Banned on ${new Date(ban.created_at).toLocaleString()}</p>
+            </div>
+          </div>
+          <hr style="border-color:rgba(255,255,255,0.06);margin:12px 0" />
+          <div style="background:#0b0b0b;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);">
+            <h3 style="margin:0 0 8px 0;color:#fff">Type: ${ban.ban_type}</h3>
+            <p style="color:#ccc">Reason: ${ban.reason || ''}</p>
+            <p style="color:#ccc">Expires: ${ban.expires_at ? new Date(ban.expires_at).toLocaleString() : 'Never'}</p>
+            <p style="color:#ccc">Appealable: ${ban.show_appeal ? 'Yes' : 'No'}</p>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button id="__removeBanBtn" style="background:#dc2626;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer;">Remove Ban</button>
+            <button id="__closeBanBtn" style="margin-left:auto;background:#666;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer;">Close</button>
+          </div>
+          <div style="margin-top:12px;color:#ccc;">
+            <strong>Mod Notes</strong>
+            <p>${ban.mod_notes || ''}</p>
+          </div>
+        </div>
+      `;
+
+      openOverlay1(`<div style="background:#000;padding:20px;border-radius:12px;">${html}</div>`);
+
+      document.getElementById('__removeBanBtn').addEventListener('click', async () => {
+        if (!confirm('Remove ban for ' + prof.username + ' ?')) return;
+        try {
+          const { data: delData, error: delErr } = await supabase.from('bans').delete().eq('user_id', ban.user_id).select();
+          if (delErr) {
+            console.error('removeBan: error', delErr);
+            return alert('Failed to remove ban: ' + (delErr.message || JSON.stringify(delErr)));
+          }
+          alert('Ban removed');
+          closeOverlay();
+          await refreshBans();
+        } catch (ex) {
+          console.error('removeBan: unexpected', ex);
+          alert('Failed to remove ban. See console.');
+        }
+      });
+
+      document.getElementById('__closeBanBtn').addEventListener('click', () => closeOverlay());
+    });
+
+    container.appendChild(row);
+  });
+}
+
+// Create Ban overlay with username search/autocomplete
+document.addEventListener('DOMContentLoaded', () => {
+  const trigger = document.getElementById('createBanTrigger');
+  if (!trigger) return;
+  trigger.addEventListener('click', (e) => {
+    e.preventDefault();
+    const html = `
+      <h2>Create Ban</h2>
+      <form id="createBanForm" class="ban-form">
+        <label>Search Username</label>
+        <input id="ban_username_search" class="ban-input" placeholder="Type username to search..." autocomplete="off" />
+        <div id="ban_search_results" class="ban-search-results" aria-hidden="true"></div>
+
+        <input type="hidden" id="ban_user_id" />
+        <div class="ban-selected"><strong>Selected:</strong> <span id="ban_user_display">(none)</span></div>
+
+        <label>Ban Type</label>
+        <select id="ban_type" class="ban-input"><option value="Permanent">Permanent</option><option value="Temporary">Temporary</option></select>
+
+        <label>Reason</label>
+        <textarea id="ban_reason" class="ban-textarea" placeholder="Optional reason..."></textarea>
+
+  <label>Expires At (time they get unbanned)</label>
+  <input id="ban_expires_at" class="ban-input" type="datetime-local" />
+
+        <label>Allow Appeal </label>
+        <select id="ban_show_appeal" class="ban-input"><option value="true">Yes</option><option value="false">No</option></select>
+
+        <label>Offensive Items (comma-separated)</label>
+        <input id="ban_offensive_items" class="ban-input" placeholder="item1, item2" />
+
+        <label>Mod Notes</label>
+        <textarea id="ban_mod_notes" class="ban-textarea" placeholder="Optional moderator notes"></textarea>
+
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button type="submit" class="ban-button">Create Ban</button>
+          <button type="button" class="ban-button" id="ban_cancel_btn" style="background:#666;">Cancel</button>
+        </div>
+      </form>
+    `;
+
+    openOverlay1(`<div style="background:#000;padding:20px;border-radius:12px;color:#fff;">${html}</div>`);
+
+    setTimeout(() => {
+      const searchInput = document.getElementById('ban_username_search');
+      const resultsContainer = document.getElementById('ban_search_results');
+      const hiddenUserId = document.getElementById('ban_user_id');
+      const userDisplay = document.getElementById('ban_user_display');
+      const cancelBtn = document.getElementById('ban_cancel_btn');
+
+      // If a prefill was set (from Ban User button), populate selected user
+      if (window._ban_prefill && window._ban_prefill.id) {
+        hiddenUserId.value = window._ban_prefill.id;
+        userDisplay.textContent = `${window._ban_prefill.username} (${window._ban_prefill.id})`;
+        // clear the prefill so subsequent opens don't reuse it
+        delete window._ban_prefill;
+      }
+
+      let debounceTimer = null;
+
+      function clearResults() {
+        resultsContainer.innerHTML = '';
+        resultsContainer.style.display = 'none';
+        resultsContainer.setAttribute('aria-hidden', 'true');
+      }
+
+      function showResults(items) {
+        resultsContainer.innerHTML = '';
+        if (!items || items.length === 0) return clearResults();
+        items.forEach(u => {
+          const it = document.createElement('div');
+          it.className = 'ban-search-item';
+          it.dataset.id = u.id;
+          const avatar = u.avatar_url || (`https://placehold.co/40x40/8a2be2/ffffff?text=${(u.username||'U').charAt(0).toUpperCase()}`);
+          it.innerHTML = `<img src="${avatar}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;margin-right:8px;vertical-align:middle;"/> <span class="ban-search-username">${u.username}</span>`;
+          it.addEventListener('click', () => {
+            hiddenUserId.value = u.id;
+            userDisplay.textContent = u.username + ' (' + u.id + ')';
+            clearResults();
+            searchInput.value = '';
+          });
+          resultsContainer.appendChild(it);
+        });
+        resultsContainer.style.display = 'block';
+        resultsContainer.setAttribute('aria-hidden', 'false');
+      }
+
+      searchInput.addEventListener('input', (ev) => {
+        const term = ev.target.value.trim();
+        if (debounceTimer) clearTimeout(debounceTimer);
+        if (term.length < 2) { clearResults(); return; }
+        debounceTimer = setTimeout(async () => {
+          try {
+            const { data: users, error } = await supabase
+              .from('profiles')
+              .select('id, username, avatar_url')
+              .ilike('username', `%${term}%`)
+              .limit(6);
+            if (error) { console.error('ban search error', error); return clearResults(); }
+            showResults(users || []);
+          } catch (ex) {
+            console.error('ban search unexpected', ex);
+            clearResults();
+          }
+        }, 300);
+      });
+
+      cancelBtn.addEventListener('click', () => closeOverlay());
+
+      // Handle form submit
+      const form = document.getElementById('createBanForm');
+      form.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        const user_id = hiddenUserId.value;
+        if (!user_id) return alert('Please select a user from search results first.');
+        const ban_type = document.getElementById('ban_type').value;
+        const reason = document.getElementById('ban_reason').value;
+  const expires_raw = document.getElementById('ban_expires_at').value || null;
+  const expires_at = expires_raw ? new Date(expires_raw).toISOString() : null;
+        const show_appeal = document.getElementById('ban_show_appeal').value === 'true';
+        const offensive_items_raw = document.getElementById('ban_offensive_items').value;
+        const offensive_items = offensive_items_raw ? offensive_items_raw.split(',').map(s=>s.trim()).filter(Boolean) : null;
+        const mod_notes = document.getElementById('ban_mod_notes').value || null;
+
+        try {
+          const { data: ins, error: insErr } = await supabase.from('bans').insert([{ user_id, ban_type, reason, expires_at, show_appeal, offensive_items, mod_notes }]).select();
+          if (insErr) {
+            console.error('createBan: error', insErr);
+            return alert('Failed to create ban: ' + (insErr.message || JSON.stringify(insErr)));
+          }
+          alert('Ban created');
+          closeOverlay();
+          await refreshBans();
+        } catch (ex) {
+          console.error('createBan: unexpected', ex);
+          alert('Failed to create ban. See console.');
+        }
+      });
+    }, 50);
+  });
+});
+
+// Try to refresh bans when admin page loads
+window.addEventListener('DOMContentLoaded', () => {
+  try { refreshBans(); } catch(e) { console.warn('refreshBans failed to start:', e); }
+});
 

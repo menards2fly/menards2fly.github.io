@@ -1,3 +1,13 @@
+/* Create Ban form styles */
+.ban-form { display:flex; flex-direction:column; gap:8px; max-width:640px; }
+.ban-input { padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); color:#fff; }
+.ban-textarea { min-height:80px; padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02); color:#fff; }
+.ban-button { padding:8px 12px; border-radius:8px; background:#8a2be2; color:#fff; border:none; cursor:pointer; }
+.ban-button:hover { opacity:0.95; }
+.ban-search-results { display:none; margin-top:4px; border:1px solid rgba(255,255,255,0.06); border-radius:8px; background:rgba(0,0,0,0.6); max-height:260px; overflow:auto; }
+.ban-search-item { padding:8px; display:flex; align-items:center; gap:8px; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.02); }
+.ban-search-item:hover { background:rgba(255,255,255,0.02); }
+.ban-selected { font-size:13px; color:#ddd; margin-top:6px; }
 .blog,
 .games,
 .admins,
