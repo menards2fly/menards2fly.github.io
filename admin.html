@@ -156,6 +156,7 @@
       <div class="sidebar">
         <button class="tab-button active" data-tab="bandg">Blog & Games</button>
         <button class="tab-button" data-tab="admins">Admins</button>
+  <button class="tab-button" data-tab="reports">Reports</button>
         <button class="tab-button" data-tab="reviews">Reviews</button>
         <button class="tab-button" data-tab="tools">Tools</button>
       </div>
@@ -211,6 +212,18 @@
           <div class="reviewlist"></div>
           <hr id="review-hr" />
           <div class="approve"></div>
+        </div>
+
+        <div id="reports" class="reports tab-content">
+          <div class="controls">
+            <h3 style="color:#fff">Profile Reports</h3>
+          </div>
+          <!-- Dark background for reports area -->
+          <div class="reports-list" style="display:flex;flex-direction:column;gap:10px;background:#000;color:#fff;padding:16px;border-radius:8px;min-height:200px;">
+            <!-- rows will be injected here by alladmin.js -->
+          </div>
+          <hr />
+          <!-- detail pane intentionally removed in favor of modal overlay -->
         </div>
 
         <div id="admins" class="admins tab-content">

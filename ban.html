@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account Banned</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css');
+    
+    body {
+        font-family: 'Inter', sans-serif;
+        background: #000;
+        color: #fff;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 1rem;
+    }
+
+    .ban-card {
+        background: #111;
+        border-radius: 16px;
+        max-width: 700px;
+        width: 100%;
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .ban-icon-section {
+        background: #1a1a1a;
+        border-radius: 50%;
+        padding: 1.5rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 3rem;
+        color: #8a2be2;
+        width: 100px;
+        height: 100px;
+    }
+
+    h1 {
+        font-size: 2rem;
+        font-weight: 600;
+        margin: 0;
+        text-align: center;
+    }
+
+    .ban-data-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .data-card {
+        background: #1a1a1a;
+        border-radius: 10px;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    }
+
+    .data-card strong {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+        color: #8a2be2;
+    }
+
+    .data-card i {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .data-card span {
+        font-size: 1rem;
+    }
+
+    .full-width-section {
+        background: #1a1a1a;
+        border-radius: 10px;
+        padding: 1rem;
+        width: 100%;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    }
+
+    ul.offensive-items {
+        margin: 0.5rem 0 0 1rem;
+        padding-left: 0;
+        list-style-type: disc;
+    }
+
+    ul.offensive-items li {
+        margin-bottom: 0.3rem;
+    }
+
+    .appeal-button {
+        display: inline-block;
+        margin-top: 1.5rem;
+        padding: 0.75rem 1.5rem;
+        background: #8a2be2;
+        color: #fff;
+        font-weight: 600;
+        text-decoration: none;
+        border-radius: 6px;
+        transition: background 0.2s;
+    }
+
+    .appeal-button:hover {
+        background: #7020b5;
+    }
+</style>
+</head>
+<body>
+<div class="ban-card">
+    <div class="ban-icon-section" id="ban-icon">
+        <img src="/uploads/branding/favicon.png" alt="Site Logo" style="width:100px;height:100px;">
+    </div>
+    <h1>Account Banned</h1>
+
+    <div class="ban-data-grid">
+        <div class="data-card" id="ban-type-card">
+            <strong>Ban Type</strong>
+            <i id="ban-type-icon" class="fas fa-ban"></i>
+            <span id="ban-type">Loading...</span>
+        </div>
+        <div class="data-card" id="ban-reason-card">
+            <strong>Reason</strong>
+            <i class="fas fa-info-circle"></i>
+            <span id="ban-reason">Loading...</span>
+        </div>
+        <div class="data-card" id="ban-time-left-card">
+            <strong>Time Until Unbanned</strong>
+            <i class="fas fa-hourglass-half"></i>
+            <span id="ban-time-left">Loading...</span>
+        </div>
+        <div class="data-card" id="ban-appeal-card">
+            <strong>Appealable?</strong>
+            <i id="appeal-icon" class="fas fa-question-circle"></i>
+            <span id="appeal-text">Loading...</span>
+        </div>
+    </div>
+
+    <div class="full-width-section" id="offensive-items-container" style="display:none;">
+        <strong>Offensive Items:</strong>
+        <ul class="offensive-items" id="offensive-items"></ul>
+    </div>
+
+    <div class="full-width-section" id="mod-notes-container" style="display:none;">
+        <strong>Mod Notes:</strong>
+        <p id="mod-notes"></p>
+    </div>
+
+    <a href="/appeal.html" class="appeal-button" id="appeal-button" style="display:none;">Appeal Ban</a>
+</div>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const SUPABASE_URL = "https://jbekjmsruiadbhaydlbt.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY";
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function formatTimeLeft(ms) {
+    if (ms <= 0) return "Ban expired";
+    const minutes = Math.floor(ms / 1000 / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    const months = Math.floor(days / 30);
+
+    if (months > 0) return `${months} month${months > 1 ? "s" : ""}`;
+    if (days > 0) return `${days} day${days > 1 ? "s" : ""}`;
+    if (hours > 0) return `${hours} hour${hours > 1 ? "s" : ""}`;
+    return `${minutes} minute${minutes !== 1 ? "s" : ""}`;
+}
+
+function getBanIconClass(banType) {
+    switch(banType.toLowerCase()) {
+        case "permanent": return "fas fa-ban";
+        case "temporary": return "fas fa-exclamation-triangle";
+        default: return "fas fa-info-circle";
+    }
+}
+
+async function loadBanInfo() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+        .from("bans")
+        .select("ban_type, reason, created_at, expires_at, show_appeal, offensive_items, mod_notes")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+    if (!data) return;
+
+    // Top icon & Ban Type icon
+    const iconClass = getBanIconClass(data.ban_type);
+    document.getElementById("ban-type-icon").className = iconClass;
+
+    document.getElementById("ban-type").textContent = data.ban_type;
+
+    // Reason
+    document.getElementById("ban-reason").textContent = data.reason || "No reason provided";
+
+    // Time Until Unban
+    const now = new Date();
+    let timeText = "N/A";
+    if (data.ban_type.toLowerCase() === "temporary" && data.expires_at) {
+        const expires = new Date(data.expires_at);
+        timeText = formatTimeLeft(expires - now);
+    }
+    document.getElementById("ban-time-left").textContent = timeText;
+
+    // Appealable
+    const appealIcon = document.getElementById("appeal-icon");
+    const appealText = document.getElementById("appeal-text");
+    if (data.show_appeal) {
+        appealIcon.className = "fas fa-check";
+        appealIcon.style.color = "#4CAF50";
+        appealText.textContent = "Yes";
+        document.getElementById("appeal-button").style.display = "inline-block";
+    } else {
+        appealIcon.className = "fas fa-times";
+        appealIcon.style.color = "#F44336";
+        appealText.textContent = "No";
+    }
+
+    // Offensive items
+    if (data.offensive_items && data.offensive_items.length > 0) {
+        const container = document.getElementById("offensive-items-container");
+        const list = document.getElementById("offensive-items");
+        list.innerHTML = "";
+        data.offensive_items.forEach(item => {
+            const li = document.createElement("li");
+            li.textContent = item;
+            list.appendChild(li);
+        });
+        container.style.display = "block";
+    }
+
+    // Mod notes
+    if (data.mod_notes) {
+        const container = document.getElementById("mod-notes-container");
+        document.getElementById("mod-notes").textContent = data.mod_notes;
+        container.style.display = "block";
+    }
+}
+
+loadBanInfo();
+</script>
+</body>
+</html>

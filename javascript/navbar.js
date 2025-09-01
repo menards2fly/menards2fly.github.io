@@ -985,3 +985,34 @@ async function checkAccountDeletionStatus(user) {
   await checkAccountDeletionStatus(user);
 })();
 
+  async function checkBan() {
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error || !user) {
+      console.warn("⚠️ No user logged in or error fetching user:", error);
+      return;
+    }
+
+    const { data: bans, error: banError } = await supabase
+      .from("bans")
+      .select("*")
+      .eq("user_id", user.id);
+
+    if (banError) {
+      console.error("❌ Error fetching bans:", banError);
+      return;
+    }
+
+    if (bans && bans.length > 0) {
+      const activeBan = bans.find(ban => !ban.expires_at || new Date(ban.expires_at) > new Date());
+
+      if (activeBan) {
+        // Nuke all page content
+        document.documentElement.innerHTML = "";
+        // Redirect to ban page
+        window.location.href = "/ban.html";
+      }
+    }
+  }
+
+  checkBan();

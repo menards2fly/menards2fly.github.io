@@ -303,6 +303,8 @@ window.addEventListener('DOMContentLoaded', () => {
   safeRefreshGamesList();
   refreshBlogPosts();
   refreshAdminList();
+  // Load reports section
+  try { refreshReports(); } catch(e) { console.warn('refreshReports failed to start:', e); }
 });
 
 // #endregion
@@ -557,3 +559,212 @@ async function loadReviews() {
 
 
 loadReviews();
+
+// === Profile Reports ===
+async function refreshReports() {
+  const container = document.querySelector('.reports-list');
+  if (!container) return;
+  console.log('refreshReports: starting');
+  container.innerHTML = '<p>Loading reports...</p>';
+
+  const { data: reports, error } = await supabase
+    .from('profile_reports')
+    .select('id, reporter_id, reported_id, reason, details, created_at')
+    .order('created_at', { ascending: false });
+
+  console.log('refreshReports: query returned', { error, count: reports && reports.length });
+
+  if (error) {
+    console.error('❌ Failed to load reports:', error.message);
+    container.innerHTML = '<p>Error loading reports.</p>';
+    return;
+  }
+
+  if (!reports || reports.length === 0) {
+    container.innerHTML = '<p>No reports found.</p>';
+    return;
+  }
+
+  // Fetch profiles for all involved user ids
+  const ids = Array.from(new Set(reports.flatMap(r => [r.reporter_id, r.reported_id])));
+  console.log('refreshReports: fetching profiles for ids', ids);
+  const { data: profiles, error: profilesError } = await supabase.from('profiles').select('id, username, bio, avatar_url').in('id', ids || []);
+  if (profilesError) console.error('refreshReports: failed to fetch profiles', profilesError);
+  const profilesMap = (profiles || []).reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
+  console.log('refreshReports: profilesMap', profilesMap);
+
+  container.innerHTML = '';
+  reports.forEach(report => {
+    const reporter = profilesMap[report.reporter_id] || { username: 'Unknown', bio: '', avatar_url: '' };
+    const reported = profilesMap[report.reported_id] || { username: 'Unknown', bio: '', avatar_url: '' };
+
+  const row = document.createElement('div');
+  row.className = 'report-row';
+  // dark row style to match reports panel
+  row.style = 'border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;display:flex;gap:12px;align-items:center;cursor:pointer;background:#0b0b0b;color:#fff;';
+    row.dataset.reportId = report.id;
+
+  const avatar = document.createElement('img');
+  const avatarPlaceholder = `https://placehold.co/60x60/8a2be2/ffffff?text=${(reported.username||'U').charAt(0).toUpperCase()}`;
+  avatar.src = reported.avatar_url || avatarPlaceholder;
+  avatar.style = 'width:48px;height:48px;border-radius:999px;object-fit:cover;';
+
+    const content = document.createElement('div');
+    content.style = 'flex:1;';
+  content.innerHTML = `<strong style="color:#fff">${reported.username}</strong> — reported by <em style="color:#ddd">${reporter.username}</em><br/><small style="color:#bbb">${new Date(report.created_at).toLocaleString()} · ${report.reason}</small>`;
+
+  console.log('refreshReports: appending row', { reportId: report.id, reported: reported.username, reporter: reporter.username });
+
+    row.appendChild(avatar);
+    row.appendChild(content);
+
+    row.addEventListener('click', async () => {
+      // Build modal HTML and open via existing overlay helper
+      const avatarUrl = reported.avatar_url || `https://placehold.co/100x100/8a2be2/ffffff?text=${(reported.username||'U').charAt(0).toUpperCase()}`;
+      const html = `
+        <div style="color:#fff;max-width:700px;padding:18px;">
+          <div style="display:flex;gap:12px;align-items:center;">
+            <img src="${avatarUrl}" style="width:96px;height:96px;border-radius:12px;object-fit:cover;" />
+            <div>
+              <h2 style="margin:0">${reported.username}</h2>
+              <p style="margin:0;color:#ddd">${reported.bio || '<i>No bio</i>'}</p>
+              <p style="margin:6px 0 0 0;color:#aaa;font-size:13px">Reported by <strong>${reporter.username}</strong> on ${new Date(report.created_at).toLocaleString()}</p>
+            </div>
+          </div>
+          <hr style="border-color:rgba(255,255,255,0.06);margin:12px 0" />
+          <div style="background:#0b0b0b;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);">
+            <h3 style="margin:0 0 8px 0;color:#fff">Reason: ${report.reason}</h3>
+            <p style="color:#ccc">${report.details || ''}</p>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button id="__resetBioBtn" style="background:#dc2626;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer;">Reset Bio</button>
+            <button id="__resetPicBtn" style="background:#2563eb;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer;">Reset Picture</button>
+            <button id="__deleteReportBtn" style="background:#111;color:#fff;border:1px solid #444;padding:8px 12px;border-radius:6px;cursor:pointer;">Delete Report</button>
+            <button id="__closeReportBtn" style="margin-left:auto;background:#666;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer;">Close</button>
+          </div>
+        </div>
+      `;
+
+      openOverlay1(`<div style="background:#000;padding:20px;border-radius:12px;">${html}</div>`);
+
+      // Wire buttons with robust logging and better checks
+      document.getElementById('__resetBioBtn').addEventListener('click', async (e) => {
+        console.log('resetBio clicked for', report.reported_id);
+        if (!confirm('Reset bio for ' + reported.username + ' ?')) return;
+        const targetId = report.reported_id;
+        if (!targetId) { console.error('resetBio: missing reported_id', report); return alert('Invalid reported id'); }
+        try {
+          console.log('resetBio: calling supabase.update', { id: targetId, bio: '[Deleted by admin]' });
+          const { data, error: updErr } = await supabase.from('profiles').update({ bio: '[Deleted by admin]' }).eq('id', targetId).select().single();
+          if (updErr) {
+            console.error('resetBio: update error', updErr);
+            return alert('Failed to reset bio: ' + (updErr.message || JSON.stringify(updErr)));
+          }
+          console.log('resetBio: update returned', data);
+          // Verify the bio actually changed (sometimes Supabase returns null when RLS or policies restrict returning rows)
+          if (!data || data.bio !== '[Deleted by admin]') {
+            console.log('resetBio: verifying by re-querying profile');
+            const { data: verify, error: verifyErr } = await supabase.from('profiles').select('bio').eq('id', targetId).single();
+            if (verifyErr) {
+              console.error('resetBio: verify query error', verifyErr);
+            } else {
+              console.log('resetBio: verify result', verify);
+              if (!verify || verify.bio !== '[Deleted by admin]') {
+                alert('Bio update did not persist. Check permissions.');
+                return;
+              }
+            }
+          }
+          alert('Bio reset');
+          closeOverlay();
+          await refreshReports();
+        } catch (ex) {
+          console.error('resetBio: unexpected', ex);
+          alert('Failed to reset bio. See console.');
+        }
+      });
+
+      document.getElementById('__resetPicBtn').addEventListener('click', async (e) => {
+        console.log('resetPic clicked for', report.reported_id);
+        if (!confirm('Reset picture for ' + reported.username + ' ?')) return;
+        const targetId = report.reported_id;
+        if (!targetId) { console.error('resetPic: missing reported_id', report); return alert('Invalid reported id'); }
+        const placeholder = `https://placehold.co/100x100/8a2be2/ffffff?text=${(reported.username||'U').charAt(0).toUpperCase()}`;
+        try {
+          console.log('resetPic: calling supabase.update', { id: targetId, avatar_url: placeholder });
+          const { data, error: updErr } = await supabase.from('profiles').update({ avatar_url: placeholder }).eq('id', targetId).select().single();
+          if (updErr) {
+            console.error('resetPic: update error', updErr);
+            return alert('Failed to reset picture: ' + (updErr.message || JSON.stringify(updErr)));
+          }
+          console.log('resetPic: update returned', data);
+          if (!data || data.avatar_url !== placeholder) {
+            console.log('resetPic: verifying by re-querying profile');
+            const { data: verify, error: verifyErr } = await supabase.from('profiles').select('avatar_url').eq('id', targetId).single();
+            if (verifyErr) {
+              console.error('resetPic: verify query error', verifyErr);
+            } else {
+              console.log('resetPic: verify result', verify);
+              if (!verify || verify.avatar_url !== placeholder) {
+                alert('Avatar update did not persist. Check permissions.');
+                return;
+              }
+            }
+          }
+          alert('Picture reset');
+          closeOverlay();
+          await refreshReports();
+        } catch (ex) {
+          console.error('resetPic: unexpected', ex);
+          alert('Failed to reset picture. See console.');
+        }
+      });
+
+      document.getElementById('__deleteReportBtn').addEventListener('click', async (e) => {
+        console.log('deleteReport clicked for', report.id);
+        if (!confirm('Delete this report permanently?')) return;
+        const targetReportId = report.id;
+        if (!targetReportId) { console.error('deleteReport: missing id', report); return alert('Invalid report id'); }
+        try {
+          console.log('deleteReport: calling supabase.delete', { id: targetReportId });
+          const { data, error: delErr } = await supabase.from('profile_reports').delete().eq('id', targetReportId).select();
+          if (delErr) {
+            console.error('deleteReport: error', delErr);
+            return alert('Failed to delete report: ' + (delErr.message || JSON.stringify(delErr)));
+          }
+          console.log('deleteReport: delete returned', data);
+          // Verify deletion
+          const { data: verify, error: verifyErr } = await supabase.from('profile_reports').select('id').eq('id', targetReportId).single();
+          if (verifyErr && verifyErr.code !== 'PGRST116') { // PGRST116 = no rows found (single) - different libs vary
+            console.error('deleteReport: verify query error', verifyErr);
+          }
+          if (verify) {
+            console.error('deleteReport: still exists after delete', verify);
+            alert('Report still exists after delete. Check permissions.');
+            return;
+          }
+          console.log('deleteReport: success, verified removed');
+          alert('Report deleted');
+          closeOverlay();
+          await refreshReports();
+        } catch (ex) {
+          // If the verify single() threw because there were no rows, postgres client may throw — treat as success
+          if (ex && ex.code && (ex.code === 'PGRST116' || ex.name === 'PostgrestError')) {
+            console.log('deleteReport: delete likely successful (no row found on verify).', ex);
+            alert('Report deleted');
+            closeOverlay();
+            await refreshReports();
+            return;
+          }
+          console.error('deleteReport: unexpected', ex);
+          alert('Failed to delete report. See console.');
+        }
+      });
+
+      document.getElementById('__closeReportBtn').addEventListener('click', (e) => { closeOverlay(); });
+    });
+
+    container.appendChild(row);
+  });
+}
+
