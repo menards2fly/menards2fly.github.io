@@ -1,0 +1,18 @@
+name: Cleanup Bans
+
+# Trigger every hour on the hour
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:  # allows manual trigger too
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Supabase Edge Function
+        run: |
+          curl -X POST https://jbekjmsruiadbhaydlbt.supabase.co/functions/v1/clean-bans \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d '{"action":"clean_expired_bans"}'
