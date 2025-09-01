@@ -985,34 +985,78 @@ async function checkAccountDeletionStatus(user) {
   await checkAccountDeletionStatus(user);
 })();
 
-  async function checkBan() {
-    const { data: { user }, error } = await supabase.auth.getUser();
+async function checkBan() {
+  console.log("🔍 Checking for bans...");
 
-    if (error || !user) {
-      console.warn("⚠️ No user logged in or error fetching user:", error);
-      return;
-    }
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-    const { data: bans, error: banError } = await supabase
-      .from("bans")
-      .select("*")
-      .eq("user_id", user.id);
-
-    if (banError) {
-      console.error("❌ Error fetching bans:", banError);
-      return;
-    }
-
-    if (bans && bans.length > 0) {
-      const activeBan = bans.find(ban => !ban.expires_at || new Date(ban.expires_at) > new Date());
-
-      if (activeBan) {
-        // Nuke all page content
-        document.documentElement.innerHTML = "";
-        // Redirect to ban page
-        window.location.href = "/ban.html";
-      }
-    }
+  if (userError || !user) {
+    console.warn("⚠️ No user logged in or error fetching user:", userError);
+    return;
   }
 
-  checkBan();
+  console.log("👤 User found:", user.id);
+
+  const { data: bans, error: banError } = await supabase
+    .from("bans")
+    .select("*")
+    .eq("user_id", user.id);
+
+  if (banError) {
+    console.error("❌ Error fetching bans:", banError);
+    return;
+  }
+
+  console.log("📋 Bans fetched:", bans);
+
+  if (bans && bans.length > 0) {
+    const activeBan = bans.find(ban => !ban.expires_at || new Date(ban.expires_at) > new Date());
+
+    if (activeBan) {
+      console.warn("⛔ Active ban detected:", activeBan);
+
+      // Wipe everything and show minimal message
+      document.documentElement.innerHTML = `
+        <html>
+          <head>
+            <title>401 Error</title>
+            <style>
+              body { 
+                margin:0; 
+                height:100vh; 
+                display:flex; 
+                flex-direction:column; 
+                justify-content:center; 
+                align-items:center; 
+                background:#000; 
+                color:#fff; 
+                font-family:sans-serif;
+                text-align:center;
+              }
+            </style>
+          </head>
+          <body>
+            <h1>401 Error</h1>
+            <p>Access denied</p>
+          </body>
+        </html>
+      `;
+
+      // Redirect shortly after
+      setTimeout(() => {
+        console.log("➡️ Redirecting to /ban.html");
+        window.location.href = "/ban.html";
+      }, 500);
+    } else {
+      console.log("✅ No active bans for this user.");
+    }
+  } else {
+    console.log("✅ No bans found for this user.");
+  }
+}
+
+// Run immediately
+checkBan();
+
+// Re-run every minute
+setInterval(checkBan, 60_000);
