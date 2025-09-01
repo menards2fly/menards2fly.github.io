@@ -186,19 +186,34 @@
       <button onclick="showSignup()">Create an Account</button>
     </div>
 
-    <!-- Login Section -->
-    <div id="login-section" style="display:none;">
-      <input id="email" type="email" placeholder="Email" /><br>
-      <input id="password" type="password" placeholder="Password" /><br>
-            <p> <a href="#" id="forgot-password-link" onClick="sendResetLink()"
-          style="text-decoration: underline; cursor: pointer;">Forgot Password</a></p>
-      <div class="cf-turnstile" data-sitekey="0x4AAAAAABnpTjrdDgkMZ8Nr"  data-theme="dark"   data-callback="onTurnstileLoginSuccess"></div>
-
-      <button id="login-btn">Log In</button>
-      <p id="status-lo"></p>
-      <p>New to this galaxy? <a href="#" onclick="showSignup()"
-          style="text-decoration: underline; cursor: pointer;">Sign up</a></p>
+<!-- Login Section -->
+<div id="login-section" style="display:none;">
+  <input id="login-email" type="email" placeholder="Email" /><br>
+  <div id="login-methods">
+    <button id="show-password-login-btn">Use Password</button>
+    <button id="show-magic-link-btn">Send Magic Link</button>
+  </div>
+  <!-- Main login Turnstile (used for magic link / main login) -->
+  <div id="login-turnstile-container" style="margin-top:12px;">
+    <div class="cf-turnstile" id="login-turnstile" data-sitekey="0x4AAAAAABnpTjrdDgkMZ8Nr" data-theme="dark" data-callback="onTurnstileLoginSuccess"></div>
+  </div>
+  <div id="password-login-fields" style="display:none;">
+    <input id="login-password" type="password" placeholder="Password" /><br>
+    <div id="password-turnstile-container" style="display:none;">
+  <div class="cf-turnstile" id="password-turnstile" data-sitekey="0x4AAAAAABnpTjrdDgkMZ8Nr" data-theme="dark" data-callback="onTurnstilePasswordSuccess"></div>
     </div>
+    <button id="login-btn">Log In</button>
+    <p> <a href="#" id="forgot-password-link" onClick="sendResetLink()" style="text-decoration: underline; cursor: pointer;">Forgot Password</a></p>
+  </div>
+  <div id="magic-link-confirm" style="display:none; margin-top:20px;">
+    <i class="fa fa-check-circle" style="color:#4caf50;font-size:2em;"></i>
+    <p style="font-size:24px;">We've sent a magic login link to your email.<br>Check your inbox!</p>
+    <p style="font-size:14px;color:red;">School or work emails may not receive this link. </p>
+    <button id="magic-link-back-btn">Back</button>
+  </div>
+  <p id="status-lo"></p>
+  <p id="signupalt">New to this galaxy? <a href="#" onclick="showSignup()" style="text-decoration: underline; cursor: pointer;">Sign up</a></p>
+</div>
 
     <div id="signup-section" style="display:none;">
       <input id="signup-email" type="email" placeholder="Email" /><br>
@@ -225,7 +240,7 @@
 <p id="birthday-warning" style="color: red; display: none; margin-top: 4px;">
   You aren't old enough to use Starship.
 </p>
-      <div class="cf-turnstile" data-sitekey="0x4AAAAAABnpTjrdDgkMZ8Nr"   data-theme="dark"   data-callback="onTurnstileSignupSuccess"></div>
+  <div class="cf-turnstile" id="signup-turnstile" data-sitekey="0x4AAAAAABnpTjrdDgkMZ8Nr"   data-theme="dark"   data-callback="onTurnstileSignupSuccess"></div>
       <p id="status">By signing up, you automatically agree to the <a href=/legal>Privacy Policy</a> and <a href=/legal>Terms Of Use</a>.</p>
       <button id="signup-btn">Sign Up</button>
     </div>

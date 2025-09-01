@@ -1,18 +1,46 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+// (Initialization of interactive auth UI is performed after DOMContentLoaded)
 
-const supabaseUrl = 'https://jbekjmsruiadbhaydlbt.supabase.co';
-const supabaseKey =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY';
+// When returning to login view, reset all login UI and show main Turnstile only
+function showLogin() {
+  console.log('🔄 Switching to Login view');
+  if (authOptions) authOptions.style.display = 'none';
+  if (loginSection) loginSection.style.display = 'block';
+  if (signupSection) signupSection.style.display = 'none';
+  // Reset login UI
+  if (passwordLoginFields) passwordLoginFields.style.display = 'none';
+  if (magicLinkConfirm) magicLinkConfirm.style.display = 'none';
+  if (showPasswordLoginBtn) showPasswordLoginBtn.style.display = '';
+  if (showMagicLinkBtn) showMagicLinkBtn.style.display = '';
+  const loginMethods = document.getElementById('login-methods');
+  if (loginMethods) loginMethods.style.display = '';
+  // Hide password Turnstile, show main Turnstile
+  const allTurnstiles = loginSection ? loginSection.querySelectorAll('.cf-turnstile') : [];
+  allTurnstiles.forEach(ts => {
+    if (ts.id === 'password-turnstile') {
+      ts.style.display = 'none';
+    } else {
+      ts.style.display = '';
+    }
+  });
+  // Always show login button in login view
+  const loginBtn = document.getElementById('login-btn');
+  if (loginBtn) loginBtn.style.display = '';
+  // Always show email/password inputs
+  if (loginEmailInput) loginEmailInput.style.display = '';
+  const loginPasswordInput = document.getElementById('login-password');
+  if (loginPasswordInput) loginPasswordInput.style.display = '';
+  setStatus('', 'login');
+}
 
-const supabase = createClient(supabaseUrl, supabaseKey);
-const supabaseClient = supabase; // alias for supabaseClient usage elsewhere
+// Bulletproof: Immediately assign to window after declaration, with try/catch for safety
+try {
+  window.showLogin = showLogin;
+} catch (e) {
+  // fallback: define property if window is not writable
+  Object.defineProperty(window, 'showLogin', { value: showLogin, writable: true });
+}
 
-export default supabase;
-
-
-
-
-
+// ...existing code...
 // Elements
 const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
@@ -30,6 +58,13 @@ const updateUsernameBtn = document.getElementById('update-username-btn');
 const authOptions = document.getElementById('auth-options');
 const loginSection = document.getElementById('login-section');
 const signupSection = document.getElementById('signup-section');
+const loginEmailInput = document.getElementById('login-email');
+const loginPasswordInput = document.getElementById('login-password');
+const showPasswordLoginBtn = document.getElementById('show-password-login-btn');
+const showMagicLinkBtn = document.getElementById('show-magic-link-btn');
+const passwordLoginFields = document.getElementById('password-login-fields');
+const magicLinkConfirm = document.getElementById('magic-link-confirm');
+const magicLinkBackBtn = document.getElementById('magic-link-back-btn');
 
 function setStatus(msg, los) {
   if (los === 'login') {
@@ -38,42 +73,256 @@ function setStatus(msg, los) {
   } else if (los === 'signup') {
     console.log(`💬 [Status - Signup]: ${msg}`);
     statusEl.innerHTML = msg;
-    
+
   } else {
     console.log(`💬 [Status]: ${msg}`);
   }
 }
 
-function showLogin() {
-  console.log('🔄 Switching to Login view');
-  authOptions.style.display = 'none';
-  loginSection.style.display = 'block';
-  signupSection.style.display = 'none';
+// ...existing code...
+// Global tokens for each widget
+// Tokens for each flow/widget
+// Tokens for each flow and metadata (timestamp) to prevent reuse/timeouts
+window.turnstileSignupToken = null;
+window.turnstileSignupMeta = null; // { token, ts }
+window.turnstileLoginToken = null;
+window.turnstileLoginMeta = null; // { token, ts }
+window.turnstilePasswordToken = null;
+window.turnstilePasswordMeta = null; // { token, ts }
+
+// In-flight flags and render promises to prevent duplicate actions
+window._authInFlight = window._authInFlight || false;
+window._turnstileRenderPromises = window._turnstileRenderPromises || {};
+
+function _cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function setTurnstileToken(flow, token){
+  const meta = { token: token, ts: Date.now() };
+  if (flow === 'signup') { window.turnstileSignupToken = token; window.turnstileSignupMeta = meta; }
+  else if (flow === 'login') { window.turnstileLoginToken = token; window.turnstileLoginMeta = meta; }
+  else if (flow === 'password') { window.turnstilePasswordToken = token; window.turnstilePasswordMeta = meta; }
+}
+function clearTurnstileToken(flow){
+  if (flow === 'signup') { window.turnstileSignupToken = null; window.turnstileSignupMeta = null; }
+  else if (flow === 'login') { window.turnstileLoginToken = null; window.turnstileLoginMeta = null; }
+  else if (flow === 'password') { window.turnstilePasswordToken = null; window.turnstilePasswordMeta = null; }
+}
+function isTurnstileTokenFresh(flow, maxAgeMs = 120000){
+  let meta = null;
+  if (flow === 'signup') meta = window.turnstileSignupMeta;
+  else if (flow === 'login') meta = window.turnstileLoginMeta;
+  else if (flow === 'password') meta = window.turnstilePasswordMeta;
+  if (!meta || !meta.token) return false;
+  return (Date.now() - meta.ts) <= maxAgeMs;
 }
 
-function showSignup() {
-  console.log('🔄 Switching to Signup view');
-  authOptions.style.display = 'none';
-  signupSection.style.display = 'block';
-  loginSection.style.display = 'none';
+// Helper: Reload all visible Turnstile widgets and clear tokens
+function reloadAllTurnstiles(force = false) {
+  // Prefer resetting by stored widget id to avoid duplicate-render warnings
+  try {
+    Object.keys(window._turnstileWidgets || {}).forEach(key => {
+      const widgetId = window._turnstileWidgets[key];
+      if (widgetId !== undefined && widgetId !== null && window.turnstile && typeof window.turnstile.reset === 'function') {
+        try { window.turnstile.reset(widgetId); } catch (e) { /* ignore */ }
+      } else {
+        // Fallback: try resetting by element reference if available
+        const possibleEl = document.querySelector('[data-_turnstile-key="' + key + '"]') || document.getElementById(key);
+        if (possibleEl && window.turnstile && typeof window.turnstile.reset === 'function') {
+          try { window.turnstile.reset(possibleEl); } catch (e) { /* ignore */ }
+        }
+      }
+    });
+  } catch (e) { /* ignore */ }
+
+  // Also attempt a generic reset for any remaining containers
+  document.querySelectorAll('.cf-turnstile').forEach(el => {
+    try {
+      const key = el.dataset._turnstileKey;
+      if (!key && window.turnstile && typeof window.turnstile.reset === 'function') {
+        try { window.turnstile.reset(el); } catch (e) { /* ignore */ }
+      }
+    } catch (e) { /* ignore */ }
+  });
+
+  // Clear stored widget ids so future renders are clean
+  window._turnstileWidgets = {};
+  // Clear tokens unless they are still fresh and force is false
+  if (force) {
+    clearTurnstileToken('signup'); clearTurnstileToken('login'); clearTurnstileToken('password');
+  } else {
+    if (!isTurnstileTokenFresh('signup')) clearTurnstileToken('signup');
+    if (!isTurnstileTokenFresh('login')) clearTurnstileToken('login');
+    if (!isTurnstileTokenFresh('password')) clearTurnstileToken('password');
+  }
+  // Disable buttons until solved again
+  const loginBtn = document.getElementById('login-btn');
+  if (loginBtn) loginBtn.disabled = true;
+  const signupBtn = document.getElementById('signup-btn');
+  if (signupBtn) signupBtn.disabled = true;
 }
-window.showLogin = showLogin;
-window.showSignup = showSignup;
-// Global tokens for each widget
-window.turnstileSignupToken = null;
-window.turnstileLoginToken = null;
+
+// Debug: expose a showSignup to match HTML inline handlers
+function showSignup() {
+  console.debug('showSignup() called');
+  if (authOptions) authOptions.style.display = 'none';
+  if (loginSection) loginSection.style.display = 'none';
+  if (signupSection) signupSection.style.display = 'block';
+  // ensure signup-related widgets visible
+  const allTurnstiles = signupSection ? signupSection.querySelectorAll('.cf-turnstile') : document.querySelectorAll('.cf-turnstile');
+  allTurnstiles.forEach(ts => { ts.style.display = ''; });
+  setStatus('', 'signup');
+}
+try { window.showSignup = showSignup; } catch(e) { Object.defineProperty(window, 'showSignup', { value: showSignup, writable: true }); }
+
+
+// === Turnstile helpers (ensure script, render, reset) ===
+// These are lightweight, defensive helpers to make widget rendering reliable.
+window._turnstileWidgets = window._turnstileWidgets || {};
+window._turnstileLoadPromise = window._turnstileLoadPromise || null;
+
+function ensureTurnstileScript(timeoutMs = 10000) {
+  if (window.turnstile) return Promise.resolve(window.turnstile);
+  if (window._turnstileLoadPromise) return window._turnstileLoadPromise;
+
+  window._turnstileLoadPromise = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+    s.async = true;
+    s.defer = true;
+    let finished = false;
+    s.addEventListener('load', () => {
+      finished = true;
+      console.debug('Turnstile script loaded');
+      resolve(window.turnstile);
+    });
+    s.addEventListener('error', (e) => {
+      if (finished) return;
+      finished = true;
+      console.warn('Turnstile script failed to load, will retry once');
+      // retry once after 700ms
+      setTimeout(() => {
+        const t = document.createElement('script');
+        t.src = s.src;
+        t.async = true; t.defer = true;
+        t.addEventListener('load', () => { console.debug('Turnstile script loaded on retry'); resolve(window.turnstile); });
+        t.addEventListener('error', () => { reject(new Error('Failed to load Turnstile script after retry')); });
+        document.head.appendChild(t);
+      }, 700);
+    });
+    document.head.appendChild(s);
+    setTimeout(() => {
+      if (finished) return;
+      finished = true;
+      if (window.turnstile) resolve(window.turnstile);
+      else reject(new Error('Turnstile script load timeout'));
+    }, timeoutMs);
+  });
+  return window._turnstileLoadPromise;
+}
+
+async function renderTurnstile(container, opts = {}) {
+  const el = (typeof container === 'string') ? document.querySelector(container) : container;
+  if (!el) throw new Error('Turnstile container not found: ' + container);
+  console.debug('renderTurnstile: preparing to render into', container);
+  await ensureTurnstileScript();
+  // dedupe renders for same element
+  const renderKey = el.id || el.dataset._turnstileKey || ('ts_' + Math.random().toString(36).slice(2));
+  if (window._turnstileRenderPromises[renderKey]) {
+    console.debug('renderTurnstile: waiting for in-flight render for', renderKey);
+    try { await window._turnstileRenderPromises[renderKey]; } catch(e) { /* ignore */ }
+  }
+  // Avoid double-render: if we've already rendered into this element, return stored id
+  const key = el.dataset._turnstileKey || (el.id || ('ts_' + Math.random().toString(36).slice(2)));
+  if (el.dataset._turnstileKey && (window._turnstileWidgets && window._turnstileWidgets[key] !== undefined)) {
+    console.debug('renderTurnstile: already rendered for key', key, 'widgetId=', window._turnstileWidgets[key]);
+    return window._turnstileWidgets[key];
+  }
+
+  // If element already appears to contain a rendered Turnstile (iframe), skip rendering to avoid warning
+  try {
+    const hasIframe = el.querySelector && el.querySelector('iframe[src*="challenges.cloudflare.com"]');
+    if (hasIframe) {
+      // mark as rendered so we don't attempt again
+      el.dataset._turnstileKey = key;
+      window._turnstileWidgets[key] = null; // externally rendered
+      return null;
+    }
+  } catch (e) { /* ignore DOM checks */ }
+  const cb = opts.onSuccess ? function(token){ try { opts.onSuccess(token); } catch(e){console.error(e);} } : undefined;
+  const exp = opts.onExpired ? function(){ try { opts.onExpired(); } catch(e){console.error(e);} } : undefined;
+  const renderOpts = Object.assign({}, opts.render || {});
+  if (cb) renderOpts.callback = cb;
+  if (exp) renderOpts['expired-callback'] = exp;
+  let widgetId = null;
+  try {
+    console.debug('renderTurnstile: calling window.turnstile.render for key', key);
+    // store promise so concurrent callers wait for the same render
+    window._turnstileRenderPromises[renderKey] = (async () => {
+      try { return window.turnstile.render(el, renderOpts); }
+      catch (e1) {
+        try { return window.turnstile.render('#' + el.id, renderOpts); } catch (e2) { console.warn('turnstile render failed', e1, e2); throw e2; }
+      }
+    })();
+    widgetId = await window._turnstileRenderPromises[renderKey];
+    delete window._turnstileRenderPromises[renderKey];
+  } catch (e1) {
+    console.warn('renderTurnstile: final render failure', e1);
+  }
+  // store key even if widgetId is null (external render or failure)
+  el.dataset._turnstileKey = key;
+  window._turnstileWidgets[key] = widgetId;
+  console.debug('renderTurnstile: stored widget', key, '=>', widgetId);
+  return widgetId;
+}
+
+function resetTurnstile(container) {
+  const el = (typeof container === 'string') ? document.querySelector(container) : container;
+  if (!el) return;
+  const key = el.dataset._turnstileKey;
+  const widgetId = key ? window._turnstileWidgets && window._turnstileWidgets[key] : undefined;
+  console.debug('resetTurnstile: key=', key, 'widgetId=', widgetId);
+  if (widgetId !== undefined && widgetId !== null && window.turnstile && typeof window.turnstile.reset === 'function') {
+    try { window.turnstile.reset(widgetId); } catch (e) { console.error('turnstile reset failed', e); }
+  } else if (window.turnstile && typeof window.turnstile.reset === 'function') {
+    try { window.turnstile.reset(el); } catch (e) { /* ignore */ }
+  }
+  console.debug('resetTurnstile: cleared tokens for element id=', el.id);
+  // Clear associated tokens
+  if (el.id && el.id.includes('password')) {
+    window.turnstilePasswordToken = null;
+  } else if (el.id && el.id.includes('signup')) {
+    window.turnstileSignupToken = null;
+  } else if (el.id && el.id.includes('login')) {
+    window.turnstileLoginToken = null;
+  } else {
+    // fallback: clear all to be safe
+    window.turnstileSignupToken = null;
+    window.turnstileLoginToken = null;
+    window.turnstilePasswordToken = null;
+  }
+}
+
+window.ensureTurnstileScript = ensureTurnstileScript;
+window.renderTurnstile = renderTurnstile;
+window.resetTurnstile = resetTurnstile;
 
 // Callbacks for the Turnstile widgets (set these in your HTML widget data-callback)
 window.onTurnstileSignupSuccess = function (token) {
-  window.turnstileSignupToken = token;
-  document.getElementById('signup-btn').disabled = false;
-  console.log('✅ Turnstile signup token received');
+  setTurnstileToken('signup', token);
+  const btn = document.getElementById('signup-btn'); if (btn) btn.disabled = false;
+  console.log('✅ Turnstile signup token received (fresh)');
 };
 
 window.onTurnstileLoginSuccess = function (token) {
-  window.turnstileLoginToken = token;
-  document.getElementById('login-btn').disabled = false;
-  console.log('✅ Turnstile login token received');
+  setTurnstileToken('login', token);
+  const btn = document.getElementById('login-btn'); if (btn) btn.disabled = false;
+  console.log('✅ Turnstile login token received (fresh)');
+};
+
+// Password-specific callback (password login flow)
+window.onTurnstilePasswordSuccess = function (token) {
+  setTurnstileToken('password', token);
+  const loginBtn = document.getElementById('login-btn'); if (loginBtn) loginBtn.disabled = false;
+  console.log('✅ Turnstile password token received (fresh)');
 };
 
 async function signUp() {
@@ -93,16 +342,18 @@ async function signUp() {
   const usernameWarning = document.getElementById('username-warning');
   if (usernameWarning) usernameWarning.style.display = 'none';
 
+  const signupBtn = document.getElementById('signup-btn');
+  if (signupBtn) signupBtn.disabled = true;
   if (!email || !password || !confirmPassword || !username || !birthdayValue) {
     console.warn('⚠️ SignUp failed: Missing fields');
-    return setStatus('Please fill in all fields.', 'signup');
+    setStatus('Please fill in all fields.', 'signup');
+    reloadAllTurnstiles();
+    if (signupBtn) signupBtn.disabled = false;
+    return;
   }
-
   // New: Block bad usernames
   if (containsBadWord(username)) {
     usernameInput.style.border = '2px solid red';
-    
-    // Show or create a warning message under username input
     if (usernameWarning) {
       usernameWarning.textContent = "This username isn't appropriate for starship.";
       usernameWarning.style.color = 'red';
@@ -115,42 +366,47 @@ async function signUp() {
       warningEl.textContent = "This username isn't appropriate for starship.";
       usernameInput.insertAdjacentElement('afterend', warningEl);
     }
-    
     console.warn('⚠️ SignUp failed: Username contains banned word');
-    return setStatus("This username isn't appropriate for starship.", 'signup');
+    setStatus("This username isn't appropriate for starship.", 'signup');
+    reloadAllTurnstiles();
+    if (signupBtn) signupBtn.disabled = false;
+    return;
   }
-
   // --- Passwords match check ---
   if (password !== confirmPassword) {
     console.warn('⚠️ SignUp failed: Passwords do not match');
-    return setStatus('Passwords do not match.', 'signup');
+    setStatus('Passwords do not match.', 'signup');
+    reloadAllTurnstiles();
+    if (signupBtn) signupBtn.disabled = false;
+    return;
   }
-
   // --- Age check ---
   const birthday = new Date(birthdayValue);
   const today = new Date();
   const ageDifMs = today - birthday;
   const ageDate = new Date(ageDifMs);
   const age = Math.abs(ageDate.getUTCFullYear() - 1970);
-
   if (age < 13) {
     birthdayInput.style.border = "2px solid red";
     birthdayWarning.style.display = "block";
     console.warn('⚠️ SignUp failed: User under 13');
-    return setStatus("You must be at least 13 years old to sign up.", "signup");
+    setStatus("You must be at least 13 years old to sign up.", "signup");
+    reloadAllTurnstiles();
+    if (signupBtn) signupBtn.disabled = false;
+    return;
   } else {
     birthdayInput.style.border = "";
     birthdayWarning.style.display = "none";
   }
-
   // --- Turnstile token check ---
   const token = window.turnstileSignupToken;
   if (!token) {
     console.warn('⚠️ No Turnstile token found.');
-    return setStatus('Please complete the bot check.', 'signup');
+    setStatus('Please complete the bot check.', 'signup');
+    reloadAllTurnstiles();
+    if (signupBtn) signupBtn.disabled = false;
+    return;
   }
-
-  // --- Sign up using Supabase ---
   try {
     const { data, error } = await supabaseClient.auth.signUp({
       email,
@@ -163,44 +419,45 @@ async function signUp() {
         }
       }
     });
-
     if (error) {
       console.error('❌ SignUp error:', error);
-      return setStatus('Sign up error: ' + error.message, 'signup');
+      setStatus('Sign up error: ' + error.message, 'signup');
+      reloadAllTurnstiles(true);
+      if (signupBtn) signupBtn.disabled = false;
+      return;
     }
-
-    console.log('✅ SignUp successful:', data);
-// showEmailConfirmModal();
-localStorage.setItem('pendingUsername', username);
-
-
-
-    setStatus(
-      'Signed up! Confirm your email, then sign in.',
-      'signup'
-    );
-
-    window.turnstileSignupToken = null;
+  console.log('✅ SignUp successful:', data);
+    localStorage.setItem('pendingUsername', username);
+    setStatus('Signed up! Confirm your email, then sign in.', 'signup');
+  reloadAllTurnstiles(true);
+    if (signupBtn) signupBtn.disabled = false;
   } catch (e) {
-    console.error('❌ Unexpected error during signUp:', e);
-    return setStatus('Unexpected error. Please try again later.', 'signup');
+  console.error('❌ Unexpected error during signUp:', e);
+  setStatus('Unexpected error. Please try again later.', 'signup');
+  reloadAllTurnstiles(true);
+  if (signupBtn) signupBtn.disabled = false;
   }
 }
 
 
 
 async function signIn() {
-  const token = window.turnstileLoginToken;
-  const email = emailInput.value.trim();
-  const password = passwordInput.value;
-
+  // Prefer password token when fresh; fall back to login token if fresh
+  let token = null;
+  if (isTurnstileTokenFresh('password')) token = window.turnstilePasswordToken;
+  else if (isTurnstileTokenFresh('login')) token = window.turnstileLoginToken;
+  const email = loginEmailInput.value.trim();
+  const password = loginPasswordInput.value;
+  const loginBtn = document.getElementById('login-btn');
+  if (loginBtn) loginBtn.disabled = true;
   if (!token) {
     console.warn('⚠️ No Turnstile token found.');
-    return setStatus('Please complete the bot check.', 'login');
+    setStatus('Please complete the bot check to send a magic link.', 'login');
+    reloadAllTurnstiles();
+    if (loginBtn) loginBtn.disabled = false;
+    return;
   }
-
   console.log(`🔐 SignIn attempt for email: ${email}`);
-
   try {
     const { data, error } = await supabaseClient.auth.signInWithPassword({
       email,
@@ -209,60 +466,77 @@ async function signIn() {
         captchaToken: token
       }
     });
-
     if (error) {
       console.error('❌ Login error:', error);
-      console.log('Turnstile token:', token);
-      return setStatus('Login error: ' + error.message, 'login');
+      setStatus('Login error: ' + error.message, 'login');
+      reloadAllTurnstiles(true);
+      if (loginBtn) loginBtn.disabled = false;
+      return;
     }
-
     console.log('✅ Logged in successfully:', data);
     setStatus('Logged in!', 'login');
     await ensureProfile();
     await checkForAdmin();
     await loadProfile();
-    location.reload();
-
-    window.turnstileLoginToken = null;
+  location.reload();
+  reloadAllTurnstiles(true);
+    if (loginBtn) loginBtn.disabled = false;
   } catch (e) {
-    console.error('❌ Unexpected error during signIn:', e);
-    return setStatus('Unexpected error. Please try again later.', 'login');
+  console.error('❌ Unexpected error during signIn:', e);
+  setStatus('Unexpected error. Please try again later.', 'login');
+  reloadAllTurnstiles(true);
+  if (loginBtn) loginBtn.disabled = false;
   }
-
-
 }
-
 
 
 async function sendResetLink() {
   const email = emailInput.value.trim();
   const token = window.turnstileLoginToken; // grab the same Turnstile token
-
+  const loginBtn = document.getElementById('login-btn');
+  if (loginBtn) loginBtn.disabled = true;
   if (!email) {
-    return setStatus('Please enter your email address.', 'reset');
+    setStatus('Please enter your email address.', 'reset');
+    reloadAllTurnstiles();
+    if (loginBtn) loginBtn.disabled = false;
+    return;
   }
   if (!token) {
-    return setStatus('Please complete the bot check.', 'reset');
+    setStatus('Please complete the bot check.', 'reset');
+  reloadAllTurnstiles();
+    if (loginBtn) loginBtn.disabled = false;
+    return;
   }
-
   console.log(`🔑 Password reset requested for email: ${email}`);
-
   try {
-    const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/reset-password.html',
-      captchaToken: token // 👈 required if CAPTCHA enforcement is on
-    });
-
-    if (error) {
-      console.error('❌ Error sending reset link:', error);
-      return setStatus('Error: ' + error.message, 'reset');
+    // ensure token fresh
+    if (!isTurnstileTokenFresh('login')) {
+      setStatus('Captcha token expired — please solve the bot check again.', 'reset');
+      try { await renderTurnstile(document.querySelector('#login-turnstile') || document.querySelector('#signup-turnstile') || document.querySelector('.cf-turnstile'), { onSuccess: (t) => setTurnstileToken('login', t), onExpired: () => clearTurnstileToken('login') }); } catch(e){}
+      if (loginBtn) loginBtn.disabled = false;
+      return;
     }
 
+    const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/reset-password.html',
+      captchaToken: window.turnstileLoginToken // 👈 required if CAPTCHA enforcement is on
+    });
+    if (error) {
+      console.error('❌ Error sending reset link:', error);
+      setStatus('Error: ' + error.message, 'reset');
+      reloadAllTurnstiles(true);
+      if (loginBtn) loginBtn.disabled = false;
+      return;
+    }
     console.log('✅ Reset link sent:', data);
     setStatus('Password reset link sent! Check your inbox.', 'login');
+    reloadAllTurnstiles();
+    if (loginBtn) loginBtn.disabled = false;
   } catch (e) {
     console.error('❌ Unexpected error during reset link send:', e);
-    return setStatus('Unexpected error. Please try again later.', 'login');
+    setStatus('Unexpected error. Please try again later.', 'login');
+    reloadAllTurnstiles();
+    if (loginBtn) loginBtn.disabled = false;
   }
 }
 
@@ -338,7 +612,7 @@ async function ensureProfile() {
 
   if (!profile) {
     console.log('🆕 No profile found, creating new profile');
-    
+
     // Get username from localStorage first
     let username = localStorage.getItem('pendingUsername');
 
@@ -389,7 +663,8 @@ async function updateAvatarUrl(userId, url) {
     console.log('✅ Avatar URL updated successfully');
   }
 }
-import { bannedWords } from '/javascript/filter.js';
+// Safe fallback for bannedWords list (avoid breaking if module import fails)
+const bannedWords = window.bannedWords || [];
 async function updateUsername() {
   const newUsername = newUsernameInput.value.trim();
   console.log(`✏️ Attempting username update to: ${newUsername}`);
@@ -589,7 +864,7 @@ async function loadProfile() {
 }
 
 
-profileAvatar.addEventListener('click', async () => {
+profileAvatar?.addEventListener('click', async () => {
   console.log('👆 Avatar clicked, triggering file input...');
   let fileInput = document.getElementById('profile-avatar-input');
   if (!fileInput) {
@@ -658,11 +933,57 @@ updateAvatarBtn?.addEventListener('click', async () => {
   }
 });
 
-document.getElementById('signup-btn')?.addEventListener('click', function (e) {
-  e.preventDefault();
-  console.log('👤 Signup button clicked');
-  signUp();
+document.getElementById('signup-btn')?.addEventListener('click', async function (e) {
+  e.preventDefault && e.preventDefault();
+  const btn = this;
+  console.log('👤 Signup button clicked (robust handler)');
+  console.debug('signup: current tokens: signup=', window.turnstileSignupToken, 'login=', window.turnstileLoginToken);
+  if (window._authInFlight) return;
+  window._authInFlight = true;
+  btn.disabled = true;
+
+  try {
+    const container = document.querySelector('#signup-turnstile, .signup-turnstile, .cf-turnstile');
+    if (container) {
+      try {
+        await renderTurnstile(container, {
+          onSuccess: (token) => { window.turnstileSignupToken = token; btn.disabled = false; },
+          onExpired: () => { window.turnstileSignupToken = null; }
+        });
+      } catch (e) { console.warn('Turnstile render failed for signup:', e); }
+    } else {
+      // Ensure script is available so any inline markup can render
+      try { await ensureTurnstileScript(); } catch (e) { /* ignore */ }
+    }
+
+    // If backend requires captcha, ensure token exists
+    const requireCaptcha = true;
+    if (requireCaptcha && !window.turnstileSignupToken) {
+      setStatus && setStatus('Please complete the captcha to create your account.', 'signup');
+      btn.disabled = false;
+      window._authInFlight = false;
+      return;
+    }
+
+  // Call the original signUp function if present
+    if (typeof signUp === 'function') {
+      const res = signUp();
+      if (res && typeof res.then === 'function') await res;
+    } else {
+      // fallback: submit nearest form
+      const form = btn.closest('form') || document.querySelector('#signup-form');
+      if (form) form.submit();
+      else setStatus && setStatus('Signup handler missing.', 'signup');
+    }
+  } catch (err) {
+    console.error('Signup wrapper error', err);
+    setStatus && setStatus('Error creating account. Please try again.', 'signup');
+  } finally {
+    btn.disabled = false;
+    window._authInFlight = false;
+  }
 });
+console.debug('signup handler attached');
 document.getElementById('login-btn')?.addEventListener('click', () => {
   console.log('🔑 Login button clicked');
   signIn();
@@ -697,7 +1018,7 @@ function hideAvatarPopup() {
   }, 3000);
 }
 
-document.getElementById('toggle-signup-password').onclick = function () {
+document.getElementById('toggle-signup-password')?.addEventListener('click', function () {
   console.log('👁️ Toggling signup password visibility');
   const pw = document.getElementById('signup-password');
   pw.type = pw.type === 'password' ? 'text' : 'password';
@@ -705,10 +1026,9 @@ document.getElementById('toggle-signup-password').onclick = function () {
     pw.type === 'text'
       ? '<i class="fa-solid fa-eye-slash"></i>'
       : '<i class="fa-solid fa-eye"></i>';
-};
+});
 
-document.getElementById('toggle-signup-confirm-password').onclick =
-  function () {
+document.getElementById('toggle-signup-confirm-password')?.addEventListener('click', function () {
     console.log('👁️ Toggling signup confirm password visibility');
     const pw = document.getElementById('signup-confirm-password');
     pw.type = pw.type === 'password' ? 'text' : 'password';
@@ -716,7 +1036,61 @@ document.getElementById('toggle-signup-confirm-password').onclick =
       pw.type === 'text'
         ? '<i class="fa-solid fa-eye-slash"></i>'
         : '<i class="fa-solid fa-eye"></i>';
-  };
+  });
+
+  // Proactively ensure Turnstile script is available but do NOT render main widgets on load.
+  // We'll render per-flow on user action (magic-link click, signup click, password flow) to avoid
+  // showing a Turnstile on the email-only page and to prevent duplicate-render/timeouts.
+  try {
+    await ensureTurnstileScript();
+  } catch (e) {
+    console.warn('Turnstile script could not be loaded proactively:', e);
+  }
+
+  // Helper: render a Turnstile into a container and wait for its token for the given flow.
+  // Resolves with token string, or rejects on error/timeout.
+  async function renderAndGetToken(flow, containerSelector, opts = {}) {
+    // If token is already fresh, return it immediately
+    if (isTurnstileTokenFresh(flow)) {
+      if (flow === 'login') return window.turnstileLoginToken;
+      if (flow === 'signup') return window.turnstileSignupToken;
+      if (flow === 'password') return window.turnstilePasswordToken;
+    }
+
+    await ensureTurnstileScript();
+    const container = (typeof containerSelector === 'string') ? document.querySelector(containerSelector) : containerSelector;
+    if (!container) throw new Error('Turnstile container not found for flow: ' + flow);
+
+    return new Promise(async (resolve, reject) => {
+      let settled = false;
+      const timeout = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        reject(new Error('Turnstile solve timed out'));
+      }, opts.timeoutMs || 120000);
+
+      const onSuccess = (token) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeout);
+        try { setTurnstileToken(flow, token); } catch (e) { /* ignore */ }
+        resolve(token);
+      };
+      const onExpired = () => {
+        try { clearTurnstileToken(flow); } catch (e) { /* ignore */ }
+      };
+
+      try {
+        await renderTurnstile(container, { onSuccess, onExpired });
+      } catch (e) {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timeout);
+          reject(e);
+        }
+      }
+    });
+  }
 
 function fileToDataUrl(file) {
   console.log('🔄 Converting file to DataURL...');
@@ -812,14 +1186,177 @@ async function saveBio() {
   }, 4000);
 }
 
-saveBioBtn.addEventListener('click', saveBio);
+saveBioBtn?.addEventListener('click', saveBio);
 
-window.onload = async () => {
-  console.log('🌐 Window loaded, loading profile, bio, and privacy setting...');
-  await loadProfile();
-  await loadBio();
-  await loadPrivateSetting();
-};
+// Consolidate critical initialization to DOMContentLoaded
+document.addEventListener('DOMContentLoaded', async () => {
+  // Wire up auth buttons
+  const signupBtn = document.getElementById('signup-btn');
+  // signup button uses the robust handler attached earlier; if it's missing, attach a safe fallback
+  if (signupBtn && !signupBtn._robustAttached) {
+    signupBtn._robustAttached = true;
+    // existing robust handler attached near top of file will be used; no-op here
+  }
+
+  const loginBtn = document.getElementById('login-btn');
+  if (loginBtn) loginBtn.addEventListener('click', () => { console.log('🔑 Login button clicked'); signIn(); });
+
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) logoutBtn.addEventListener('click', () => { console.log('🚪 Logout button clicked'); signOut(); });
+
+  if (updateUsernameBtn) updateUsernameBtn.addEventListener('click', () => { console.log('✏️ Update username button clicked'); updateUsername(); });
+
+  // Password login toggle
+  const showPasswordBtn = document.getElementById('show-password-login-btn');
+  showPasswordBtn?.addEventListener('click', async () => {
+    console.debug('showPasswordBtn clicked, tokens before:', window.turnstilePasswordToken, window.turnstileLoginToken);
+    if (magicLinkConfirm) magicLinkConfirm.style.display = 'none';
+    const loginMethods = document.getElementById('login-methods');
+    if (loginMethods) loginMethods.style.display = 'none';
+    if (passwordLoginFields) passwordLoginFields.style.display = '';
+    const allTurnstiles = loginSection ? loginSection.querySelectorAll('.cf-turnstile') : [];
+    // show only password turnstile
+    allTurnstiles.forEach(ts => { ts.style.display = ts.id === 'password-turnstile' ? '' : 'none'; });
+    // Reset any previous widgets/tokens then render the password widget so it remains active
+    try { reloadAllTurnstiles(); } catch(e) { /* ignore */ }
+    try {
+      const pwd = document.getElementById('password-turnstile') || document.querySelector('.cf-turnstile.password');
+      if (pwd) {
+        pwd.style.display = '';
+        await renderTurnstile(pwd, {
+          onSuccess: (token) => { window.turnstilePasswordToken = token; const b = document.getElementById('login-btn'); if (b) b.disabled = false; },
+          onExpired: () => { window.turnstilePasswordToken = null; }
+        });
+      }
+    } catch (e) { console.warn('Password turnstile render failed', e); }
+    setStatus('Please complete the bot check for password login.', 'login');
+    console.debug('password flow: rendered password widget; tokens now:', window.turnstilePasswordToken);
+    const loginBtn = document.getElementById('login-btn'); if (loginBtn) loginBtn.style.display = '';
+    if (loginEmailInput) loginEmailInput.style.display = '';
+    const loginPasswordInput = document.getElementById('login-password'); if (loginPasswordInput) loginPasswordInput.style.display = '';
+  });
+
+  // Magic link handler
+  const magicBtn = document.getElementById('show-magic-link-btn');
+  magicBtn?.addEventListener('click', async () => {
+    console.debug('magicBtn clicked, tokens:', window.turnstileLoginToken, window.turnstileSignupToken);
+    const allTurnstiles = loginSection ? loginSection.querySelectorAll('.cf-turnstile') : [];
+    // Hide the 'use password' button immediately and show only the main turnstile when solving
+    if (showPasswordLoginBtn) showPasswordLoginBtn.style.display = 'none';
+    // ensure main (non-password) turnstile is hidden until render
+    allTurnstiles.forEach(ts => { if (ts.id === 'password-turnstile') ts.style.display = 'none'; else ts.style.display = 'none'; });
+    const email = loginEmailInput ? loginEmailInput.value.trim() : '';
+    const btn = magicBtn;
+    // simple debounce to prevent duplicate requests
+    btn._lastClick = btn._lastClick || 0;
+    if (Date.now() - btn._lastClick < 3000) { console.warn('Duplicate magic link click ignored'); return; }
+    btn._lastClick = Date.now();
+    // If no email, prompt user
+    if (!email) { setStatus('Please enter your email address.', 'login'); if (showPasswordLoginBtn) showPasswordLoginBtn.style.display = ''; return; }
+
+    // Render the login turnstile on-demand and wait for token
+    btn.disabled = true;
+    try {
+      const mainSelector = '#login-turnstile, #signup-turnstile, .cf-turnstile';
+      const mainEl = document.querySelector('#login-turnstile') || document.querySelector('#signup-turnstile') || document.querySelector('.cf-turnstile');
+      if (!mainEl) {
+        // No container available—try to show user a helpful message and abort
+        setStatus('Bot check unavailable on this page.', 'login');
+        btn.disabled = false;
+        if (showPasswordLoginBtn) showPasswordLoginBtn.style.display = '';
+        return;
+      }
+
+      // Make sure only main container is visible
+      allTurnstiles.forEach(ts => { ts.style.display = ts.id === 'password-turnstile' ? 'none' : 'none'; });
+      mainEl.style.display = '';
+
+      // Wait for user to solve the Turnstile and get token (timeout ~2 minutes)
+      let token = null;
+      try {
+        token = await renderAndGetToken('login', mainEl, { timeoutMs: 120000 });
+      } catch (e) {
+        console.warn('User did not complete Turnstile or render failed:', e);
+        setStatus('Please complete the bot check to send a magic link.', 'login');
+        btn.disabled = false;
+        if (showPasswordLoginBtn) showPasswordLoginBtn.style.display = '';
+        return;
+      }
+
+      if (!token) {
+        setStatus('Bot check failed. Please try again.', 'login');
+        btn.disabled = false;
+        if (showPasswordLoginBtn) showPasswordLoginBtn.style.display = '';
+        return;
+      }
+
+      // Ensure token fresh
+      if (!isTurnstileTokenFresh('login')) {
+        setStatus('Captcha token expired — please solve the bot check again.', 'login');
+        btn.disabled = false;
+        if (showPasswordLoginBtn) showPasswordLoginBtn.style.display = '';
+        return;
+      }
+
+      // Send magic link
+      const { error } = await supabase.auth.signInWithOtp({ email, options: { captchaToken: token, emailRedirectTo: window.location.origin + '/auth.html' } });
+      if (error) {
+        setStatus('Error sending magic link: ' + error.message, 'login');
+        reloadAllTurnstiles(true);
+        btn.disabled = false;
+        if (showPasswordLoginBtn) showPasswordLoginBtn.style.display = '';
+        return;
+      }
+
+      // Success -> show confirmation UI
+      if (loginEmailInput) loginEmailInput.style.display = 'none';
+      const loginMethods = document.getElementById('login-methods'); if (loginMethods) loginMethods.style.display = 'none';
+      if (passwordLoginFields) passwordLoginFields.style.display = 'none';
+      const newhere = document.getElementById('signupalt');
+      if (newhere) newhere.style.display = 'none';
+      if (showPasswordLoginBtn) showPasswordLoginBtn.style.display = 'none';
+      if (showMagicLinkBtn) showMagicLinkBtn.style.display = 'none';
+      allTurnstiles.forEach(ts => { ts.style.display = ts.id === 'password-turnstile' ? 'none' : 'none'; });
+      if (magicLinkConfirm) {
+        magicLinkConfirm.style.display = 'block';
+        const backBtn = document.getElementById('magic-link-back-btn'); if (backBtn) backBtn.style.display = 'none';
+      }
+      setStatus('', 'login');
+      reloadAllTurnstiles(true);
+      btn.disabled = false;
+      console.debug('magic link sent successfully');
+    } catch (e) {
+      console.error('Unexpected error in magic flow', e);
+      setStatus('Unexpected error. Please try again.', 'login');
+      reloadAllTurnstiles(true);
+      btn.disabled = false;
+      if (showPasswordLoginBtn) showPasswordLoginBtn.style.display = '';
+    }
+  });
+
+  // Back from magic link confirmation
+  const magicBack = document.getElementById('magic-link-back-btn');
+  magicBack?.addEventListener('click', () => {
+    if (magicLinkConfirm) magicLinkConfirm.style.display = 'none';
+    if (showPasswordLoginBtn) showPasswordLoginBtn.style.display = '';
+    if (showMagicLinkBtn) showMagicLinkBtn.style.display = '';
+    if (passwordLoginFields) passwordLoginFields.style.display = 'none';
+    if (loginEmailInput) loginEmailInput.style.display = '';
+    const loginMethods = document.getElementById('login-methods'); if (loginMethods) loginMethods.style.display = '';
+    const allTurnstiles = loginSection ? loginSection.querySelectorAll('.cf-turnstile') : [];
+    allTurnstiles.forEach(ts => { ts.style.display = ts.id === 'password-turnstile' ? 'none' : ''; });
+    const backBtn = document.getElementById('magic-link-back-btn'); if (backBtn) backBtn.style.display = '';
+    setStatus('', 'login');
+  });
+
+  // Load initial data
+  try { await loadProfile(); } catch (e) { console.warn('loadProfile failed:', e); }
+  try { await loadBio(); } catch (e) { console.warn('loadBio failed:', e); }
+  try { await loadPrivateSetting(); } catch (e) { console.warn('loadPrivateSetting failed:', e); }
+  try { await loadStatusVisibility(); } catch (e) { /* ignore */ }
+  try { await loadStatsSetting(); } catch (e) { /* ignore */ }
+  try { await loadBlurSetting(); } catch (e) { /* ignore */ }
+});
 
 const privateToggle = document.getElementById('private-toggle');
 
@@ -1037,69 +1574,69 @@ async function deleteAccount() {
       };
     }
 
-   continueBtn.onclick = async () => {
-  if (currentLayer < totalLayers) {
-    showLayer(currentLayer + 1);
-  } else {
-    const password = modal.querySelector('.delete-modal-password').value.trim();
-    console.log('Password entered:', password);
-
-    // ✅ Make sure Turnstile token is present
-    const token = window.turnstileDeleteToken;
-    if (!token) {
-      alert('Please complete the bot check.');
-      return;
-    }
-
-    // ✅ Get the current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user || !user.email) {
-      alert('No logged-in user found.');
-      modal.style.display = 'none';
-      resetModal();
-      return;
-    }
-
-    // ✅ Try signing in with the password and Turnstile token
-    const { error } = await supabase.auth.signInWithPassword({
-      email: user.email,
-      password,
-      options: {
-        captchaToken: turnstileDeleteToken,
-      },
-    });
-
-    modal.style.display = 'none';
-    resetModal();
-
-    if (error) {
-      console.log('Password verification failed:', error.message);
-      abortModal.style.display = 'flex';
-    } else {
-      console.log('Password verified!');
-      successModal.style.display = 'flex';
-
-      // Proceed with account deletion
-      const { data: userData, error: userFetchError } = await supabase.auth.getUser();
-      const userId = userData?.user?.id;
-
-      if (!userId || userFetchError) {
-        console.error('❌ Failed to get user ID:', userFetchError?.message);
-        return;
-      }
-
-      const { error: insertError } = await supabase
-        .from('account_deletion')
-        .insert({ user_id: userId });
-
-      if (insertError) {
-        console.error('❌ Failed to queue deletion:', insertError.message);
+    continueBtn.onclick = async () => {
+      if (currentLayer < totalLayers) {
+        showLayer(currentLayer + 1);
       } else {
-        console.log('🗑️ Account deletion queued successfully.');
+        const password = modal.querySelector('.delete-modal-password').value.trim();
+        console.log('Password entered:', password);
+
+        // ✅ Make sure Turnstile token is present
+        const token = window.turnstileDeleteToken;
+        if (!token) {
+          alert('Please complete the bot check.');
+          return;
+        }
+
+        // ✅ Get the current user
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user || !user.email) {
+          alert('No logged-in user found.');
+          modal.style.display = 'none';
+          resetModal();
+          return;
+        }
+
+        // ✅ Try signing in with the password and Turnstile token
+        const { error } = await supabase.auth.signInWithPassword({
+          email: user.email,
+          password,
+          options: {
+            captchaToken: turnstileDeleteToken,
+          },
+        });
+
+        modal.style.display = 'none';
+        resetModal();
+
+        if (error) {
+          console.log('Password verification failed:', error.message);
+          abortModal.style.display = 'flex';
+        } else {
+          console.log('Password verified!');
+          successModal.style.display = 'flex';
+
+          // Proceed with account deletion
+          const { data: userData, error: userFetchError } = await supabase.auth.getUser();
+          const userId = userData?.user?.id;
+
+          if (!userId || userFetchError) {
+            console.error('❌ Failed to get user ID:', userFetchError?.message);
+            return;
+          }
+
+          const { error: insertError } = await supabase
+            .from('account_deletion')
+            .insert({ user_id: userId });
+
+          if (insertError) {
+            console.error('❌ Failed to queue deletion:', insertError.message);
+          } else {
+            console.log('🗑️ Account deletion queued successfully.');
+          }
+        }
       }
-    }
-  }
-};
+    };
 
   }
 
@@ -1142,7 +1679,7 @@ deleteAccountBtn?.addEventListener('click', (e) => {
 
 window.turnstileDeleteToken = null;
 
-window.onTurnstileCheckSuccess = function(token) {
+window.onTurnstileCheckSuccess = function (token) {
   console.log("✅ Turnstile passed for deletion:", token);
   window.turnstileDeleteToken = token;
 
@@ -1293,46 +1830,51 @@ async function loadStatsSetting() {
 
 loadStatsSetting();
 
-  (function () {
-    const overlay = document.getElementById('email-confirm-overlay');
-    const emailSpan = document.getElementById('ec-email');
-    const primary = document.getElementById('ec-primary');
-    const closeBtn = document.getElementById('ec-close');
+(function () {
+  const overlay = document.getElementById('email-confirm-overlay');
+  const emailSpan = document.getElementById('ec-email');
+  const primary = document.getElementById('ec-primary');
+  const closeBtn = document.getElementById('ec-close');
 
-    function showEmailConfirmModal(email) {
-      if (email) emailSpan.textContent = email;
-      overlay.setAttribute('aria-hidden', 'false');
-      setTimeout(() => primary.focus(), 0);
-      document.documentElement.style.overflow = 'hidden';
-    }
+  function showEmailConfirmModal(email) {
+    if (email) emailSpan.textContent = email;
+    overlay.setAttribute('aria-hidden', 'false');
+    setTimeout(() => primary.focus(), 0);
+    document.documentElement.style.overflow = 'hidden';
+  }
 
-    function hideEmailConfirmModal() {
-      overlay.setAttribute('aria-hidden', 'true');
-      document.documentElement.style.overflow = '';
-    }
+  function hideEmailConfirmModal() {
+    overlay.setAttribute('aria-hidden', 'true');
+    document.documentElement.style.overflow = '';
+  }
 
-    // Close handlers
-    document.addEventListener('keydown', (e) => {
-      if (overlay.getAttribute('aria-hidden') === 'false' && e.key === 'Escape') hideEmailConfirmModal();
-    });
-    if (closeBtn) closeBtn.addEventListener('click', hideEmailConfirmModal);
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) hideEmailConfirmModal();
-    });
+  // Close handlers
+  document.addEventListener('keydown', (e) => {
+    if (overlay.getAttribute('aria-hidden') === 'false' && e.key === 'Escape') hideEmailConfirmModal();
+  });
+  if (closeBtn) closeBtn.addEventListener('click', hideEmailConfirmModal);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) hideEmailConfirmModal();
+  });
 
-    primary.addEventListener('click', () => {
-      showLogin();
-      hideEmailConfirmModal();
-    });
+  primary.addEventListener('click', () => {
+    showLogin();
+    hideEmailConfirmModal();
+  });
 
-    // expose globally
-    window.showEmailConfirmModal = showEmailConfirmModal;
-    window.hideEmailConfirmModal = hideEmailConfirmModal;
+  // expose globally
+  window.showEmailConfirmModal = showEmailConfirmModal;
+  window.hideEmailConfirmModal = hideEmailConfirmModal;
 
-    // Auto-show on query string (?verify=1&email=...)
-    const params = new URLSearchParams(location.search);
-    if (params.get('verify') === '1') {
-      showEmailConfirmModal(params.get('email') || undefined);
-    }
+  // Auto-show on query string (?verify=1&email=...)
+  const params = new URLSearchParams(location.search);
+  if (params.get('verify') === '1') {
+    showEmailConfirmModal(params.get('email') || undefined);
+  }
 
-  })();
+})();
+
+// Legacy magic-link handler disabled; handled by the DOMContentLoaded-attached handler which renders the Turnstile on demand.
+showMagicLinkBtn?.addEventListener('click', () => {
+  console.debug('Legacy magic-link handler invoked; no-op because new on-demand handler runs on DOMContentLoaded.');
+});
