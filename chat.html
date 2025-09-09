@@ -326,10 +326,17 @@ const orbitLogoUrl = '/uploads/branding/orbit.png'; // update with your actual l
         avatar.alt = 'avatar';
         header.appendChild(avatar);
 
-        const username = document.createElement('div');
-        username.className = 'username';
-        username.textContent = message.profiles?.username || 'Unknown';
-        header.appendChild(username);
+  // Username clickable -> redirect to profile page
+  const uname = message.profiles?.username || 'Unknown';
+  const username = document.createElement('a');
+  username.className = 'username';
+  // If we have a real username, include it as a query param, otherwise link to /profile
+  username.href = (uname && uname !== 'Unknown') ? '/profile?username=' + encodeURIComponent(uname) : '/profile';
+  username.textContent = uname;
+  // Make it behave like a link but keep visual styling
+  username.style.textDecoration = 'none';
+  username.style.color = 'inherit';
+  header.appendChild(username);
 
         const content = document.createElement('div');
         content.className = 'message-content';

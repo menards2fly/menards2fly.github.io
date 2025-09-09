@@ -43,6 +43,184 @@ async function getCurrentUserId() {
   return user?.id || null;
 }
 
+// Modal to show followers or following lists
+async function showFollowList(listType, userId) {
+  const modalId = 'follow-list-modal';
+  const existing = document.getElementById(modalId);
+  if (existing) existing.remove();
+
+  const backdrop = document.createElement('div');
+  backdrop.id = modalId;
+  backdrop.className = 'modal-backdrop active';
+
+  // visual styling: semi-transparent backdrop with blur, transparent modal box
+  backdrop.style.backgroundColor = 'rgba(0,0,0,0.2)';
+  backdrop.style.backdropFilter = 'blur(8px)';
+  backdrop.style.webkitBackdropFilter = 'blur(8px)';
+
+  const box = document.createElement('div');
+  box.className = 'modal-box';
+  box.style.background = 'transparent';
+  box.style.position = 'relative';
+  box.style.boxShadow = 'none';
+  box.innerHTML = `
+    <button id="close-follow-list" aria-label="Close" style="position:absolute;top:8px;right:8px;background:transparent;border:none;color:#fff;font-size:22px;cursor:pointer;">&times;</button>
+    <div id="follow-list-container" style="max-height:420px;overflow:auto;margin-top:8px;padding-top:6px;"></div>
+  `;
+
+  backdrop.appendChild(box);
+  document.body.appendChild(backdrop);
+
+  // Close the modal when X clicked
+  document.getElementById('close-follow-list').addEventListener('click', () => backdrop.remove());
+
+  const container = document.getElementById('follow-list-container');
+  container.textContent = 'Loading...';
+
+  try {
+    let ids = [];
+    if (listType === 'followers') {
+      const { data: rows, error } = await supabase.from('follows').select('follower_id').eq('following_id', userId).limit(2000);
+      if (error) throw error;
+      ids = (rows || []).map(r => r.follower_id);
+    } else {
+      const { data: rows, error } = await supabase.from('follows').select('following_id').eq('follower_id', userId).limit(2000);
+      if (error) throw error;
+      ids = (rows || []).map(r => r.following_id);
+    }
+
+    if (!ids.length) {
+      container.textContent = 'No users found.';
+      return;
+    }
+
+    const { data: profiles, error: perr } = await supabase
+      .from('profiles')
+      .select('id, username, avatar_url, private')
+      .in('id', ids);
+    if (perr) throw perr;
+
+    const map = {};
+    (profiles || []).forEach(p => { map[p.id] = p; });
+
+    container.innerHTML = '';
+    ids.forEach(id => {
+      const p = map[id];
+      const row = document.createElement('div');
+      row.style = 'display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid rgba(255,255,255,0.04);';
+
+      const img = document.createElement('img');
+      img.src = (p && p.avatar_url) ? p.avatar_url : '/uploads/branding/default-avatar.png';
+      img.alt = (p && p.username) ? p.username : 'avatar';
+      img.style.width = '48px';
+      img.style.height = '48px';
+      img.style.borderRadius = '8px';
+      img.style.objectFit = 'cover';
+      if (p && p.private && currentUserId !== p.id) img.style.filter = 'blur(6px)';
+
+      const link = document.createElement('a');
+      link.href = p ? '/profile.html?username=' + encodeURIComponent(p.username) : '/profile.html';
+      link.textContent = p ? p.username : 'Unknown';
+      link.style.color = 'inherit';
+      link.style.textDecoration = 'none';
+
+      row.appendChild(img);
+      row.appendChild(link);
+      container.appendChild(row);
+    });
+  } catch (err) {
+    console.error('Failed to load follow list', err);
+    container.textContent = 'Failed to load list.';
+  }
+}
+
+// Show a modal prompting unsigned visitors to sign in to view the profile
+function showSignInModal(profileUsername) {
+  const existing = document.getElementById('signin-required-modal');
+  if (existing) existing.remove();
+
+  const backdrop = document.createElement('div');
+  backdrop.id = 'signin-required-modal';
+  backdrop.className = 'modal-backdrop active';
+  backdrop.style.position = 'fixed';
+  backdrop.style.left = '0';
+  backdrop.style.top = '0';
+  backdrop.style.width = '100vw';
+  backdrop.style.height = '100vh';
+  backdrop.style.display = 'flex';
+  backdrop.style.alignItems = 'center';
+  backdrop.style.justifyContent = 'center';
+  backdrop.style.backgroundColor = 'rgba(0,0,0,0.6)';
+  backdrop.style.backdropFilter = 'blur(6px)';
+  backdrop.style.webkitBackdropFilter = 'blur(6px)';
+  backdrop.style.zIndex = '9999';
+
+  const box = document.createElement('div');
+  box.className = 'modal-box';
+  box.style.width = '420px';
+  box.style.maxWidth = '92%';
+  box.style.background = 'linear-gradient(135deg, rgba(30,30,30,0.9), rgba(20,20,20,0.85))';
+  box.style.borderRadius = '12px';
+  box.style.padding = '18px';
+  box.style.boxShadow = '0 8px 32px rgba(0,0,0,0.6)';
+  box.style.position = 'relative';
+
+  // use existing profile pic element if available
+  const profilePicEl = document.getElementById('profile-pic');
+  const avatarSrc = profilePicEl ? profilePicEl.src : '/uploads/branding/default-avatar.png';
+  const avatar = document.createElement('img');
+  avatar.src = avatarSrc;
+  avatar.alt = 'profile avatar';
+  avatar.style.width = '96px';
+  avatar.style.height = '96px';
+  avatar.style.borderRadius = '12px';
+  avatar.style.objectFit = 'cover';
+  if (profileIsPrivate) avatar.style.filter = 'blur(6px)';
+
+  const title = document.createElement('div');
+  title.style.marginTop = '8px';
+  title.style.color = '#fff';
+  title.style.fontSize = '18px';
+  title.style.fontWeight = '600';
+  title.textContent = `Hold up — you're not signed in.`;
+
+  const desc = document.createElement('div');
+  desc.style.marginTop = '8px';
+  desc.style.color = 'rgba(255,255,255,0.9)';
+  desc.style.fontSize = '14px';
+  const displayName = profileUsername || (document.getElementById('profile-username')?.textContent || '').replace(/^@/, '');
+  desc.innerHTML = `Log in to check out <strong style="color:#fff">${displayName}'s</strong> profile.`;
+
+  const btnRow = document.createElement('div');
+  btnRow.style.display = 'flex';
+  btnRow.style.gap = '8px';
+  btnRow.style.marginTop = '14px';
+  btnRow.style.justifyContent = 'flex-end';
+
+  const loginBtn = document.createElement('button');
+  loginBtn.textContent = 'Log in';
+  loginBtn.onclick = () => { window.location.href = '/auth.html'; };
+  loginBtn.style.background = '#8A2BE2';
+  loginBtn.style.color = '#fff';
+  loginBtn.style.border = 'none';
+  loginBtn.style.padding = '10px 14px';
+  loginBtn.style.borderRadius = '8px';
+  loginBtn.style.cursor = 'pointer';
+
+
+
+  btnRow.appendChild(loginBtn);
+
+
+  box.appendChild(avatar);
+  box.appendChild(title);
+  box.appendChild(desc);
+  box.appendChild(btnRow);
+
+  backdrop.appendChild(box);
+  document.body.appendChild(backdrop);
+}
+
 async function checkIfFollowing(followerId, followingId) {
   if (!followerId || !followingId) {
     console.log('⚠️ Missing IDs for follow check:', {
@@ -143,8 +321,24 @@ async function updateProfileStats(profileUserId) {
     }
 
     // --- Update DOM ---
-    if (followersEl) followersEl.textContent = followersCount;
-    if (followingEl) followingEl.textContent = followingCount;
+    if (followersEl) {
+      followersEl.textContent = followersCount;
+      const parent = followersEl.closest('.stat-item');
+      if (parent) {
+        parent.style.cursor = 'pointer';
+        parent.title = 'View followers';
+        parent.onclick = () => showFollowList('followers', id);
+      }
+    }
+    if (followingEl) {
+      followingEl.textContent = followingCount;
+      const parent2 = followingEl.closest('.stat-item');
+      if (parent2) {
+        parent2.style.cursor = 'pointer';
+        parent2.title = 'View following';
+        parent2.onclick = () => showFollowList('following', id);
+      }
+    }
     if (favoritesEl) favoritesEl.textContent = favoritesCount;
 
   } catch (err) {
@@ -211,7 +405,7 @@ async function toggleFollow() {
 
   // Update UI
   updateFollowButton();
-  updateFollowerCount();
+  await updateProfileStats(profileUserId);
 }
 
 
@@ -284,6 +478,13 @@ canShowStatus = (() => {
   const profilePic = document.getElementById('profile-pic');
   if (profilePic && data.avatar_url) {
     profilePic.src = data.avatar_url;
+  }
+
+  // If visitor is not signed in, show a sign-in required modal
+  if (!currentUserId) {
+    // ensure profileIsPrivate is set before determining blur inside modal
+    profileIsPrivate = !!data.private;
+    showSignInModal(data.username);
   }
 
   // 📝 Set username + bio
@@ -668,6 +869,99 @@ let searchTimeout = null;
 
 
 searchInput.addEventListener('input', () => {
+// Show followers/following overlay
+async function showFollowList(listType, userId) {
+  // listType: 'followers' or 'following'
+  const modalId = 'follow-list-modal';
+  const existing = document.getElementById(modalId);
+  if (existing) existing.remove();
+
+  const backdrop = document.createElement('div');
+  backdrop.id = modalId;
+  backdrop.className = 'modal-backdrop active';
+
+  // Apply semi-transparent backdrop with blur
+  backdrop.style.backgroundColor = 'rgba(0,0,0,0.2)';
+  backdrop.style.backdropFilter = 'blur(8px)';
+  backdrop.style.webkitBackdropFilter = 'blur(8px)';
+
+  const box = document.createElement('div');
+  box.className = 'modal-box';
+  box.style.background = 'transparent';
+  box.style.position = 'relative';
+  box.style.boxShadow = 'none';
+  box.innerHTML = `
+    <button id="close-follow-list" aria-label="Close" style="position:absolute;top:8px;right:8px;background:transparent;border:none;color:#fff;font-size:22px;cursor:pointer;">&times;</button>
+    <div id="follow-list-container" style="max-height:420px;overflow:auto;margin-top:8px;padding-top:6px;"></div>
+  `;
+
+  backdrop.appendChild(box);
+  document.body.appendChild(backdrop);
+
+
+  // Close on X
+  document.getElementById('close-follow-list').addEventListener('click', () => backdrop.remove());
+
+  const container = document.getElementById('follow-list-container');
+  container.textContent = 'Loading...';
+
+  try {
+    let ids = [];
+    if (listType === 'followers') {
+      const { data: rows, error } = await supabase.from('follows').select('follower_id').eq('following_id', userId).limit(1000);
+      if (error) throw error;
+      ids = (rows || []).map(r => r.follower_id);
+    } else {
+      const { data: rows, error } = await supabase.from('follows').select('following_id').eq('follower_id', userId).limit(1000);
+      if (error) throw error;
+      ids = (rows || []).map(r => r.following_id);
+    }
+
+    if (!ids.length) {
+      container.textContent = 'No users found.';
+      return;
+    }
+
+    const { data: profiles, error: perr } = await supabase
+      .from('profiles')
+      .select('id, username, avatar_url, private')
+      .in('id', ids);
+    if (perr) throw perr;
+
+    const map = {};
+    (profiles || []).forEach(p => { map[p.id] = p; });
+
+    container.innerHTML = '';
+    ids.forEach(id => {
+      const p = map[id];
+      const row = document.createElement('div');
+      row.style = 'display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid rgba(255,255,255,0.04);';
+
+      const img = document.createElement('img');
+      img.src = (p && p.avatar_url) ? p.avatar_url : '/uploads/branding/default-avatar.png';
+      img.alt = (p && p.username) ? p.username : 'avatar';
+      img.style.width = '48px';
+      img.style.height = '48px';
+      img.style.borderRadius = '8px';
+      img.style.objectFit = 'cover';
+      if (p && p.private && currentUserId !== p.id) img.style.filter = 'blur(6px)';
+
+      const link = document.createElement('a');
+      link.href = p ? '/profile?username=' + encodeURIComponent(p.username) : '/profile';
+      link.textContent = p ? p.username : 'Unknown';
+      link.style.color = 'inherit';
+      link.style.textDecoration = 'none';
+
+      row.appendChild(img);
+      row.appendChild(link);
+      container.appendChild(row);
+    });
+  } catch (err) {
+    console.error('Failed to load follow list', err);
+    container.textContent = 'Failed to load list.';
+  }
+}
+
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     searchProfiles(searchInput.value);
