@@ -428,7 +428,8 @@ async function signUp() {
     }
   console.log('✅ SignUp successful:', data);
     localStorage.setItem('pendingUsername', username);
-    setStatus('Signed up! Confirm your email, then sign in.', 'signup');
+    setStatus('Signed up! Logging you in....', 'signup');
+    location.reload();
   reloadAllTurnstiles(true);
     if (signupBtn) signupBtn.disabled = false;
   } catch (e) {
