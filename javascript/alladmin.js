@@ -305,6 +305,8 @@ window.addEventListener('DOMContentLoaded', () => {
   refreshAdminList();
   // Load reports section
   try { refreshReports(); } catch(e) { console.warn('refreshReports failed to start:', e); }
+  // Load forms section
+  try { refreshForms(); } catch(e) { console.warn('refreshForms failed to start:', e); }
 });
 
 // #endregion
@@ -780,6 +782,111 @@ async function refreshReports() {
           }, 60);
         });
       }
+    });
+
+    container.appendChild(row);
+  });
+}
+
+// === Form Submissions ===
+async function refreshForms() {
+  const container = document.querySelector('.forms-list');
+  if (!container) return;
+  console.log('refreshForms: starting');
+  container.innerHTML = '<p>Loading form submissions...</p>';
+
+  const { data: forms, error } = await supabase
+    .from('form_submissions')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('❌ Failed to load form submissions:', error.message);
+    container.innerHTML = '<p>Error loading form submissions.</p>';
+    return;
+  }
+
+  if (!forms || forms.length === 0) {
+    container.innerHTML = '<p>No form submissions found.</p>';
+    return;
+  }
+
+  // fetch related profiles
+  const ids = Array.from(new Set(forms.map(f => f.user_id).filter(Boolean)));
+  const { data: profiles, error: profilesError } = await supabase.from('profiles').select('id, username, avatar_url').in('id', ids || []);
+  if (profilesError) console.error('refreshForms: failed to fetch profiles', profilesError);
+  const profilesMap = (profiles || []).reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
+
+  container.innerHTML = '';
+  forms.forEach(f => {
+    const prof = profilesMap[f.user_id] || { username: 'Unknown', avatar_url: '' };
+
+    const row = document.createElement('div');
+    row.className = 'form-row';
+    row.style = 'border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;display:flex;gap:12px;align-items:center;cursor:pointer;background:#0b0b0b;color:#fff;';
+    row.dataset.formId = f.id;
+
+    const avatar = document.createElement('img');
+    const avatarPlaceholder = `https://placehold.co/60x60/8a2be2/ffffff?text=${(prof.username||'U').charAt(0).toUpperCase()}`;
+    avatar.src = prof.avatar_url || avatarPlaceholder;
+    avatar.style = 'width:48px;height:48px;border-radius:999px;object-fit:cover;';
+
+    const content = document.createElement('div');
+    content.style = 'flex:1;';
+    const typeLabel = (f.type || '').replace('_', ' ');
+    const preview = (() => {
+      switch (f.type) {
+        case 'request_game': return f.title || '(no title)';
+        case 'contact': return f.title || '(no title)';
+        case 'bug_report': return f.title || '(no title)';
+        default: return f.title || '(submission)';
+      }
+    })();
+
+    content.innerHTML = `<strong style="color:#fff">${preview}</strong> — <em style="color:#ddd">${prof.username}</em><br/><small style="color:#bbb">${new Date(f.created_at).toLocaleString()} · ${typeLabel}</small>`;
+
+    row.appendChild(avatar);
+    row.appendChild(content);
+
+    row.addEventListener('click', async () => {
+      // Build modal HTML showing all relevant fields for this submission
+      const lines = [];
+      lines.push(`<strong>Type:</strong> ${f.type}`);
+      if (f.title) lines.push(`<strong>Title:</strong> ${f.title}`);
+      if (f.game_url) lines.push(`<strong>Game URL:</strong> <a href="${f.game_url}" target="_blank" rel="noopener">${f.game_url}</a>`);
+      if (f.location) lines.push(`<strong>Location:</strong> ${f.location}`);
+      if (f.steps) lines.push(`<strong>Steps to reproduce:</strong><pre style="white-space:pre-wrap;background:#111;padding:8px;border-radius:6px;color:#ddd">${f.steps}</pre>`);
+      if (f.message2) lines.push(`<strong>Contact Email:</strong> ${f.message2}`);
+      if (f.message) lines.push(`<strong>Message:</strong><pre style="white-space:pre-wrap;background:#111;padding:8px;border-radius:6px;color:#ddd">${f.message}</pre>`);
+      lines.push(`<strong>User:</strong> <a href="/profile.html?username=${encodeURIComponent(prof.username)}" target="_blank">${prof.username}</a> (${f.user_id || 'unknown'})`);
+
+      const html = `
+        <div style="background:#000;padding:16px;border-radius:8px;color:#fff;max-width:760px;">
+          <h3>Form Submission</h3>
+          <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><img src="${avatar.src}" style="width:64px;height:64px;border-radius:8px;object-fit:cover"/><div><strong>${prof.username}</strong><br/><small style="color:#bbb">${new Date(f.created_at).toLocaleString()}</small></div></div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">${lines.join('')}</div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
+            <button id="delete-form-btn" style="background:#dc2626;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">Delete</button>
+            <button id="close-form-btn" style="background:#666;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">Close</button>
+          </div>
+        </div>
+      `;
+
+      openOverlay1(html);
+
+      setTimeout(() => {
+        const del = document.getElementById('delete-form-btn');
+        const closeBtn = document.getElementById('close-form-btn');
+        del?.addEventListener('click', async () => {
+          if (!confirm('Delete this submission?')) return;
+          const { error } = await supabase.from('form_submissions').delete().eq('id', f.id);
+          if (error) { alert('Failed to delete.'); console.error(error); return; }
+          alert('Deleted.');
+          closeOverlay();
+          refreshForms();
+        });
+        closeBtn?.addEventListener('click', () => closeOverlay());
+      }, 50);
     });
 
     container.appendChild(row);

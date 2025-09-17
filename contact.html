@@ -34,130 +34,250 @@
 
       gtag('config', 'G-ZZH4JE7RJF');
     </script>
-    <style>
-      .tabs {
-        display: flex;
-        justify-content: center;
-        margin-top: 20px;
-        background-color: #222;
-        border-bottom: 2px solid #444;
-      }
-
-      .tab {
-        padding: 15px 20px;
-        cursor: pointer;
-        color: #fff;
-        border: none;
-        background: #222;
-        outline: none;
-        transition: background 0.3s ease;
-      }
-
-      .tab:hover,
-      .tab.active {
-        background: #444;
-      }
-
-      .tab-content {
-        display: none;
-        padding: 20px;
-        transform: scale(0.95); /* Start slightly smaller for transition */
-        opacity: 0; /* Start invisible */
-        transition:
-          transform 0.3s ease,
-          opacity 0.3s ease; /* Smooth scaling and fading */
-      }
-
-      .tab-content.active {
-        display: block;
-        transform: scale(1); /* Full size */
-        opacity: 1; /* Fully visible */
-      }
-
-      h2 {
-        text-align: center;
-        color: #fff;
-      }
-
-      p {
-        line-height: 1.5;
-        font-size: 1em;
-      }
-    </style>
+ 
   </head>
   <body>
     <!-- Navigation Bar -->
     <div id="navbar"></div>
     <script type="module" src="/javascript/navbar.js"></script>
-    <!-- Footer -->
+<div class="form-container">
+  <h1>Contact Starship</h1>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="request_game">Request Game</button>
+    <button class="tab-btn" data-tab="contact">Contact</button>
+    <button class="tab-btn" data-tab="bug_report">Bug Report</button>
+  </div>
+
+  <!-- Form -->
+  <form id="submission-form">
+    <input type="hidden" id="submission-type" name="type" value="request_game">
+
+    <!-- Dynamic Inputs -->
+    <div class="form-fields" id="form-fields">
+      <!-- Fields will be injected here based on type -->
+    </div>
+
+    <button type="submit" class="submit-btn">Submit</button>
+    <div id="form-status"></div>
+  </form>
+</div>
+
+<style>
+  body {
+    font-family: Inter, sans-serif !important;
+  }
+/* Container & Blur */
+.form-container {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 40px;
+  border-radius: 20px;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 0 40px rgba(0,0,0,0.5);
+  font-family: 'Arial', sans-serif;
+  border: 2px solid #8a2be2;
+}
+
+/* Title */
+.form-container h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2.5rem;
+  text-shadow: 0 0 8px #8a2be2;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 25px;
+}
+
+.tab-btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.tab-btn.active, .tab-btn:hover {
+  background: #8a2be2;
+  box-shadow: 0 0 12px #8a2be2, 0 0 24px rgba(138,43,226,0.3);
+}
+
+/* Form Fields */
+.form-fields .field-group {
+  margin-bottom: 18px;
+}
+
+.form-fields label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.form-fields input, 
+.form-fields textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.form-fields input:focus, 
+.form-fields textarea:focus {
+  border: 2px solid #8a2be2;
+  box-shadow: 0 0 8px #8a2be2;
+}
+
+.form-fields small {
+  display: block;
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+/* Submit Button */
+.submit-btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #8a2be2;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+  box-shadow: 0 0 12px #8a2be2, 0 0 24px rgba(138,43,226,0.3);
+}
+
+/* Status */
+#form-status {
+  margin-top: 16px;
+  font-size: 1rem;
+  opacity: 0.9;
+  text-align: center;
+}
+</style>
+
+<script type="module">
 
 
-    <center>
-      <!-- Main Content 
+// Tabs
+const tabButtons = document.querySelectorAll('.tab-btn');
+const submissionTypeInput = document.getElementById('submission-type');
+const formFields = document.getElementById('form-fields');
 
-        
-        <h1 class="gradient-red">Contact & Support</h1>
-        <p>
-            Here at starship, YOU are our top priority. Get in touch and submit ideas here. Emails will be answered in a timely manner. Texts and phone calls will be answered during designated hours.
-        </p>
-        <p style="font-size:20px;">
-            <i class="fa fa-envelope"></i> 
-            <a href="mailto:starship.site@gmail.com?subject=starship%20-%20Contact%20Request">starship.site@gmail.com</a>
+const formsConfig = {
+  request_game: [
+    { label: 'Game Name', type: 'text', name: 'title', description: 'The name of the game you want to request.', required: true },
+    { label: 'Game URL', type: 'url', name: 'game_url', description: 'Optional link to the game.', required: false },
+    { label: 'Message', type: 'textarea', name: 'message', description: 'Any additional details about the request.', required: true }
+  ],
+  contact: [
+    { label: 'Name', type: 'text', name: 'title', description: 'Your full name.', required: true },
+    { label: 'Email', type: 'email', name: 'message', description: 'Your email address so we can reply.', required: true },
+    { label: 'Message', type: 'textarea', name: 'message2', description: 'Your message.', required: true }
+  ],
+  bug_report: [
+    { label: 'Bug Title', type: 'text', name: 'title', description: 'Short description of the bug.', required: true },
+    { label: 'Location', type: 'text', name: 'location', description: 'Where in the game/site the bug occurs.', required: true },
+    { label: 'Steps to Reproduce', type: 'textarea', name: 'steps', description: 'Exact steps to reproduce the bug.', required: true },
+    { label: 'Additional Info', type: 'textarea', name: 'message', description: 'Any extra information about the bug.', required: false }
+  ]
+};
 
-        </p>
-        <hr>
--->
-      <!-- Tab Buttons -->
-      <div class="tab">
-        <button
-          class="tab"
-          onclick="openPage('suggestgame', this)"
-          id="defaultOpen"
-        >
-          Suggest a Game
-        </button>
-        <button class="tab" onclick="openPage('suggestapp', this)">
-          Suggest an App
-        </button>
-        <button class="tab" onclick="openPage('contact', this)">
-          Contact Form
-        </button>
-      </div>
-      <!-- Tab Content -->
-      <div id="suggestgame" class="tabcontent">
-        <iframe
-          src="https://docs.google.com/forms/d/e/1FAIpQLScmErEzDXvFQwLy1PohKPp5H5der3mLFwZcVOSJvmcWkuZCyA/viewform"
-          width="100%"
-          height="800"
-          frameborder="0"
-          marginheight="0"
-          marginwidth="0"
-          >Loading…</iframe
-        >
-      </div>
-      <div id="suggestapp" class="tabcontent">
-        <iframe
-          src="https://docs.google.com/forms/d/e/1FAIpQLScrxqbzDKZWVQ_5cQn9dkb-n8Hvyv8hgNusQA6r6G_k1wrX9Q/viewform"
-          width="100%"
-          height="800"
-          frameborder="0"
-          marginheight="0"
-          marginwidth="0"
-          >Loading…</iframe
-        >
-      </div>
-      <div id="contact" class="tabcontent">
-        <iframe
-          src="https://docs.google.com/forms/d/e/1FAIpQLSePgAncfRqlqQGWtB112q0jPEFvW_2jUYQIO4K1sR0bFztKjA/viewform"
-          width="100%"
-          height="800"
-          frameborder="0"
-          marginheight="0"
-          marginwidth="0"
-          >Loading…</iframe
-        >
-      </div>
-    </center>
+function renderFormFields(type) {
+  formFields.innerHTML = '';
+  formsConfig[type].forEach(field => {
+    const div = document.createElement('div');
+    div.className = 'field-group';
+    let inputHTML;
+    if(field.type === 'textarea') {
+      inputHTML = `<textarea name="${field.name}" ${field.required ? 'required' : ''}></textarea>`;
+    } else {
+      inputHTML = `<input type="${field.type}" name="${field.name}" ${field.required ? 'required' : ''}>`;
+    }
+    div.innerHTML = `<label>${field.label}</label>${inputHTML}<small>${field.description}</small>`;
+    formFields.appendChild(div);
+  });
+}
+
+// Initialize
+renderFormFields('request_game');
+
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const type = btn.dataset.tab;
+    submissionTypeInput.value = type;
+    renderFormFields(type);
+  });
+});
+
+// Form submission
+const form = document.getElementById('submission-form');
+const status = document.getElementById('form-status');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  status.textContent = 'Submitting...';
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    status.textContent = 'You must be logged in to submit a form.';
+    return;
+  }
+
+  const formData = new FormData(form);
+  const type = formData.get('type');
+  const payload = { user_id: user.id, type };
+
+  formData.forEach((value, key) => {
+    if(key !== 'type') payload[key] = value;
+  });
+
+  const { error } = await supabase.from('form_submissions').insert([payload]);
+
+  if (error) {
+    status.textContent = 'Error: ' + error.message;
+  } else {
+    status.textContent = 'Submission sent! Thanks!';
+    form.reset();
+    // Placeholder for custom success function
+    handleFormSuccess();
+  }
+});
+
+// Success placeholder
+function handleFormSuccess() {
+  // You can replace this with your own success behavior
+  console.log('Form successfully submitted!');
+}
+</script>
+
+
+
     <!-- Particles.JS Background -->
     <div id="particles-js"></div>
     <script src="/javascript/particles.js"></script>
@@ -169,10 +289,7 @@
     <script src="/javascript/screentimetracking.js" type="module"></script>
     <!-- Scrollbar Customization -->
 
-    
-    <!-- Tabs Script -->
 
-    <script src="/javascript/tabs.js"></script>
     <!-- Scheduler -->
 
     <script src="/javascript/schedule.js"></script>
