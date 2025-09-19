@@ -443,14 +443,19 @@ async function signUp() {
 
 
 async function signIn() {
-  // Prefer password token when fresh; fall back to login token if fresh
+  const loginBtn = document.getElementById('login-btn');
+  if (loginBtn) loginBtn.disabled = true;
+
+  const loginEmailInput = document.getElementById('login-email');
+  const loginPasswordInput = document.getElementById('login-password');
+  const email = loginEmailInput?.value.trim() || '';
+  const password = loginPasswordInput?.value || '';
+
+  // Prefer password token, fall back to login token
   let token = null;
   if (isTurnstileTokenFresh('password')) token = window.turnstilePasswordToken;
   else if (isTurnstileTokenFresh('login')) token = window.turnstileLoginToken;
-  const email = loginEmailInput.value.trim();
-  const password = loginPasswordInput.value;
-  const loginBtn = document.getElementById('login-btn');
-  if (loginBtn) loginBtn.disabled = true;
+
   if (!token) {
     console.warn('⚠️ No Turnstile token found.');
     setStatus('Please complete the bot check to send a magic link.', 'login');
@@ -458,37 +463,44 @@ async function signIn() {
     if (loginBtn) loginBtn.disabled = false;
     return;
   }
+
   console.log(`🔐 SignIn attempt for email: ${email}`);
+
   try {
     const { data, error } = await supabaseClient.auth.signInWithPassword({
       email,
       password,
-      options: {
-        captchaToken: token
-      }
+      options: { captchaToken: token }
     });
+
     if (error) {
       console.error('❌ Login error:', error);
       setStatus('Login error: ' + error.message, 'login');
       reloadAllTurnstiles(true);
-      if (loginBtn) loginBtn.disabled = false;
       return;
     }
+
     console.log('✅ Logged in successfully:', data);
     setStatus('Logged in!', 'login');
+
     await ensureProfile();
     await checkForAdmin();
     await loadProfile();
-  location.reload();
-  reloadAllTurnstiles(true);
-    if (loginBtn) loginBtn.disabled = false;
+
+    // Clear token and reload page
+    window.turnstilePasswordToken = null;
+    window.turnstileLoginToken = null;
+    reloadAllTurnstiles(true);
+    location.reload();
   } catch (e) {
-  console.error('❌ Unexpected error during signIn:', e);
-  setStatus('Unexpected error. Please try again later.', 'login');
-  reloadAllTurnstiles(true);
-  if (loginBtn) loginBtn.disabled = false;
+    console.error('❌ Unexpected error during signIn:', e);
+    setStatus('Unexpected error. Please try again later.', 'login');
+    reloadAllTurnstiles(true);
+  } finally {
+    if (loginBtn) loginBtn.disabled = false;
   }
 }
+
 
 
 async function sendResetLink() {
@@ -1219,17 +1231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // show only password turnstile
     allTurnstiles.forEach(ts => { ts.style.display = ts.id === 'password-turnstile' ? '' : 'none'; });
     // Reset any previous widgets/tokens then render the password widget so it remains active
-    try { reloadAllTurnstiles(); } catch(e) { /* ignore */ }
-    try {
-      const pwd = document.getElementById('password-turnstile') || document.querySelector('.cf-turnstile.password');
-      if (pwd) {
-        pwd.style.display = '';
-        await renderTurnstile(pwd, {
-          onSuccess: (token) => { window.turnstilePasswordToken = token; const b = document.getElementById('login-btn'); if (b) b.disabled = false; },
-          onExpired: () => { window.turnstilePasswordToken = null; }
-        });
-      }
-    } catch (e) { console.warn('Password turnstile render failed', e); }
+   
     setStatus('Please complete the bot check for password login.', 'login');
     console.debug('password flow: rendered password widget; tokens now:', window.turnstilePasswordToken);
     const loginBtn = document.getElementById('login-btn'); if (loginBtn) loginBtn.style.display = '';
