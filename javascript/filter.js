@@ -9,6 +9,7 @@ export const bannedWords = `
  gooner
  busting
  daddy
+ imaboutabust
  .com
  .org
  .net
