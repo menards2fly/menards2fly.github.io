@@ -3,7 +3,12 @@
 // Viewing is not recommended as it contains sensitive content.
 
 export const bannedWords = `
- 
+ goon
+ bust
+ fap
+ gooner
+ busting
+ daddy
  .com
  .org
  .net
