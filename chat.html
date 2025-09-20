@@ -374,60 +374,75 @@ const orbitLogoUrl = '/uploads/branding/orbit.png'; // update with your actual l
       let messageTimestamps = [];
 
       form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const content = input.value.trim();
-        if (!content) return;
+  e.preventDefault();
+  const content = input.value.trim();
+  if (!content) return;
 
-        if (!currentUser || currentUser.username === 'Guest') {
-          showNotification('Message Not Sent', {
-            body: `You must be logged in to send messages. Please create an account or log in <a href="/auth">here.</a>`,
-            duration: 5000,
-            sound: true,
-          });
-          return;
-        }
+  if (!currentUser || currentUser.username === 'Guest') {
+    showNotification('Message Not Sent', {
+      body: `You must be logged in to send messages. Please create an account or log in <a href="/auth">here.</a>`,
+      duration: 5000,
+      sound: true,
+    });
+    return;
+  }
 
-        // Spam filter: clean timestamps older than 20 seconds
-        const now = Date.now();
-        messageTimestamps = messageTimestamps.filter(
-          (ts) => now - ts < TIME_WINDOW_MS
-        );
+  // Spam filter: clean timestamps older than 20 seconds
+  const now = Date.now();
+  messageTimestamps = messageTimestamps.filter(
+    (ts) => now - ts < TIME_WINDOW_MS
+  );
 
-        if (messageTimestamps.length >= MESSAGE_LIMIT) {
-          showNotification('Slow down!', {
-            body: `You can only send ${MESSAGE_LIMIT} messages every 20 seconds. Please wait a bit before sending more.`,
-            duration: 5000,
-            sound: true,
-          });
-          return;
-        }
+  if (messageTimestamps.length >= MESSAGE_LIMIT) {
+    showNotification('Slow down!', {
+      body: `You can only send ${MESSAGE_LIMIT} messages every 20 seconds. Please wait a bit before sending more.`,
+      duration: 5000,
+      sound: true,
+    });
+    return;
+  }
 
-        const lowered = content.toLowerCase();
-        const foundWord = bannedWords.find((word) => {
-          const pattern = new RegExp(`\\b${word}\\b`, 'i'); // \b = word boundary, 'i' = case-insensitive
-          return pattern.test(lowered);
-        });
+  // 🔹 Profanity.dev API check
+  let cleanContent;
+  try {
+    const res = await fetch(
+      "https://vector.profanity.dev?text=" + encodeURIComponent(content)
+    );
+    const data = await res.json();
+    cleanContent = data.cleaned;
 
-        if (foundWord) {
-          console.log('Word blocked:', foundWord);
-          showNotification('Message Filtered', {
-            body: `That message contains inappropriate content and has been blocked.`,
-            duration: 5000,
-            sound: true,
-          });
-          input.value = ''; // Clear input
-          return;
-        }
-
-        // Passed spam filter, add current timestamp
-        messageTimestamps.push(now);
-
-        await supabase
-          .from('messages')
-          .insert([{ user_id: currentUser.id, content }]);
-        input.value = '';
-        scrollToBottom();
+    // If the cleaned text is different → it had profanity
+    if (cleanContent !== content) {
+      showNotification('Message Filtered', {
+        body: `That message contains inappropriate content and has been blocked.`,
+        duration: 5000,
+        sound: true,
       });
+      input.value = ''; // Clear input
+      return;
+    }
+  } catch (err) {
+    console.error("Profanity API error:", err);
+    // fallback: block message if API fails
+    showNotification('Message Error', {
+      body: `Could not process your message right now. Please try again later.`,
+      duration: 5000,
+      sound: true,
+    });
+    return;
+  }
+
+  // Passed filters → add timestamp
+  messageTimestamps.push(now);
+
+  await supabase
+    .from('messages')
+    .insert([{ user_id: currentUser.id, content: cleanContent }]);
+
+  input.value = '';
+  scrollToBottom();
+});
+
 
       async function init() {
         await ensureUser();
