@@ -683,9 +683,12 @@ async function updateUsername() {
   console.log(`✏️ Attempting username update to: ${newUsername}`);
 if (await containsBadWord(newUsername)) {
   showNotification('Username Blocked', {
-    body: `Hey explorer, that username is a bit rough. Let's keep it friendly!`,
+    body: `Username blocked due to filters.`,
     duration: 5000,
     sound: true,
+                      style: 'mini',     // tells it to use the mini style
+      icon: 'fa-warning',  // optional: any Font Awesome icon you want
+    bgColor: '#ff4444', 
   });
   return; // STOP here — don't update username
 
@@ -1187,16 +1190,20 @@ async function saveBio() {
   bioStatus.textContent = 'Saving...';
 
   const newBio = bioTextarea.value.trim();
-  if (containsBadWord(newBio)) {
-    showNotification('Bio Blocked', {
-      body: `Hey explorer, that bio is a bit rough. Let's keep it friendly!`,
-      duration: 5000,
-      sound: true,
-    });
-    bioStatus.style.color = 'red';
-    bioStatus.textContent = 'Bio contains inappropriate content.';
-    return; // STOP here — don't update username
-  }
+if (await containsBadWord(newBio)) {
+  showNotification('Bio Blocked', {
+    body: `Bio blocked due to filters.`,
+    duration: 5000,
+    sound: true,
+                  style: 'mini',     // tells it to use the mini style
+      icon: 'fa-warning',  // optional: any Font Awesome icon you want
+    bgColor: '#ff4444', 
+  });
+  bioStatus.style.color = 'red';
+  bioStatus.textContent = 'Bio contains inappropriate content.';
+  return; // STOP here — don't update bio
+}
+
 
   const {
     data: { user },
