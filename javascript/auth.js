@@ -681,13 +681,15 @@ const bannedWords = window.bannedWords || [];
 async function updateUsername() {
   const newUsername = newUsernameInput.value.trim();
   console.log(`✏️ Attempting username update to: ${newUsername}`);
-  if (containsBadWord(newUsername)) {
-    showNotification('Username Blocked', {
-      body: `Hey explorer, that username is a bit rough. Let's keep it friendly!`,
-      duration: 5000,
-      sound: true,
-    });
-    return; // STOP here — don't update username
+if (await containsBadWord(newUsername)) {
+  showNotification('Username Blocked', {
+    body: `Hey explorer, that username is a bit rough. Let's keep it friendly!`,
+    duration: 5000,
+    sound: true,
+  });
+  return; // STOP here — don't update username
+
+
   }
   if (!newUsername) {
     console.warn('⚠️ Username update failed: no input');
@@ -719,13 +721,37 @@ async function updateUsername() {
   const navbarUsername = document.querySelector('.username');
   if (navbarUsername) navbarUsername.textContent = newUsername;
 }
-function containsBadWord(text) {
-  const lowered = text.toLowerCase();
-  return bannedWords.some(word => {
-    const pattern = new RegExp(`\\b${word}\\b`, 'i');
-    return pattern.test(lowered);
-  });
+async function containsBadWord(content) {
+  console.log("📝 Checking for profanity:", content);
+
+  try {
+    const res = await fetch("https://vector.profanity.dev", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: content }),
+    });
+
+    if (!res.ok) {
+      console.error("❌ Profanity API returned error status:", res.status);
+      return false;
+    }
+
+    const data = await res.json();
+    console.log("✅ Profanity API response:", data);
+
+    if (data.isProfanity) {
+      console.warn("🚫 Profanity detected in message!");
+      return true;
+    }
+
+    console.log("✔️ No profanity detected.");
+    return false;
+  } catch (err) {
+    console.error("❌ Profanity API error:", err);
+    return true; // assume unsafe if API fails
+  }
 }
+
 
 async function loadProfile() {
   console.log('⏳ Loading profile data for current user...');
@@ -1027,6 +1053,9 @@ function hideAvatarPopup() {
     showNotification('Changes uploaded.', {
       body: 'Your changes were made successfully.',
       duration: 5000,
+              style: 'mini',     // tells it to use the mini style
+      icon: 'fa-bell',  // optional: any Font Awesome icon you want
+    allowClose: false,
     });
   }, 3000);
 }
