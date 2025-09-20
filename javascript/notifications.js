@@ -1,7 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 (function () {
 
-
   // --- NOTIFICATION UI ---
   function showNotification(message, options = {}) {
     console.log('🟢 showNotification called with message:', message, options);
@@ -26,45 +25,68 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
     if (options.isStatus) {
       const existing = container.querySelector('.notification.status-notification');
-      if (existing) {
-        existing.remove();
-        console.log('🟡 Removed existing status notification');
-      }
+      if (existing) existing.remove();
     }
 
     const notif = document.createElement('div');
     notif.className = 'notification';
     if (options.isStatus) notif.classList.add('status-notification');
+    if (options.style === 'mini') notif.classList.add('notification-mini');
+
     notif.dataset.message = message;
 
-    let innerHTML =
-      `<div class="notification-title">${message}</div>` +
-      (options.body
-        ? `<div class="notification-body" style="text-align:center; margin-top:8px;">${options.body}</div>`
-        : '');
-
-    if (allowClose) {
-      innerHTML += `<a href="#" class="notification-close" aria-label="Close notification" tabindex="0" role="button">&times;</a>`;
-    }
-
-    if (options.duration && options.duration > 0 && !options.sticky) {
-      innerHTML += `<div class="notification-timer"></div>`;
-    }
-
-    notif.innerHTML = innerHTML;
-
-    if (options.bgColor) {
-      notif.style.background = options.bgColor;
-      notif.style.backdropFilter = 'blur(12px)';
-      notif.style.color = '#fff';
-      notif.style.boxShadow = `0 4px 24px ${hexToRgba(options.bgColor, 0.3)}`;
-    }
-
-    if (options.isStatus) {
-      container.prepend(notif);
+    // --- Inner HTML for mini or normal ---
+    if (options.style === 'mini') {
+      const icon = options.icon || 'fa-info-circle'; // default Font Awesome icon
+      notif.innerHTML = `
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="flex-shrink:0; width:40px; height:40px; display:flex; align-items:center; justify-content:center; background:#ffffff20; border-radius:8px;">
+            <i class="fa ${icon}" style="color:#fff; font-size:18px;"></i>
+          </div>
+          <div style="flex:1;">
+            <div style="font-weight:600; font-size:14px; font-family:Inter;">${message}</div>
+            ${options.body ? `<div style="font-size:13px; margin-top:2px; font-family:Inter;">${options.body}</div>` : ''}
+            ${options.duration && !options.sticky ? `<div class="notification-timer"></div>` : ''}
+          </div>
+          ${allowClose ? `<a href="#" class="notification-close" aria-label="Close notification">&times;</a>` : ''}
+        </div>
+      `;
+      Object.assign(notif.style, {
+        background: options.bgColor || 'rgba(50,50,50,0.85)',
+        color: '#fff',
+        padding: '10px 12px',
+        borderRadius: '12px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        backdropFilter: 'blur(10px)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        fontFamily: 'sans-serif',
+        maxWidth: '320px',
+          minWidth: '380px',
+        marginBottom: '8px',
+      });
     } else {
-      container.appendChild(notif);
+      // existing normal style logic
+      let innerHTML =
+        `<div class="notification-title">${message}</div>` +
+        (options.body
+          ? `<div class="notification-body" style="text-align:center; margin-top:8px;">${options.body}</div>`
+          : '');
+      if (allowClose) innerHTML += `<a href="#" class="notification-close" aria-label="Close notification" tabindex="0" role="button">&times;</a>`;
+      if (options.duration && !options.sticky) innerHTML += `<div class="notification-timer"></div>`;
+      notif.innerHTML = innerHTML;
+
+      if (options.bgColor) {
+        notif.style.background = options.bgColor;
+        notif.style.backdropFilter = 'blur(12px)';
+        notif.style.color = '#fff';
+        notif.style.boxShadow = `0 4px 24px ${hexToRgba(options.bgColor, 0.3)}`;
+      }
     }
+
+    if (options.isStatus) container.prepend(notif);
+    else container.appendChild(notif);
 
     requestAnimationFrame(() => notif.classList.add('notif-in'));
 
@@ -80,38 +102,36 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
     if (allowClose) {
       const closeBtn = notif.querySelector('.notification-close');
-      closeBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        closeNotification(notif);
-      });
-      closeBtn.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+      if (closeBtn) {
+        closeBtn.addEventListener('click', (e) => {
           e.preventDefault();
           closeNotification(notif);
-        }
-      });
+        });
+        closeBtn.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            closeNotification(notif);
+          }
+        });
+      }
     }
 
-    let timerInterval,
-      timerBar,
-      remaining = options.duration || 4000,
-      start,
-      paused = false;
+    // --- Timer bar logic ---
+    let timerInterval, timerBar, remaining = options.duration || 4000, start, paused = false;
 
-    if (options.duration && options.duration > 0 && !options.sticky) {
+    if (options.duration && !options.sticky) {
       timerBar = notif.querySelector('.notification-timer');
-      Object.assign(timerBar.style, {
-        width: '100%',
-        height: '3px',
-        background: 'rgba(255,255,255,0.5)',
-        borderRadius: '2px',
-        marginTop: '8px',
-        transition: `width ${remaining}ms linear`,
-      });
-
-      setTimeout(() => {
-        timerBar.style.width = '0%';
-      }, 10);
+      if (timerBar) {
+        Object.assign(timerBar.style, {
+          width: '100%',
+          height: '3px',
+          background: 'rgba(255,255,255,0.5)',
+          borderRadius: '2px',
+          marginTop: '6px',
+          transition: `width ${remaining}ms linear`,
+        });
+        setTimeout(() => timerBar.style.width = '0%', 10);
+      }
 
       start = Date.now();
       timerInterval = setTimeout(() => closeNotification(notif), remaining);
@@ -122,17 +142,17 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
         clearTimeout(timerInterval);
         const elapsed = Date.now() - start;
         remaining -= elapsed;
-        timerBar.style.transition = '';
-        timerBar.style.width = `${(remaining / (options.duration || 4000)) * 100}%`;
+        if (timerBar) timerBar.style.transition = '';
+        if (timerBar) timerBar.style.width = `${(remaining / (options.duration || 4000)) * 100}%`;
       });
 
       notif.addEventListener('mouseleave', () => {
         if (!paused) return;
         paused = false;
         start = Date.now();
-        timerBar.style.transition = `width ${remaining}ms linear`;
+        if (timerBar) timerBar.style.transition = `width ${remaining}ms linear`;
         setTimeout(() => {
-          timerBar.style.width = '0%';
+          if (timerBar) timerBar.style.width = '0%';
         }, 10);
         timerInterval = setTimeout(() => closeNotification(notif), remaining);
       });
@@ -147,9 +167,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
       n.classList.remove('notif-in');
       n.classList.add('notif-out');
       clearTimeout(timerInterval);
-      if (notifKey) {
-        localStorage.setItem(notifKey, '1');
-      }
+      if (notifKey) localStorage.setItem(notifKey, '1');
       n.addEventListener('animationend', () => n.remove(), { once: true });
     }
   }
@@ -228,6 +246,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
       'https://jbekjmsruiadbhaydlbt.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZWtqbXNydWlhZGJoYXlkbGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzOTQ2NTgsImV4cCI6MjA2Mzk3MDY1OH0.5Oku6Ug-UH2voQhLFGNt9a_4wJQlAHRaFwTeQRyjTSY'
     );
+
     if (!window.supabase) {
       console.warn('❌ Supabase client not initialized');
       return;
@@ -243,7 +262,6 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
         console.log('User:', currentUser);
       }
 
-
       const { data: notifications, error } = await supabase
         .from('notifications')
         .select('*')
@@ -258,6 +276,8 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
       notifications.forEach((notif) => {
         showNotification(notif.title, {
+          style: notif.style || 'normal',
+          icon: notif.icon,
           body: notif.body,
           allowClose: notif.allow_close ?? true,
           persistClose: notif.persist_close ?? false,
@@ -285,9 +305,6 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
   // Poll every 10 seconds
   fetchSupabaseNotifications();
 
-
-
-
   // --- INIT ---
   document.addEventListener('DOMContentLoaded', () => {
     console.log('📅 DOM loaded, initializing notifications...');
@@ -297,6 +314,8 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
       body: "We've updated our Privacy Policy and TOS. Please <a href='/legal' style='text-decoration:underline;'>review them</a>.",
       persistClose: true,
       sound: true,
+      style: 'mini',
+      icon: 'fa-bell'
     });
 
     showNotification('Leave us a review!', {

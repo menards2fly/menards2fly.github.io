@@ -170,15 +170,7 @@
     </style>
   </head>
   <body>
-    <script>
-      window.addEventListener('load', () => {
-        showNotification('Welcome to starchat!', {
-          body: `For the safety of our users, all messages are filtered for inappropriate content. Please be respectful and avoid using banned words. All profile pictures are blurred for privacy.`,
-          duration: 20000, // Auto-dismiss after 10 seconds
-          sound: true, // Play sound
-        });
-      });
-    </script>
+
     <!-- Navigation Bar -->
     <div id="navbar"></div>
     <script type="module" src="/javascript/navbar.js"></script>
@@ -413,10 +405,14 @@ form.addEventListener('submit', async (e) => {
     console.log("Profanity API response:", data);
 
     if (data.isProfanity) {
-      showNotification('Message Filtered', {
-        body: `That message contains inappropriate content and has been blocked.`,
+      showNotification('Message Blocked', {
+        body: `Your message was blocked due to chat filters.`,
         duration: 5000,
         sound: true,
+        style: 'mini',     // tells it to use the mini style
+      icon: 'fa-warning',  // optional: any Font Awesome icon you want
+    bgColor: '#ff4444', 
+    allowClose: false,
       });
       input.value = '';
       return;
