@@ -373,10 +373,12 @@ const orbitLogoUrl = '/uploads/branding/orbit.png'; // update with your actual l
       // Track timestamps of sent messages for spam filter
       let messageTimestamps = [];
 
-      form.addEventListener('submit', async (e) => {
+form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const content = input.value.trim();
   if (!content) return;
+
+  console.log("Message submitted:", content);
 
   if (!currentUser || currentUser.username === 'Guest') {
     showNotification('Message Not Sent', {
@@ -387,12 +389,8 @@ const orbitLogoUrl = '/uploads/branding/orbit.png'; // update with your actual l
     return;
   }
 
-  // Spam filter: clean timestamps older than 20 seconds
   const now = Date.now();
-  messageTimestamps = messageTimestamps.filter(
-    (ts) => now - ts < TIME_WINDOW_MS
-  );
-
+  messageTimestamps = messageTimestamps.filter(ts => now - ts < TIME_WINDOW_MS);
   if (messageTimestamps.length >= MESSAGE_LIMIT) {
     showNotification('Slow down!', {
       body: `You can only send ${MESSAGE_LIMIT} messages every 20 seconds. Please wait a bit before sending more.`,
@@ -402,28 +400,30 @@ const orbitLogoUrl = '/uploads/branding/orbit.png'; // update with your actual l
     return;
   }
 
-  // 🔹 Profanity.dev API check
-  let cleanContent;
+  // Profanity check
+  let cleanContent = content;
   try {
-    const res = await fetch(
-      "https://vector.profanity.dev?text=" + encodeURIComponent(content)
-    );
-    const data = await res.json();
-    cleanContent = data.cleaned;
+    const res = await fetch("https://vector.profanity.dev", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: content }),
+    });
 
-    // If the cleaned text is different → it had profanity
-    if (cleanContent !== content) {
+    const data = await res.json();
+    console.log("Profanity API response:", data);
+
+    if (data.isProfanity) {
       showNotification('Message Filtered', {
         body: `That message contains inappropriate content and has been blocked.`,
         duration: 5000,
         sound: true,
       });
-      input.value = ''; // Clear input
+      input.value = '';
       return;
     }
+
   } catch (err) {
     console.error("Profanity API error:", err);
-    // fallback: block message if API fails
     showNotification('Message Error', {
       body: `Could not process your message right now. Please try again later.`,
       duration: 5000,
@@ -432,16 +432,29 @@ const orbitLogoUrl = '/uploads/branding/orbit.png'; // update with your actual l
     return;
   }
 
-  // Passed filters → add timestamp
+  // Passed filters → show message immediately (optimistic UI)
+  const tempMessage = {
+    user_id: currentUser.id,
+    content: cleanContent,
+    profiles: { username: currentUser.username, avatar_url: currentUser.avatar_url },
+  };
+  addMessageToDOM(tempMessage); // Add instantly
   messageTimestamps.push(now);
-
-  await supabase
-    .from('messages')
-    .insert([{ user_id: currentUser.id, content: cleanContent }]);
-
   input.value = '';
   scrollToBottom();
+
+  // Then insert to Supabase in background
+  try {
+    const { error } = await supabase
+      .from('messages')
+      .insert([{ user_id: currentUser.id, content: cleanContent }]);
+    if (error) console.error("Supabase insert error:", error);
+  } catch (err) {
+    console.error("Unexpected Supabase error:", err);
+  }
 });
+
+
 
 
       async function init() {
