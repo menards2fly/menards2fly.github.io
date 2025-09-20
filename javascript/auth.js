@@ -689,6 +689,7 @@ if (await containsBadWord(newUsername)) {
                       style: 'mini',     // tells it to use the mini style
       icon: 'fa-warning',  // optional: any Font Awesome icon you want
     bgColor: '#ff4444', 
+    allowClose: false,
   });
   return; // STOP here — don't update username
 
@@ -1197,7 +1198,8 @@ if (await containsBadWord(newBio)) {
     sound: true,
                   style: 'mini',     // tells it to use the mini style
       icon: 'fa-warning',  // optional: any Font Awesome icon you want
-    bgColor: '#ff4444', 
+    bgColor: '#ff4444',
+    allowClose: false,
   });
   bioStatus.style.color = 'red';
   bioStatus.textContent = 'Bio contains inappropriate content.';
